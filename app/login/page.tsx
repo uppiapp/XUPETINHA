@@ -35,7 +35,7 @@ export default function LoginPage() {
           <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0">
             <RevolutLogo className="w-4 h-4 text-black" />
           </div>
-          <span className="text-sm font-medium text-white/80">Revolut Business</span>
+          <span className="text-sm font-medium text-white/80">Uppi</span>
         </div>
         <h1 className="text-[2rem] font-bold text-white leading-tight text-balance">
           Bem-vindo de volta

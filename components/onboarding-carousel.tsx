@@ -200,8 +200,7 @@ export function OnboardingCarousel() {
             }}
           >
             <p className="text-white text-[1.75rem] tracking-tight">
-              <span className="font-bold">Revolut</span>
-              <span className="font-light"> Business</span>
+              <span className="font-bold">Uppi</span>
             </p>
             <p className="text-white/40 text-[13px] mt-2 tracking-wide">Bem-vindo</p>
           </div>
@@ -246,7 +245,7 @@ export function OnboardingCarousel() {
             <RevolutLogo className="w-4 h-4" style={{ color: slide.logoColor }} />
           </div>
           <span className="text-sm font-medium tracking-wide" style={{ color: slide.headerTextColor }}>
-            Welcome to Revolut Business
+            Uppi — Mobilidade
           </span>
         </div>
 

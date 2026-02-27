@@ -2,18 +2,18 @@ import Link from "next/link"
 import { RevolutLogo } from "@/components/revolut-logo"
 
 export const metadata = {
-  title: "Termos de Uso — Revolut Business",
-  description: "Leia os termos e condições de uso do Revolut Business.",
+  title: "Termos de Uso — Uppi",
+  description: "Leia os termos e condições de uso do Uppi.",
 }
 
 const sections = [
   {
     title: "1. Aceitação dos termos",
-    content: `Ao acessar ou usar o Revolut Business, você concorda com estes Termos de Uso e com nossa Política de Privacidade. Se você não concordar com qualquer parte destes termos, não deverá usar o aplicativo. O uso contínuo do aplicativo após alterações nos termos implica aceitação das mudanças.`,
+    content: `Ao acessar ou usar o Uppi, você concorda com estes Termos de Uso e com nossa Política de Privacidade. Se você não concordar com qualquer parte destes termos, não deverá usar o aplicativo. O uso contínuo do aplicativo após alterações nos termos implica aceitação das mudanças.`,
   },
   {
     title: "2. Descrição do serviço",
-    content: `O Revolut Business é um aplicativo de gestão financeira que permite visualizar saldos, transações e realizar operações financeiras. O serviço é fornecido "como está" e pode estar sujeito a alterações, suspensões ou descontinuações a qualquer momento, com ou sem aviso prévio.`,
+    content: `O Uppi é um aplicativo de mobilidade urbana que conecta passageiros e motoristas, permitindo solicitar corridas, negociar preços e avaliar viagens. O serviço é fornecido "como está" e pode estar sujeito a alterações, suspensões ou descontinuações a qualquer momento, com ou sem aviso prévio.`,
   },
   {
     title: "3. Elegibilidade",
@@ -29,11 +29,11 @@ const sections = [
   },
   {
     title: "6. Propriedade intelectual",
-    content: `Todo o conteúdo, design, código e funcionalidades do Revolut Business são de propriedade exclusiva dos seus criadores e estão protegidos por leis de direitos autorais. Você não tem permissão para copiar, modificar, distribuir, vender ou arrendar qualquer parte do serviço sem autorização expressa por escrito.`,
+    content: `Todo o conteúdo, design, código e funcionalidades do Uppi são de propriedade exclusiva dos seus criadores e estão protegidos por leis de direitos autorais. Você não tem permissão para copiar, modificar, distribuir, vender ou arrendar qualquer parte do serviço sem autorização expressa por escrito.`,
   },
   {
     title: "7. Limitação de responsabilidade",
-    content: `Na extensão máxima permitida por lei, o Revolut Business não será responsável por danos indiretos, incidentais, especiais, consequenciais ou punitivos, incluindo perda de lucros, dados ou boa vontade, decorrentes do uso ou impossibilidade de uso do serviço.`,
+    content: `Na extensão máxima permitida por lei, o Uppi não será responsável por danos indiretos, incidentais, especiais, consequenciais ou punitivos, incluindo perda de lucros, dados ou boa vontade, decorrentes do uso ou impossibilidade de uso do serviço.`,
   },
   {
     title: "8. Isenção de garantias",
@@ -49,7 +49,7 @@ const sections = [
   },
   {
     title: "11. Contato",
-    content: `Para dúvidas sobre estes Termos de Uso, entre em contato pelo e-mail: termos@revolutbusiness.app. Respondemos todas as solicitações em até 15 dias úteis.`,
+    content: `Para dúvidas sobre estes Termos de Uso, entre em contato pelo e-mail: termos@uppi.app. Respondemos todas as solicitações em até 15 dias úteis.`,
   },
 ]
 
@@ -65,7 +65,7 @@ export default function TermsPage() {
               <RevolutLogo className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Revolut Business
+              Uppi
             </span>
           </Link>
         </div>
@@ -83,7 +83,7 @@ export default function TermsPage() {
             Termos de Uso
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            Leia com atenção antes de usar o <strong className="text-foreground">Revolut Business</strong>. Ao criar uma conta ou usar o aplicativo, você concorda com os termos e condições descritos abaixo.
+            Leia com atenção antes de usar o <strong className="text-foreground">Uppi</strong>. Ao criar uma conta ou usar o aplicativo, você concorda com os termos e condições descritos abaixo.
           </p>
         </div>
 

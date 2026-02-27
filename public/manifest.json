@@ -1,7 +1,7 @@
 {
-  "name": "Revolut Business",
-  "short_name": "Revolut Biz",
-  "description": "Go beyond business as usual with Revolut Business",
+  "name": "Uppi",
+  "short_name": "Uppi",
+  "description": "Mobilidade urbana com preço justo — negocie sua corrida diretamente com motoristas",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,7 +10,7 @@
   "theme_color": "#000000",
   "lang": "pt-BR",
   "dir": "ltr",
-  "categories": ["finance", "business"],
+  "categories": ["transportation", "travel"],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -67,21 +67,21 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Tela inicial Revolut Business"
+      "label": "Tela inicial Uppi"
     }
   ],
   "prefer_related_applications": false,
   "related_applications": [],
   "shortcuts": [
     {
-      "name": "Criar conta",
-      "url": "/?action=signup",
-      "description": "Crie uma conta Revolut Business"
+      "name": "Solicitar corrida",
+      "url": "/?action=ride",
+      "description": "Solicite uma corrida no Uppi"
     },
     {
       "name": "Entrar",
       "url": "/?action=login",
-      "description": "Faça login na sua conta"
+      "description": "Faça login na sua conta Uppi"
     }
   ]
 }

@@ -2,8 +2,8 @@ import Link from "next/link"
 import { RevolutLogo } from "@/components/revolut-logo"
 
 export const metadata = {
-  title: "Política de Privacidade — Revolut Business",
-  description: "Saiba como coletamos, usamos e protegemos seus dados no Revolut Business.",
+  title: "Política de Privacidade — Uppi",
+  description: "Saiba como coletamos, usamos e protegemos seus dados no Uppi.",
 }
 
 const sections = [
@@ -45,7 +45,7 @@ const sections = [
   },
   {
     title: "10. Contato",
-    content: `Para exercer seus direitos, tirar dúvidas ou reportar alguma preocupação sobre privacidade, entre em contato pelo e-mail: privacidade@revolutbusiness.app. Respondemos todas as solicitações em até 15 dias úteis.`,
+    content: `Para exercer seus direitos, tirar dúvidas ou reportar alguma preocupação sobre privacidade, entre em contato pelo e-mail: privacidade@uppi.app. Respondemos todas as solicitações em até 15 dias úteis.`,
   },
 ]
 
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
               <RevolutLogo className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Revolut Business
+              Uppi
             </span>
           </Link>
         </div>
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
             Política de Privacidade
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            Esta política descreve como o <strong className="text-foreground">Revolut Business</strong> coleta, usa e protege suas informações pessoais. Ao usar o aplicativo, você concorda com os termos descritos abaixo.
+            Esta política descreve como o <strong className="text-foreground">Uppi</strong> coleta, usa e protege suas informações pessoais. Ao usar o aplicativo, você concorda com os termos descritos abaixo.
           </p>
         </div>
 
@@ -107,8 +107,7 @@ export default function PrivacyPage() {
         <div className="flex flex-col gap-2 text-xs text-muted-foreground">
           <p>Última atualização: 25 de fevereiro de 2026</p>
           <p>Versão: 1.0.0</p>
-          <p>Em conformidade com a LGPD (Lei nº 13.709/2018) e o RGPD (Regulamento UE 2016/679).</p>
-        </div>
+          <p>Em conformidade com a LGPD (Lei nº 13.709/2018) e o RGPD (Regulamento UE 2016/679).</p>        </div>
 
         {/* Back button */}
         <div className="mt-10">

@@ -30,8 +30,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
       }}
     >
       <h1 className="text-white text-4xl tracking-tight select-none font-sans">
-        <span className="font-bold">Revolut</span>
-        <span className="font-light"> Business</span>
+        <span className="font-bold">Uppi</span>
       </h1>
     </div>
   )
