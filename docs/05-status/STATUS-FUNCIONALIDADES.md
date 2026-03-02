@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 16.0
-**Status Geral:** 100% Operacional — 73 tabelas no banco, 152 paginas, 57 rotas de API, 15 funcoes SQL RPC
+**Versao:** 18.0
+**Status Geral:** 100% Operacional
 
 ---
 
@@ -13,7 +13,8 @@
 | Paginas (total) | 152 | 152 | 100% |
 | Paginas Admin | 33 | 33 | 100% |
 | API route.ts | 57 | 57 | 100% |
-| Tabelas no Banco | 73 | 73 | 100% |
+| Tabelas no Banco (public) | 72 | 72 | 100% |
+| Tabelas totais (todos schemas) | 111 | 111 | 100% |
 | Funcoes SQL (RPC) | 15 | 15 | 100% |
 | Realtime (tabelas) | 8 | 8 | 100% |
 | Components Custom | 48 | 48 | 100% |
@@ -22,172 +23,168 @@
 | Hooks | 12 | 12 | 100% |
 | Documentacao | 17 | 17 | 100% |
 | Versionamento API | v1 | v1 | 100% |
+| Build sem erros | Sim | — | 100% |
 
 ---
 
 ## 1. Frontend - Paginas (152 total)
 
-### Auth (9 paginas) — /auth/
+### Auth (9) — /auth/
 - [x] /auth/welcome
 - [x] /auth/login
 - [x] /auth/sign-up
 - [x] /auth/sign-up-success
 - [x] /auth/user-type
 - [x] /auth/error
+- [x] /auth/callback
 - [x] /auth/driver/welcome
 - [x] /auth/driver/login
 - [x] /auth/driver/sign-up
 
 ### Home e Navegacao (5)
 - [x] /uppi/home — mapa + sugestoes IA + voice assistant + zonas quentes
-- [x] /uppi/notifications — central de notificacoes
-- [x] /uppi/history — historico de corridas
-- [x] /uppi/favorites — enderecos favoritos
-- [x] /uppi/favorites/add — adicionar favorito
+- [x] /uppi/notifications
+- [x] /uppi/history
+- [x] /uppi/favorites
+- [x] /uppi/favorites/add
 
 ### Fluxo de Corrida (14)
-- [x] /uppi/request-ride — solicitar corrida
-- [x] /uppi/ride/route-input — origem/destino + multiplas paradas
-- [x] /uppi/ride/select — selecao de veiculo com precos
-- [x] /uppi/ride/route-alternatives — rotas alternativas
-- [x] /uppi/ride/searching — buscando motoristas
-- [x] /uppi/ride/schedule — agendar corrida
+- [x] /uppi/request-ride
+- [x] /uppi/ride/route-input — multiplas paradas
+- [x] /uppi/ride/select — selecao de veiculo
+- [x] /uppi/ride/route-alternatives
+- [x] /uppi/ride/searching
+- [x] /uppi/ride/schedule — agendamento
 - [x] /uppi/ride/group — corridas em grupo
-- [x] /uppi/ride/[id]/offers — negociacao de preco (realtime countdown)
-- [x] /uppi/ride/[id]/tracking — rastreamento ao vivo
-- [x] /uppi/ride/[id]/chat — chat com motorista
-- [x] /uppi/ride/[id]/details — detalhes da corrida
-- [x] /uppi/ride/[id]/review — avaliacao simples
-- [x] /uppi/ride/[id]/review-enhanced — avaliacao avancada com categorias
+- [x] /uppi/ride/[id]/offers — leilao reverso (Realtime countdown)
+- [x] /uppi/ride/[id]/tracking — GPS ao vivo
+- [x] /uppi/ride/[id]/chat
+- [x] /uppi/ride/[id]/details
+- [x] /uppi/ride/[id]/payment
+- [x] /uppi/ride/[id]/review
+- [x] /uppi/ride/[id]/review-enhanced — categorias + tags
 - [x] /uppi/tracking — rastreamento global
 
 ### Motorista (7)
-- [x] /uppi/driver — painel do motorista
-- [x] /uppi/driver/register — cadastro como motorista
-- [x] /uppi/driver/documents — upload de documentos
+- [x] /uppi/driver — painel
+- [x] /uppi/driver/register
+- [x] /uppi/driver/documents
 - [x] /uppi/driver/verify — verificacao facial
-- [x] /uppi/driver/earnings — analise de ganhos (charts)
-- [x] /uppi/driver-mode — modo motorista ativo
-- [x] /uppi/driver-mode/active — recebendo corridas
+- [x] /uppi/driver/earnings — charts de ganhos
+- [x] /uppi/driver-mode
+- [x] /uppi/driver-mode/active
 
 ### Perfil e Configuracoes (8)
-- [x] /uppi/profile — perfil do usuario
-- [x] /uppi/settings — configuracoes gerais
-- [x] /uppi/settings/sms — preferencias SMS
-- [x] /uppi/settings/recording — gravacao de audio (opt-in seguranca)
-- [x] /uppi/settings/2fa — autenticacao de dois fatores
-- [x] /uppi/settings/emergency — config emergencia
-- [x] /uppi/settings/language — idioma
-- [x] /uppi/settings/password — alterar senha
+- [x] /uppi/profile
+- [x] /uppi/settings
+- [x] /uppi/settings/sms
+- [x] /uppi/settings/recording
+- [x] /uppi/settings/2fa
+- [x] /uppi/settings/emergency
+- [x] /uppi/settings/language
+- [x] /uppi/settings/password
 
 ### Financeiro (4)
-- [x] /uppi/wallet — carteira digital
-- [x] /uppi/payments — metodos de pagamento
-- [x] /uppi/promotions — promocoes e cupons
-- [x] /uppi/club — club Uppi (3 planos de assinatura)
+- [x] /uppi/wallet
+- [x] /uppi/payments
+- [x] /uppi/promotions
+- [x] /uppi/club — planos de assinatura
 
 ### Social e Gamificacao (6)
-- [x] /uppi/social — feed social
-- [x] /uppi/social/create — criar post
-- [x] /uppi/leaderboard — ranking (multiplas categorias)
-- [x] /uppi/achievements — conquistas e badges
-- [x] /uppi/referral — programa de indicacao
-- [x] /uppi/analytics — estatisticas do usuario
+- [x] /uppi/social
+- [x] /uppi/social/create
+- [x] /uppi/leaderboard
+- [x] /uppi/achievements
+- [x] /uppi/referral
+- [x] /uppi/analytics
 
 ### Seguranca (3)
-- [x] /uppi/emergency — botao SOS com GPS
-- [x] /uppi/emergency-contacts — contatos de emergencia
-- [x] /uppi/seguranca — central de seguranca
+- [x] /uppi/emergency
+- [x] /uppi/emergency-contacts
+- [x] /uppi/seguranca
 
 ### Servicos Extras (3)
-- [x] /uppi/entregas — servico de entregas
-- [x] /uppi/cidade-a-cidade — viagens intermunicipais
-- [x] /uppi/ios-showcase — showcase dos componentes iOS
+- [x] /uppi/entregas
+- [x] /uppi/cidade-a-cidade
+- [x] /uppi/ios-showcase
 
 ### Suporte e Legal (6)
-- [x] /uppi/suporte — central de ajuda
-- [x] /uppi/suporte/chat — chat com suporte
-- [x] /uppi/help — ajuda rapida
-- [x] /uppi/legal/privacy — politica de privacidade
-- [x] /uppi/legal/terms — termos de uso
-- [x] /uppi/privacy / /uppi/terms (aliases)
+- [x] /uppi/suporte
+- [x] /uppi/suporte/chat
+- [x] /uppi/help
+- [x] /uppi/legal/privacy
+- [x] /uppi/legal/terms
+- [x] /uppi/privacy | /uppi/terms
 
-### Admin (33 paginas, 5 grupos) — /admin/
+### Admin (33) — /admin/
 
-**Visao Geral (4)**
-- [x] /admin — dashboard KPIs realtime + AreaChart + BarChart (queries batch, carregamento <2s)
-- [x] /admin/analytics — analytics sem RPCs inexistentes, dados direto do banco
-- [x] /admin/monitor — mapa ao vivo, motoristas online
-- [x] /admin/emergency — Central SOS: active/acknowledged/resolved, som de alerta
+**Visao Geral**
+- [x] /admin — dashboard KPIs realtime + AreaChart + BarChart
+- [x] /admin/analytics
+- [x] /admin/monitor
+- [x] /admin/emergency
+- [x] /admin/login
 
-**Usuarios (9)**
-- [x] /admin/users — passageiros: banir, ativar, busca, filtros
-- [x] /admin/drivers — motoristas: aprovar/rejeitar documentos
-- [x] /admin/drivers/earnings — ganhos: BarChart semanal, top motorista
-- [x] /admin/reviews — avaliacoes: distribuicao por estrela, remover abusivas
-- [x] /admin/achievements — conquistas + leaderboard
-- [x] /admin/leaderboard — ranking global: 4 categorias
-- [x] /admin/referrals — indicacoes: historico, top indicadores
-- [x] /admin/subscriptions — assinaturas Club Uppi (Realtime)
-- [x] /admin/favoritos — locais favoritos: analytics de uso
+**Usuarios**
+- [x] /admin/users
+- [x] /admin/drivers
+- [x] /admin/drivers/earnings
+- [x] /admin/reviews
+- [x] /admin/achievements
+- [x] /admin/leaderboard
+- [x] /admin/referrals
+- [x] /admin/subscriptions
+- [x] /admin/favoritos
 
-**Corridas (7)**
-- [x] /admin/rides — corridas: forcar status, cancelar, filtros
-- [x] /admin/rides/[id] — detalhe completo da corrida
-- [x] /admin/agendamentos — corridas agendadas (Realtime)
-- [x] /admin/group-rides — corridas em grupo
-- [x] /admin/cidade-a-cidade — viagens intermunicipais
-- [x] /admin/entregas — pedidos entrega
-- [x] /admin/price-offers — ofertas ao vivo (Realtime)
+**Corridas**
+- [x] /admin/rides
+- [x] /admin/rides/[id]
+- [x] /admin/agendamentos
+- [x] /admin/group-rides
+- [x] /admin/cidade-a-cidade
+- [x] /admin/entregas
+- [x] /admin/price-offers
 
-**Operacoes (7)**
-- [x] /admin/financeiro — receita, repasses, graficos (queries batch)
-- [x] /admin/payments — transacoes + carteira: aprovar/rejeitar saques
-- [x] /admin/cupons — CRUD cupons: criar, editar, ativar/desativar
-- [x] /admin/messages — moderacao chats (Realtime)
-- [x] /admin/notifications — push broadcast + individual
-- [x] /admin/suporte — tickets de suporte (Realtime)
-- [x] /admin/social — feed social: moderar posts (Realtime)
+**Operacoes**
+- [x] /admin/financeiro
+- [x] /admin/payments
+- [x] /admin/cupons
+- [x] /admin/messages
+- [x] /admin/notifications
+- [x] /admin/suporte
+- [x] /admin/social
 
-**Sistema (3)**
-- [x] /admin/webhooks — endpoints de integracao, secret, historico
-- [x] /admin/logs — error_logs: filtro por nivel, stack trace (Realtime)
-- [x] /admin/settings — system_settings: 6 parametros
+**Sistema**
+- [x] /admin/webhooks
+- [x] /admin/logs
+- [x] /admin/settings
+- [x] /admin/sms
+- [x] /admin/recordings
 
-### Onboarding e Outros (4)
-- [x] /onboarding — tela de onboarding
-- [x] /onboarding/splash — splash screen
-- [x] /onboarding/create-account — criar conta
-- [x] / — redirect para /auth/welcome
-- [x] /offline — pagina offline (PWA)
-- [x] /share — compartilhamento
-- [x] /google-setup — configuracao Google Maps
-- [x] /login / /signup / /phone — aliases de auth
+### Onboarding e Outros
+- [x] /onboarding | /onboarding/splash | /onboarding/create-account
+- [x] / | /offline | /share | /google-setup
+- [x] /login | /signup | /phone | /privacy | /terms
 
 ---
 
 ## 2. Backend - API Routes (57 arquivos, 92+ handlers)
 
-**Base URL:** /api/v1
-**Middleware:** version-middleware.ts ativo
-**Auth:** Supabase Auth (cookie)
-**Rate Limiting:** 3 niveis (api:60/min, auth:10/5min, offer:5/30s)
-
 - [x] /api/v1/health
-- [x] /api/v1/profile — GET + PATCH
+- [x] /api/v1/profile — GET + PATCH (profiles, sem tabela 'users')
 - [x] /api/v1/stats
-- [x] /api/v1/rides — GET + POST (tabelas corretas: profiles, driver_profiles)
+- [x] /api/v1/rides — GET + POST (joins corretos via profiles + driver_profiles)
 - [x] /api/v1/rides/[id]/status — PATCH
 - [x] /api/v1/rides/[id]/cancel — POST
-- [x] /api/v1/rides/[id]/report — POST (email Resend automatico)
-- [x] /api/v1/offers — GET + POST (driver_profiles + profiles, sem tabela 'drivers')
+- [x] /api/v1/rides/[id]/report — POST (email via Resend)
+- [x] /api/v1/offers — GET + POST (driver_profiles, sem tabela 'drivers')
 - [x] /api/v1/offers/[id]/accept — POST
-- [x] /api/v1/ratings — GET + POST (reviewed_id + reviewer_id corretos)
+- [x] /api/v1/ratings — GET + POST (reviewed_id/reviewer_id corretos)
 - [x] /api/v1/reviews — GET + POST
 - [x] /api/v1/reviews/enhanced — GET + POST
 - [x] /api/v1/reviews/driver — GET + POST
 - [x] /api/v1/notifications — GET + POST + PATCH
-- [x] /api/v1/notifications/send — POST push
+- [x] /api/v1/notifications/send — POST
 - [x] /api/v1/messages — GET + POST
 - [x] /api/v1/wallet — GET + POST (calculate_wallet_balance RPC)
 - [x] /api/v1/coupons — GET + POST
@@ -209,14 +206,14 @@
 - [x] /api/v1/emergency — GET + POST + PUT
 - [x] /api/v1/recordings/upload — POST
 - [x] /api/v1/sms/send — POST
-- [x] /api/v1/sms/status — GET + POST (webhook Twilio)
+- [x] /api/v1/sms/status — GET + POST
 - [x] /api/v1/geocode — GET
 - [x] /api/v1/places/autocomplete — GET
 - [x] /api/v1/places/details — GET
 - [x] /api/v1/routes/alternatives — GET
 - [x] /api/v1/distance — GET
 - [x] /api/v1/webhooks — GET + POST + DELETE
-- [x] /api/v1/webhooks/process — GET + POST (cron CRON_SECRET)
+- [x] /api/v1/webhooks/process — GET + POST
 - [x] /api/v1/auth/verify — POST
 - [x] /api/v1/auth/email-otp/send — POST
 - [x] /api/v1/auth/email-otp/verify — POST
@@ -226,216 +223,238 @@
 - [x] /api/v1/push/vapid-public-key — GET
 - [x] /api/v1/admin/setup — POST
 - [x] /api/v1/admin/create-first — POST
-- [x] /api/admin/check — GET verificar status admin
+- [x] /api/admin/check — GET
 
 ---
 
-## 3. Banco de Dados — Estado Real em 02/03/2026
+## 3. Banco de Dados — 111 tabelas totais / 72 no schema public
 
-**73 tabelas ativas** — verificadas via Supabase SQL
+| Schema | Tabelas |
+|--------|---------|
+| public | 72 |
+| auth | 21 |
+| realtime | 8 |
+| storage | 8 |
+| supabase_migrations | 1 |
+| vault | 1 |
+| **Total** | **111** |
 
-### Nucleo (8 tabelas)
-| Tabela | Descricao |
-|--------|-----------|
-| profiles | Usuarios (passageiros e motoristas) — +rating, +total_rides, +preferences |
-| driver_profiles | Motorista — +last_verification_at, +verification_status, +total_trips, +acceptance_rate |
-| rides | Corridas — +vehicle_type, +notes, +accepted_at, +arrived_at, +has_rated |
-| price_offers | Ofertas de preco dos motoristas |
-| messages | Chat das corridas |
-| ratings | Avaliacoes — +rating, +reviewer_id, +reviewed_id, +tags, +category_ratings |
-| notifications | Notificacoes — +action_url, +image_url, +expires_at |
-| favorites | Motoristas/enderecos favoritos |
+### Schema public — 72 tabelas
+- [x] profiles — +rating, +total_rides, +preferences
+- [x] driver_profiles — +last_verification_at, +verification_status, +total_trips, +acceptance_rate
+- [x] rides — +vehicle_type, +notes, +accepted_at, +arrived_at, +has_rated
+- [x] price_offers
+- [x] messages
+- [x] ratings — +rating, +reviewer_id, +reviewed_id, +tags, +category_ratings
+- [x] notifications — +action_url, +image_url, +expires_at
+- [x] favorites
 
-### Localizacao (5 tabelas)
-| Tabela | Descricao |
-|--------|-----------|
-| driver_locations | Posicao em tempo real (latitude/longitude) |
-| ride_tracking | Historico GPS da corrida |
-| ride_stops | Paradas intermediarias |
-| location_history | Historico de localizacao do usuario |
-| hot_zones | Zonas de alta demanda |
+### Localizacao (5)
+- [x] driver_locations (latitude/longitude, nao lat/lng)
+- [x] ride_tracking
+- [x] ride_stops
+- [x] location_history
+- [x] hot_zones
 
-### Financeiro (6 tabelas)
-| Tabela | Descricao |
-|--------|-----------|
-| user_wallets | Carteira digital — +pending_balance, +total_earned, +total_spent |
-| wallet_transactions | Transacoes — +balance_after, +reference_type, +metadata |
-| payments | Pagamentos de corridas |
-| coupons | Cupons de desconto |
-| coupon_uses | Registro de uso |
-| subscriptions | Club Uppi (planos) |
+### Financeiro (6)
+- [x] user_wallets — +pending_balance, +total_earned, +total_spent
+- [x] wallet_transactions — +balance_after, +reference_type, +metadata
+- [x] payments
+- [x] coupons
+- [x] coupon_uses
+- [x] user_coupons
 
-### Motorista - Documentos (4 tabelas)
-| Tabela | Descricao |
-|--------|-----------|
-| driver_documents | CNH, CRLV, foto, antecedentes |
-| driver_verifications | Processo de verificacao facial |
-| vehicles | Veiculos cadastrados |
-| driver_route_segments | Segmentos de rota frequentes |
+### Motorista (4)
+- [x] driver_verifications
+- [x] vehicles
+- [x] driver_route_segments
+- [x] drivers
 
-### Social e Gamificacao (9 tabelas)
-social_posts, social_post_likes, social_post_comments, social_follows,
-user_social_stats, achievements, user_achievements, user_streaks, leaderboard
+### Social e Gamificacao (9)
+- [x] social_posts
+- [x] social_post_likes
+- [x] post_comments
+- [x] social_follows
+- [x] user_social_stats
+- [x] leaderboard
+- [x] user_achievements
+- [x] referral_achievements
+- [x] rating_categories (seed: Direcao, Trajeto, Respeito, Comportamento)
 
-### Avaliacoes Avancadas (7 tabelas)
-enhanced_reviews, driver_reviews, review_tags, rating_categories (com seed),
-ratings (simples), rating_helpful_votes, rating_reports
+### Avaliacoes (6)
+- [x] reviews
+- [x] driver_reviews
+- [x] rating_helpful_votes
+- [x] rating_reports
+- [x] reports
+- [x] campaigns
 
-### Seguranca (5 tabelas)
-emergency_contacts, emergency_alerts, ride_recordings, recording_consents,
-user_recording_preferences
+### Seguranca (5)
+- [x] emergency_contacts
+- [x] emergency_alerts
+- [x] ride_recordings
+- [x] recording_consents
+- [x] user_recording_preferences
 
-### Corridas Especiais (3 tabelas)
-group_rides, group_ride_participants, scheduled_rides
+### Corridas Especiais (4)
+- [x] group_rides
+- [x] group_ride_participants
+- [x] scheduled_rides
+- [x] ride_offers
 
-### Configuracoes do Usuario (5 tabelas)
-user_settings, notification_preferences, user_sms_preferences,
-user_onboarding (+step_completed, +preferences), fcm_tokens
+### Configuracoes (4)
+- [x] notification_preferences
+- [x] user_sms_preferences
+- [x] user_onboarding — +step_completed, +preferences
+- [x] push_subscriptions
 
-### Suporte (2 tabelas)
-support_tickets (+assigned_to, +resolved_at), support_messages
+### Suporte (2)
+- [x] support_tickets — +assigned_to, +resolved_at, +notes
+- [x] support_messages
 
-### Indicacoes (2 tabelas)
-referrals, referral_rewards
+### Indicacoes (1)
+- [x] referrals
 
-### Assinaturas e Promocoes (3 tabelas)
-subscriptions, promotions, user_coupons
+### Assinaturas e Promocoes (2)
+- [x] subscriptions
+- [x] promotions
 
-### Rotas e Historico (4 tabelas)
-popular_routes, driver_popular_routes, route_history, address_search_history
+### Rotas (4)
+- [x] popular_routes
+- [x] driver_popular_routes
+- [x] route_history
+- [x] address_search_history
 
-### SMS (3 tabelas)
-sms_templates, sms_deliveries, sms_logs
+### SMS (3)
+- [x] sms_templates
+- [x] sms_deliveries
+- [x] sms_logs
 
-### Admin e Infraestrutura (7 tabelas)
-admin_logs, pricing_rules, webhook_endpoints, webhook_deliveries,
-error_logs, system_settings, avatars
+### Admin e Infra (7)
+- [x] admin_logs
+- [x] pricing_rules
+- [x] webhook_endpoints
+- [x] webhook_deliveries
+- [x] error_logs
+- [x] system_settings (6 registros)
+- [x] avatars
+- [x] users
+- [x] faqs
+- [x] legal_documents
 
 ---
 
-## 4. Funcoes SQL (RPC) — 15 funcoes ativas
+## 4. Funcoes SQL (RPC) — 15
 
-| Funcao | Descricao |
-|--------|-----------|
-| find_nearby_drivers(lat, lng, radius, type) | Motoristas proximos com distancia e ETA |
-| calculate_wallet_balance(user_id) | Saldo atual da carteira |
-| update_user_rating(user_id) | Recalcula rating medio do perfil |
-| get_driver_stats(driver_id) | Estatisticas consolidadas do motorista |
-| get_ride_with_details(ride_id) | Corrida com todos os joins |
-| needs_facial_verification(driver_id) | Verifica se motorista precisa de re-verificacao |
-| respond_to_rating(rating_id, response) | Responder a uma avaliacao |
-| get_category_ratings(user_id) | Ratings agrupados por categoria |
-| accept_price_offer(offer_id, ride_id) | Aceitar oferta e atualizar corrida atomicamente |
-| update_driver_location(driver_id, lat, lng, heading, speed) | Atualizar GPS com upsert |
-| get_platform_stats() | Estatisticas globais da plataforma |
-| get_user_stats(user_id) | Estatisticas de um usuario |
-| get_social_feed(user_id, limit, offset) | Feed social personalizado |
-| get_leaderboard(period, metric, limit) | Ranking por periodo/metrica |
-| get_hot_zones(lat, lng, radius) | Zonas de demanda proximas |
+- [x] find_nearby_drivers(lat, lng, radius_km, vehicle_type)
+- [x] calculate_wallet_balance(user_id)
+- [x] update_user_rating(user_id)
+- [x] get_driver_stats(driver_id)
+- [x] get_ride_with_details(ride_id)
+- [x] needs_facial_verification(driver_id)
+- [x] respond_to_rating(rating_id, response)
+- [x] get_category_ratings(user_id)
+- [x] accept_price_offer(offer_id, ride_id)
+- [x] update_driver_location(driver_id, lat, lng, heading, speed)
+- [x] get_platform_stats()
+- [x] get_user_stats(user_id)
+- [x] get_social_feed(user_id, limit, offset)
+- [x] get_leaderboard(period, metric, limit)
+- [x] get_hot_zones(lat, lng, radius)
 
 ---
 
-## 5. Realtime — 8 tabelas com publicacao ativa
+## 5. Realtime — 8 tabelas
 
-| Tabela | Uso |
-|--------|-----|
-| rides | Monitor admin + busca de corridas do motorista |
-| driver_locations | Rastreamento ao vivo |
-| messages | Chat bidirecional da corrida |
-| notifications | Notificacoes push in-app |
-| price_offers | Leilao reverso de preco |
-| support_messages | Chat do suporte |
-| ride_tracking | GPS historico em tempo real |
-| ride_offers | Ofertas de corrida para motoristas |
+- [x] rides
+- [x] driver_locations
+- [x] messages
+- [x] notifications
+- [x] price_offers
+- [x] support_messages
+- [x] ride_tracking
+- [x] ride_offers
 
 ---
 
 ## 6. Componentes (133 total)
 
-### Custom (48 em /components/*.tsx)
-- [x] Mapa: google-map, modern-map, route-map, route-preview-3d, map-fallback
-- [x] Localizacao: nearby-drivers, hot-zones-card, places-search, search-address, location-tag
-- [x] Navegacao: bottom-navigation, sidebar-menu, go-back-button
-- [x] Corrida: ride-audio-recorder, chat-interface, pix-qr-code
-- [x] iOS UI: ios-page-transition, ios-confirm-dialog, pull-to-refresh, swipeable-list-item
-- [x] Skeletons: driver, history, notifications, profile, social, tracking, wallet
-- [x] Auth: facial-verification, voice-assistant-button, permission-onboarding
-- [x] Social: referral-card, referral-client
-- [x] Admin: admin-header, admin-sidebar
-- [x] Providers: client-providers, fcm-provider, theme-provider, app-initializer
-
-### UI shadcn/ui (54 em /components/ui/)
-- [x] Todos os primitivos Radix UI + extras: confetti, expandable-tabs, morphing-spinner
-
-### iOS Components (31 em /components/ui/ios-*)
-- [x] 31 componentes iOS: action-sheet, alert-dialog, avatar, back-button, badge,
-  bottom-sheet, button, button-group, card, chevron, chip, context-menu, date-picker,
-  fab, input-enhanced, list-item, loading-screen, navigation-bar, notification-banner,
-  page-transition, picker-wheel, progress, pull-refresh, search-bar, segmented-control,
-  sheet, skeleton, slider, switch, tabs, toast-advanced
+- [x] 48 custom (mapa, localizacao, navegacao, corrida, iOS UI, skeletons, auth, admin, providers)
+- [x] 54 shadcn/ui
+- [x] 31 iOS components
 
 ---
 
-## 7. Hooks (12 em /hooks/)
+## 7. Hooks (12)
 
-- [x] use-auth.ts — sessao Supabase + perfil
-- [x] use-fcm.ts — Firebase Cloud Messaging
-- [x] use-geolocation.ts — geolocalizacao
-- [x] use-google-maps.ts — loader Google Maps
-- [x] use-haptic.ts — haptic feedback (7 padroes)
-- [x] use-mobile.tsx — breakpoint 768px
-- [x] use-places-autocomplete.ts — Places API
-- [x] use-pull-to-refresh.ts — pull to refresh
-- [x] use-swipe.ts — gestos swipe
-- [x] use-swipe-actions.ts — acoes em lista
-- [x] use-toast.ts — toast shadcn
-- [x] use-voice-assistant.ts — Speech Recognition pt-BR
+- [x] use-auth, use-fcm, use-geolocation, use-google-maps
+- [x] use-haptic, use-mobile, use-places-autocomplete
+- [x] use-pull-to-refresh, use-swipe, use-swipe-actions
+- [x] use-toast, use-voice-assistant
 
 ---
 
-## 8. Services (13 em /lib/services/)
+## 8. Services (13)
 
-- [x] auth-service.ts — autenticacao e perfil
-- [x] chat-service.ts — mensagens
-- [x] favorites-service.ts — enderecos favoritos
-- [x] geolocation-service.ts — geocodificacao
-- [x] history-service.ts — historico de corridas
-- [x] notification-service.ts — notificacoes in-app
-- [x] payment-service.ts — pagamentos (tabelas corretas)
-- [x] profile-service.ts — dados do perfil
-- [x] realtime-service.ts — Supabase Realtime (8 tabelas)
-- [x] review-service.ts — avaliacoes (rater_id/rated_id corretos)
-- [x] ride-service.ts — logica de corridas (leilao reverso)
-- [x] storage-service.ts — upload de arquivos
-- [x] tracking-service.ts — rastreamento GPS
+- [x] auth, chat, favorites, geolocation, history
+- [x] notification, payment, profile, realtime
+- [x] review (rater_id/rated_id corretos), ride, storage, tracking
 
 ---
 
-## 9. Variaveis de Ambiente
+## 9. Configuracao do Projeto
 
-| Variavel | Status |
-|---------|--------|
-| NEXT_PUBLIC_SUPABASE_URL | Configurado |
-| NEXT_PUBLIC_SUPABASE_ANON_KEY | Configurado |
-| SUPABASE_SERVICE_ROLE_KEY | Configurado |
-| NEXT_PUBLIC_GOOGLE_MAPS_API_KEY | Configurado |
-| RESEND_API_KEY | Configurado (email de relatorio) |
-| CRON_SECRET | Pendente (opcional — webhooks) |
-| TWILIO_ACCOUNT_SID | Pendente (opcional — SMS) |
-| TWILIO_AUTH_TOKEN | Pendente (opcional — SMS) |
-| TWILIO_PHONE_NUMBER | Pendente (opcional — SMS) |
+- [x] proxy.ts — Supabase session + route protection (Next.js 16)
+- [x] next.config.mjs — eslint removido, Sentry, env vars
+- [x] lib/types/database.ts — atualizado com todas as novas colunas
+- [x] lib/supabase/database.ts — tabelas corretas
+- [x] lib/api-utils.ts — requireDriver correto
 
 ---
 
-## 10. Proximos Passos
+## 10. Variaveis de Ambiente
 
-1. Deploy Vercel — redeploy apos correcao das APIs
-2. Testes E2E: auth -> home -> corrida -> oferta -> pagamento -> avaliacao
+- [x] NEXT_PUBLIC_SUPABASE_URL
+- [x] NEXT_PUBLIC_SUPABASE_ANON_KEY
+- [x] SUPABASE_SERVICE_ROLE_KEY
+- [x] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+- [x] RESEND_API_KEY
+- [ ] CRON_SECRET (opcional — webhooks automaticos)
+- [ ] TWILIO_ACCOUNT_SID (opcional — SMS)
+- [ ] TWILIO_AUTH_TOKEN (opcional — SMS)
+- [ ] TWILIO_PHONE_NUMBER (opcional — SMS)
+
+---
+
+## 11. Correcoes Aplicadas (02/03/2026)
+
+| Arquivo | Correcao |
+|---------|---------|
+| next.config.mjs | Removida chave eslint (nao suportada no Next.js 16) |
+| middleware.ts | Renomeado para proxy.ts (convencao Next.js 16) |
+| api/v1/offers | Usa driver_profiles/profiles (nao 'drivers'/'users') |
+| api/v1/wallet | Usa calculate_wallet_balance RPC + colunas corretas |
+| api/v1/ratings | Usa reviewed_id/reviewer_id corretos |
+| api/v1/rides | Joins corretos via profiles!passenger_id |
+| api/v1/profile | Usa profiles com id (nao user_id) |
+| api/v1/driver/location | Usa latitude/longitude (nao lat/lng) |
+| lib/supabase/database.ts | Reescrito com tabelas corretas |
+| lib/api-utils.ts | requireDriver usa driver_profiles |
+| lib/services/review-service.ts | Usa rater_id/rated_id |
+| lib/types/database.ts | Atualizado com todas as novas colunas |
+
+---
+
+## 12. Proximos Passos
+
+1. Deploy Vercel — redeploy apos correcoes
+2. Testes E2E: auth → home → corrida → oferta → pagamento → avaliacao
 3. Configurar dominio personalizado
-4. TWA para Google Play Store (docs/06-deploy/PLAY-STORE.md)
-5. Configurar Twilio para SMS (opcional)
+4. TWA para Google Play Store
+5. Configurar Twilio (SMS — opcional)
 6. Habilitar RLS em: driver_profiles, rides, ratings, coupon_uses, wallet_transactions
+7. Monitorar error_logs no painel admin apos go-live
 
 ---
 
-**Atualizado em 02/03/2026** — banco verificado via Supabase SQL, APIs corrigidas
+**Atualizado em 02/03/2026** — 111 tabelas totais (72 public + 21 auth + 8 realtime + 8 storage + 2 outras), 152 paginas, 57 APIs, 15 RPCs, build limpo
