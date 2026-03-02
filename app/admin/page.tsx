@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   Users, Car, TrendingUp, Activity, UserCheck, Clock,
   DollarSign, ArrowUpRight, ArrowDownRight, RefreshCw,
@@ -280,21 +280,19 @@ export default function AdminDashboard() {
                 <span className="text-[11px] text-slate-500">por dia</span>
               </div>
               <ChartContainer config={{ corridas: { label: 'Corridas', color: 'hsl(var(--admin-green))' } }} className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={weeklyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--admin-green))" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="hsl(var(--admin-green))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--admin-border))" />
-                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area type="monotone" dataKey="corridas" stroke="hsl(var(--admin-green))" fill="url(#grad1)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <AreaChart data={weeklyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--admin-green))" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(var(--admin-green))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--admin-border))" />
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="corridas" stroke="hsl(var(--admin-green))" fill="url(#grad1)" strokeWidth={2} />
+                </AreaChart>
               </ChartContainer>
             </div>
 
@@ -304,15 +302,13 @@ export default function AdminDashboard() {
                 <span className="text-[11px] text-slate-500">por hora</span>
               </div>
               <ChartContainer config={{ corridas: { label: 'Corridas', color: '#818cf8' } }} className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hourlyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--admin-border))" />
-                    <XAxis dataKey="hora" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="corridas" fill="#818cf8" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarChart data={hourlyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--admin-border))" />
+                  <XAxis dataKey="hora" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="corridas" fill="#818cf8" radius={[3, 3, 0, 0]} />
+                </BarChart>
               </ChartContainer>
             </div>
           </div>
