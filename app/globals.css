@@ -529,99 +529,89 @@ input, textarea, [contenteditable] {
 
 @layer base {
   :root {
-    /* iOS Light Mode - System Colors */
-    --background: 0 0% 95%; /* #F2F2F7 - iOS system background */
-    --foreground: 0 0% 0%; /* #000000 - iOS label */
-    
-    /* Cards - iOS grouped background */
+    --background: 220 20% 97%;
+    --foreground: 220 15% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    
-    /* Popovers */
+    --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    
-    /* Primary - iOS Blue #007AFF */
-    --primary: 211 100% 50%;
+    --popover-foreground: 220 15% 10%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    
-    /* Secondary - iOS system gray */
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 0 0% 0%;
-    
-    /* Muted - iOS secondary label */
-    --muted: 240 5% 96%;
-    --muted-foreground: 0 0% 56%; /* #8E8E93 */
-    
-    /* Accent */
-    --accent: 211 100% 50%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 15% 25%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 142 71% 45%;
     --accent-foreground: 0 0% 100%;
-    
-    /* Destructive - iOS Red #FF3B30 */
-    --destructive: 4 100% 60%;
+    --destructive: 4 86% 58%;
     --destructive-foreground: 0 0% 100%;
-    
-    /* Borders - iOS separator */
-    --border: 0 0% 78%; /* rgba(0,0,0,0.06) */
-    --input: 0 0% 90%;
-    --ring: 211 100% 50%;
-    
-    /* iOS Charts */
-    --chart-1: 211 100% 50%; /* Blue */
-    --chart-2: 142 76% 36%; /* Green */
-    --chart-3: 262 83% 58%; /* Purple */
-    --chart-4: 0 100% 60%; /* Red */
-    --chart-5: 48 96% 53%; /* Yellow */
-    
-    /* iOS corner radius */
-    --radius: 1.25rem;
-    
-    /* Sidebar */
-    --sidebar-background: 0 0% 95%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
-    --sidebar-primary-foreground: 0 0% 95%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 78%;
-    --sidebar-ring: 211 100% 50%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 142 71% 45%;
+    --chart-1: 142 71% 45%;
+    --chart-2: 211 100% 50%;
+    --chart-3: 262 83% 58%;
+    --chart-4: 4 86% 58%;
+    --chart-5: 45 96% 53%;
+    --radius: 0.75rem;
+    --sidebar-background: 222 47% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 142 71% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 16%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 35% 18%;
+    --sidebar-ring: 142 71% 45%;
+    /* admin specific */
+    --admin-bg: 222 47% 8%;
+    --admin-surface: 222 40% 12%;
+    --admin-border: 222 35% 18%;
+    --admin-green: 142 71% 45%;
   }
   .dark {
-    /* iOS Dark Mode - System Colors */
-    --background: 0 0% 0%; /* #000000 - iOS dark background */
-    --foreground: 0 0% 100%; /* #FFFFFF - iOS dark label */
-    --card: 0 0% 11%; /* #1C1C1E - iOS dark elevated */
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 211 100% 50%; /* #007AFF stays same */
+    --background: 222 47% 7%;
+    --foreground: 210 20% 92%;
+    --card: 222 40% 11%;
+    --card-foreground: 210 20% 92%;
+    --popover: 222 40% 11%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 17%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 17%;
-    --muted-foreground: 0 0% 56%; /* #8E8E93 */
-    --accent: 211 100% 50%;
+    --secondary: 222 35% 17%;
+    --secondary-foreground: 210 20% 80%;
+    --muted: 222 35% 17%;
+    --muted-foreground: 220 15% 52%;
+    --accent: 142 71% 45%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 4 100% 60%; /* #FF453A dark red */
+    --destructive: 4 86% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 20%; /* rgba(255,255,255,0.08) */
-    --input: 0 0% 20%;
-    --ring: 211 100% 50%;
-    --chart-1: 211 100% 55%;
-    --chart-2: 142 70% 45%;
+    --border: 222 35% 19%;
+    --input: 222 35% 19%;
+    --ring: 142 71% 45%;
+    --chart-1: 142 71% 45%;
+    --chart-2: 211 100% 55%;
     --chart-3: 262 80% 60%;
-    --chart-4: 4 100% 60%;
-    --chart-5: 48 90% 55%;
-    --radius: 1.25rem;
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 211 100% 50%;
+    --chart-4: 4 86% 58%;
+    --chart-5: 45 90% 55%;
+    --radius: 0.75rem;
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 17%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 222 40% 13%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 35% 17%;
+    --sidebar-ring: 142 71% 45%;
+    --admin-bg: 222 47% 6%;
+    --admin-surface: 222 40% 10%;
+    --admin-border: 222 35% 17%;
+    --admin-green: 142 71% 45%;
   }
+}
+
+/* Admin dark theme forced for all admin pages */
+.admin-layout {
+  color-scheme: dark;
 }
 
 @layer base {

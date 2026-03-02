@@ -112,8 +112,8 @@ export default function UsersPage() {
     return (
       <>
         <AdminHeader title="Usuarios" subtitle="Carregando..." />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-[3px] border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex-1 flex items-center justify-center bg-[hsl(var(--admin-bg))]">
+          <div className="w-6 h-6 border-2 border-[hsl(var(--admin-green))] border-t-transparent rounded-full animate-spin" />
         </div>
       </>
     )
@@ -122,18 +122,18 @@ export default function UsersPage() {
   return (
     <>
       <AdminHeader title="Usuarios" subtitle={`${users.length} usuarios cadastrados`} />
-      <div className="flex-1 overflow-hidden flex">
+      <div className="flex-1 overflow-hidden flex bg-[hsl(var(--admin-bg))]">
         {/* Left: List */}
-        <div className="flex-1 flex flex-col overflow-hidden border-r border-border">
+        <div className="flex-1 flex flex-col overflow-hidden border-r border-[hsl(var(--admin-border))]">
           {/* Search + Tabs */}
           <div className="p-4 pb-0 space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <Input
                 placeholder="Buscar por nome ou telefone..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 rounded-xl bg-secondary border-0 text-[14px]"
+                className="pl-9 h-10 rounded-xl bg-[hsl(var(--admin-surface))] border-[hsl(var(--admin-border))] text-slate-200 placeholder:text-slate-600 text-[13px]"
               />
             </div>
             <div className="flex gap-1">
@@ -206,7 +206,7 @@ export default function UsersPage() {
         </div>
 
         {/* Right: Details Panel */}
-        <div className="hidden lg:flex w-[380px] flex-col overflow-y-auto bg-background">
+        <div className="hidden lg:flex w-[360px] flex-col overflow-y-auto bg-[hsl(var(--admin-bg))]">
           {selected ? (
             <div className="p-6 space-y-5">
               {/* Profile Header */}

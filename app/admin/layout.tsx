@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import { AdminHeader } from '@/components/admin/admin-header'
 import { Shield } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +31,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return
       }
 
-      // Usar API Route com service_role para ignorar RLS
       try {
         const res = await fetch('/api/admin/check', {
           method: 'POST',
@@ -56,21 +56,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkAdmin()
   }, [isLoginPage, router])
 
-  // Login page renders without sidebar
-  if (isLoginPage) {
-    return <>{children}</>
-  }
+  if (isLoginPage) return <>{children}</>
 
-  // Loading state
   if (!checked) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
+      <div className="h-screen bg-[hsl(var(--admin-bg))] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-7 h-7 text-white" />
+          <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--admin-green))]/10 border border-[hsl(var(--admin-green))]/30 flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-7 h-7 text-[hsl(var(--admin-green))]" />
           </div>
-          <div className="w-8 h-8 border-[3px] border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[14px] text-muted-foreground font-medium">Verificando acesso...</p>
+          <div className="w-6 h-6 border-2 border-[hsl(var(--admin-green))] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[13px] text-slate-400 font-medium">Verificando acesso...</p>
         </div>
       </div>
     )
@@ -79,9 +75,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return null
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="admin-layout dark flex h-screen bg-[hsl(var(--admin-bg))] overflow-hidden">
       <AdminSidebar />
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
         {children}
       </main>
     </div>
