@@ -37,6 +37,9 @@ import {
   Calendar,
   Crown,
   Heart,
+  Mic,
+  MessageCircle,
+  HelpCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -84,14 +87,17 @@ const navGroups = [
       { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
       { href: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
       { href: '/admin/notifications', icon: Bell, label: 'Notificacoes' },
+      { href: '/admin/sms', icon: MessageCircle, label: 'SMS' },
       { href: '/admin/suporte', icon: HeadphonesIcon, label: 'Suporte' },
       { href: '/admin/social', icon: Rss, label: 'Feed Social' },
+      { href: '/admin/faq', icon: HelpCircle, label: 'FAQ / Ajuda' },
     ],
   },
   {
     label: 'Sistema',
     items: [
       { href: '/admin/webhooks', icon: Webhook, label: 'Webhooks' },
+      { href: '/admin/recordings', icon: Mic, label: 'Gravacoes' },
       { href: '/admin/logs', icon: AlertTriangle, label: 'Logs de Erro' },
       { href: '/admin/settings', icon: Settings, label: 'Configuracoes' },
     ],

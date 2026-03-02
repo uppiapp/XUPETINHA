@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { iosToast } from '@/lib/utils/ios-toast'
 import { haptics } from '@/lib/utils/ios-haptics'
@@ -10,48 +11,52 @@ import { IOSCard } from '@/components/ui/ios-card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Car, CreditCard, Heart, Bell, MessageCircle, Shield, ChevronDown } from 'lucide-react'
 
+interface Faq {
+  id: string
+  question: string
+  answer: string
+  category: string
+  order_index: number
+}
+
+// FAQs estáticas como fallback caso a tabela ainda não exista
+const fallbackFaqs: Faq[] = [
+  { id: '1', question: 'Como funciona a negociação de preço?', answer: 'Você informa seu destino e o preço que deseja pagar. Motoristas próximos recebem sua solicitação e podem aceitar seu preço ou fazer uma contra-oferta. Você escolhe a melhor opção.', category: 'Corridas', order_index: 1 },
+  { id: '2', question: 'Como sei se o motorista é confiável?', answer: 'Todos os motoristas passam por verificação de documentos. Você pode ver a avaliação, número de corridas e comentários de outros passageiros antes de aceitar.', category: 'Seguranca', order_index: 2 },
+  { id: '3', question: 'Posso cancelar uma corrida?', answer: 'Sim, você pode cancelar antes do motorista chegar. Cancelamentos após o motorista iniciar o deslocamento podem ter taxa de cancelamento.', category: 'Corridas', order_index: 3 },
+  { id: '4', question: 'Como funciona o pagamento?', answer: 'Você pode pagar em dinheiro, cartão de crédito/débito ou PIX. O pagamento é processado apenas após a conclusão da viagem.', category: 'Pagamentos', order_index: 4 },
+  { id: '5', question: 'O que fazer em caso de emergência?', answer: 'Use o botão SOS dentro do app durante a corrida. Suas informações e localização serão compartilhadas com nosso suporte e contatos de emergência.', category: 'Seguranca', order_index: 5 },
+  { id: '6', question: 'Como adicionar um método de pagamento?', answer: 'Vá em Perfil > Pagamentos e adicione seu cartão ou configure o PIX. Todos os dados são criptografados e seguros.', category: 'Pagamentos', order_index: 6 },
+]
+
 export default function HelpPage() {
   const router = useRouter()
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
+  const supabase = createClient()
+  const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [showContactForm, setShowContactForm] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [faqs, setFaqs] = useState<Faq[]>(fallbackFaqs)
 
-  const faqs = [
-    {
-      question: 'Como funciona a negociação de preço?',
-      answer: 'Você informa seu destino e o preço que deseja pagar. Motoristas próximos recebem sua solicitação e podem aceitar seu preço ou fazer uma contra-oferta. Você escolhe a melhor opção.',
-    },
-    {
-      question: 'Como sei se o motorista é confiável?',
-      answer: 'Todos os motoristas passam por verificação de documentos. Você pode ver a avaliação, número de corridas e comentários de outros passageiros antes de aceitar.',
-    },
-    {
-      question: 'Posso cancelar uma corrida?',
-      answer: 'Sim, você pode cancelar antes do motorista chegar. Cancelamentos após o motorista iniciar o deslocamento podem ter taxa de cancelamento.',
-    },
-    {
-      question: 'Como funciona o pagamento?',
-      answer: 'Você pode pagar em dinheiro, cartão de crédito/débito ou PIX. O pagamento é processado apenas após a conclusão da viagem.',
-    },
-    {
-      question: 'O que fazer em caso de emergência?',
-      answer: 'Use o botão SOS dentro do app durante a corrida. Suas informações e localização serão compartilhadas com nosso suporte e contatos de emergência.',
-    },
-    {
-      question: 'Como adicionar um método de pagamento?',
-      answer: 'Vá em Perfil > Pagamentos e adicione seu cartão ou configure o PIX. Todos os dados são criptografados e seguros.',
-    },
-  ]
+  useEffect(() => {
+    supabase
+      .from('faqs')
+      .select('id, question, answer, category, order_index')
+      .eq('is_active', true)
+      .order('order_index', { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setFaqs(data as Faq[])
+      })
+  }, [])
 
   const quickActions = [
-    { iconPath: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', title: 'Minhas Corridas', path: '/uppi/history' },
-    { iconPath: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', title: 'Pagamentos', path: '/uppi/profile' },
-    { iconPath: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', title: 'Favoritos', path: '/uppi/favorites' },
-    { iconPath: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9', title: 'Notificacoes', path: '/uppi/notifications' },
+    { icon: Car, title: 'Minhas Corridas', path: '/uppi/history' },
+    { icon: CreditCard, title: 'Pagamentos', path: '/uppi/profile' },
+    { icon: Heart, title: 'Favoritos', path: '/uppi/favorites' },
+    { icon: Bell, title: 'Notificacoes', path: '/uppi/notifications' },
   ]
 
-  const filteredFaqs = searchQuery 
-    ? faqs.filter(faq => 
+  const filteredFaqs = searchQuery
+    ? faqs.filter(faq =>
         faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -69,12 +74,12 @@ export default function HelpPage() {
       <header className="relative z-10 bg-white/80 dark:bg-black/80 ios-blur-heavy border-b border-black/[0.08] dark:border-white/[0.08] sticky top-0">
         <div className="px-5 pt-safe-offset-4 pb-4">
           <div className="flex items-center gap-4 mb-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
                 haptics.impactLight()
                 router.back()
-              }} 
+              }}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary/60 ios-press"
             >
               <ArrowLeft className="w-5 h-5 text-foreground" strokeWidth={2.5} />
@@ -116,10 +121,7 @@ export default function HelpPage() {
                 className="group bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl rounded-[20px] p-5 text-left shadow-lg border border-black/[0.04] dark:border-white/[0.08] ios-press"
               >
                 <div className="w-12 h-12 bg-blue-500/10 dark:bg-blue-500/20 rounded-[16px] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  {action.title === 'Minhas Corridas' && <Car className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2} />}
-                  {action.title === 'Pagamentos' && <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2} />}
-                  {action.title === 'Favoritos' && <Heart className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2} />}
-                  {action.title === 'Notificacoes' && <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2} />}
+                  <action.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2} />
                 </div>
                 <p className="text-[15px] font-semibold text-foreground">{action.title}</p>
               </motion.button>
@@ -141,7 +143,7 @@ export default function HelpPage() {
             <AnimatePresence>
               {filteredFaqs.map((faq, index) => (
                 <motion.div
-                  key={index}
+                  key={faq.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -151,13 +153,13 @@ export default function HelpPage() {
                     type="button"
                     onClick={() => {
                       haptics.selection()
-                      setExpandedFaq(expandedFaq === index ? null : index)
+                      setExpandedFaq(expandedFaq === faq.id ? null : faq.id)
                     }}
                     className="w-full px-5 py-5 text-left flex items-start justify-between gap-4 ios-press"
                   >
                     <span className="text-[17px] font-semibold text-foreground leading-snug">{faq.question}</span>
                     <motion.div
-                      animate={{ rotate: expandedFaq === index ? 180 : 0 }}
+                      animate={{ rotate: expandedFaq === faq.id ? 180 : 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       className="flex-shrink-0 mt-1"
                     >
@@ -165,7 +167,7 @@ export default function HelpPage() {
                     </motion.div>
                   </button>
                   <AnimatePresence>
-                    {expandedFaq === index && (
+                    {expandedFaq === faq.id && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -194,7 +196,7 @@ export default function HelpPage() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-[28px]" />
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay" />
-          
+
           <div className="relative p-8 text-white text-center">
             <div className="w-16 h-16 rounded-[20px] bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="w-8 h-8 text-white" strokeWidth={2} />
@@ -242,3 +244,4 @@ export default function HelpPage() {
     </div>
   )
 }
+

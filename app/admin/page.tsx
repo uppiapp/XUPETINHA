@@ -8,6 +8,7 @@ import { Area, AreaChart, Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'rec
 import {
   Users, Car, TrendingUp, Activity, UserCheck, Clock,
   DollarSign, ArrowUpRight, ArrowDownRight, RefreshCw,
+  CheckCircle2, XCircle, AlertCircle, Database, Map, Lock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
   const [recentRides, setRecentRides] = useState<RecentRide[]>([])
   const [weeklyData, setWeeklyData] = useState<{ day: string; corridas: number; receita: number }[]>([])
   const [hourlyData, setHourlyData] = useState<{ hora: string; corridas: number }[]>([])
+  const [health, setHealth] = useState<{ status: string; services: Record<string, { status: string; latency_ms?: number }> } | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
@@ -188,6 +190,12 @@ export default function AdminDashboard() {
 
     setLastUpdated(new Date())
     setLoading(false)
+
+    // Health check em paralelo (não bloqueia os stats)
+    fetch('/api/v1/health')
+      .then(r => r.json())
+      .then(data => setHealth(data))
+      .catch(() => setHealth({ status: 'error', services: {} }))
   }, [])
 
   useEffect(() => {
@@ -272,8 +280,42 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Health Check */}
+          {health && (
+            <div className="bg-[hsl(var(--admin-surface))] rounded-xl border border-[hsl(var(--admin-border))] p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[13px] font-bold text-slate-200">Status do Sistema</h3>
+                <span className={cn(
+                  'text-[11px] font-bold px-2 py-0.5 rounded-full',
+                  health.status === 'ok' ? 'bg-emerald-500/15 text-emerald-400' :
+                  health.status === 'degraded' ? 'bg-amber-500/15 text-amber-400' :
+                  'bg-red-500/15 text-red-400'
+                )}>
+                  {health.status === 'ok' ? 'Operacional' : health.status === 'degraded' ? 'Degradado' : 'Erro'}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 flex-wrap">
+                {Object.entries(health.services || {}).map(([name, svc]) => {
+                  const ok = svc.status === 'healthy' || svc.status === 'configured'
+                  const warn = svc.status === 'degraded'
+                  const Icon = ok ? CheckCircle2 : warn ? AlertCircle : XCircle
+                  const ServiceIcon = name === 'database' ? Database : name === 'maps' ? Map : Lock
+                  return (
+                    <div key={name} className="flex items-center gap-2">
+                      <ServiceIcon className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-[12px] text-slate-400 capitalize">{name}</span>
+                      <Icon className={cn('w-3.5 h-3.5', ok ? 'text-emerald-400' : warn ? 'text-amber-400' : 'text-red-400')} />
+                      {svc.latency_ms !== undefined && (
+                        <span className="text-[11px] text-slate-600">{svc.latency_ms}ms</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Charts */}          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-[hsl(var(--admin-surface))] rounded-xl border border-[hsl(var(--admin-border))] p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[13px] font-bold text-slate-200">Corridas — 7 dias</h3>
