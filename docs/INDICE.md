@@ -14,6 +14,8 @@ docs/
   AUDITORIA-PROJETO.md                       Auditoria completa: paginas, APIs, componentes, hooks
   CONFIGURACAO-COMPLETA.md                   Env vars, integrações, proximos passos
   VAPID-SETUP.md                             Setup Web Push (VAPID) para push notifications
+  PAINEL-ADMIN.md                            Painel admin completo: 11 paginas, bugs corrigidos,
+                                             RLS, Realtime, system_settings, createMap()
 
   01-frontend/
     IMPLEMENTACAO.md                         Funcionalidades, componentes React, UX
@@ -24,11 +26,9 @@ docs/
     VERSIONAMENTO.md                         Padrão /api/v1/, middleware, headers de versão
 
   03-banco-de-dados/
-    AUDITORIA-COMPLETA.md                    DOCUMENTO PRINCIPAL - 73 tabelas, 98+ RLS policies,
-                                             45 RPC functions, 24 triggers, 60 indexes,
-                                             scripts SQL, enums, variaveis de ambiente
-    SCHEMA.md                                Schema real do Supabase (24/02/2026), tabelas,
-                                             enums, campos, RPC functions, Realtime
+    AUDITORIA-COMPLETA.md                    Schema alvo completo (73 tabelas, 98+ RLS, 45+ RPC)
+    SCHEMA.md                                Estado real (11 tabelas ativas em 01/03/2026) +
+                                             schema alvo completo, campos detalhados, RLS, indexes
 
   04-infraestrutura/
     GOOGLE-MAPS.md                           Setup, hooks, componentes, troubleshooting
@@ -37,7 +37,8 @@ docs/
     TESTE-REALTIME.md                        Guia de teste Supabase Realtime (passo a passo)
 
   05-status/
-    STATUS-FUNCIONALIDADES.md                Checklist completo: pronto vs faltante por categoria
+    STATUS-FUNCIONALIDADES.md                Checklist completo: 11 tabelas ativas, 16 RLS policies,
+                                             17 indexes, 11 paginas admin, bugs corrigidos (01/03/2026)
 
   06-deploy/
     PLAY-STORE.md                            Guia de publicacao (TWA/Capacitor/FCM)
@@ -127,15 +128,19 @@ app/
       verify/page.tsx                        Verificacao facial
       earnings/page.tsx                      Ganhos e analytics
 
-  admin/                                     Painel administrativo (7 paginas)
+  admin/                                     Painel administrativo (11 paginas)
     layout.tsx                               Layout admin (sidebar + header, auth via is_admin)
-    page.tsx                                 Dashboard com KPIs em tempo real
-    users/page.tsx                           Gerenciar usuarios
-    rides/page.tsx                           Gerenciar corridas
-    financeiro/page.tsx                      Financeiro
-    analytics/page.tsx                       Analytics avancado (5 RPCs)
-    monitor/page.tsx                         Monitor realtime (mapa)
-    webhooks/page.tsx                        Webhooks
+    page.tsx                                 Dashboard com KPIs em tempo real + 2 charts (AreaChart + BarChart)
+    users/page.tsx                           Gerenciar usuarios — banir, ativar, busca, filtros
+    drivers/page.tsx                         Gerenciar motoristas — aprovar/rejeitar docs, status
+    rides/page.tsx                           Gerenciar corridas — forcar status, cancelar, detalhes
+    financeiro/page.tsx                      Financeiro — receita, repasses, graficos
+    analytics/page.tsx                       Analytics avancado (5 RPCs Supabase)
+    monitor/page.tsx                         Monitor realtime — mapa ao vivo com createMap() corrigido
+    cupons/page.tsx                          CRUD de cupons de desconto
+    notifications/page.tsx                   Envio de push notifications (broadcast + individual)
+    logs/page.tsx                            Logs de erros (error_logs) em tempo real
+    settings/page.tsx                        Configuracoes do sistema (system_settings)
 ```
 
 ### 2.2 Backend - API Routes (app/api/v1/)
@@ -349,22 +354,75 @@ package.json                                 Dependencias completas
 
 ---
 
-## 5. Banco de Dados - Resumo (SQL 24/02/2026)
+## 5. Banco de Dados - Resumo Real (01/03/2026)
 
-| Categoria           | Quantidade |
-|---------------------|-----------|
-| Tabelas             | 73        |
-| RLS Policies        | 98+       |
-| RPC Functions       | 45+       |
-| Triggers            | 24+       |
-| Indexes             | 60+       |
-| Enums               | 6         |
-| Realtime (tabelas)  | 4         |
+| Categoria           | Quantidade     | Observacao                                    |
+|---------------------|---------------|-----------------------------------------------|
+| Tabelas             | 11 (schema público) | profiles, rides, driver_profiles, payments, notifications, coupons, coupon_uses, reviews, error_logs, system_settings, webhook_endpoints |
+| RLS Policies ativas | 16            | Verificadas via pg_policies em 01/03/2026      |
+| Indexes             | 17            | btree em colunas de busca frequente            |
+| Realtime (tabelas)  | rides + notifications | Canais ativos no painel admin            |
+| system_settings     | 6 registros   | Populado via migration em 01/03/2026           |
 
-**Realtime ativo em:** rides, price_offers, messages, notifications
+> **Nota:** O documento SCHEMA.md e AUDITORIA-COMPLETA.md descrevem o schema alvo completo (73 tabelas).
+> O schema público verificado em 01/03/2026 possui 11 tabelas ativas — as demais estão planejadas para migrations futuras.
 
-**PostGIS ativo em:** driver_profiles (localizacao GPS), rides (pickup/dropoff)
+**Tabelas ativas em 01/03/2026:**
+- `profiles` (12 cols) — usuarios passageiros e motoristas
+- `driver_profiles` (19 cols) — dados do veiculo, localizacao GPS, ganhos
+- `rides` (20 cols) — corridas com ciclo completo de status
+- `payments` (12 cols) — pagamentos com metodo, taxa e repasse
+- `notifications` (8 cols) — notificacoes in-app com RLS
+- `coupons` (13 cols) — cupons com desconto fixo ou percentual
+- `coupon_uses` (6 cols) — rastreia uso de cupons por corrida
+- `reviews` (7 cols) — avaliacoes 1-5 com comentario
+- `error_logs` (8 cols) — logs de erros do sistema
+- `system_settings` (5 cols) — configuracoes da plataforma (6 registros)
+- `webhook_endpoints` (11 cols) — endpoints de integracao
+
+**RLS Policies ativas (16 total):**
+
+| Tabela             | Policy                       | Comando |
+|--------------------|------------------------------|---------|
+| coupons            | admins_all_coupons           | ALL     |
+| coupons            | auth_read_active_coupons     | SELECT  |
+| error_logs         | admins_all_error_logs        | ALL     |
+| error_logs         | admins_can_read_error_logs   | ALL     |
+| error_logs         | auth_insert_error_logs       | INSERT  |
+| notifications      | own_notifications            | ALL     |
+| payments           | auth_insert_payments         | INSERT  |
+| payments           | own_payments                 | SELECT  |
+| profiles           | profiles_admin_select        | SELECT  |
+| profiles           | profiles_admin_update        | UPDATE  |
+| profiles           | profiles_own_insert          | INSERT  |
+| profiles           | profiles_own_select          | SELECT  |
+| profiles           | profiles_own_update          | UPDATE  |
+| system_settings    | admins_all_system_settings   | ALL     |
+| webhook_endpoints  | admins_all_webhooks          | ALL     |
+| webhook_endpoints  | admins_can_manage_webhooks   | ALL     |
+
+**Indexes ativos (17 total):**
+
+| Tabela           | Index                              | Tipo   |
+|------------------|------------------------------------|--------|
+| coupon_uses      | coupon_uses_coupon_id_user_id_key  | UNIQUE |
+| coupons          | coupons_code_key                   | UNIQUE |
+| coupons          | idx_coupons_code                   | btree  |
+| driver_profiles  | idx_driver_profiles_is_available   | btree  |
+| error_logs       | idx_error_logs_created_at          | btree  |
+| error_logs       | idx_error_logs_level               | btree  |
+| notifications    | idx_notifications_user_id          | btree  |
+| payments         | idx_payments_created_at            | btree  |
+| payments         | idx_payments_status                | btree  |
+| profiles         | idx_profiles_email                 | btree  |
+| profiles         | idx_profiles_is_admin              | btree  |
+| profiles         | idx_profiles_user_type             | btree  |
+| profiles         | profiles_email_key                 | UNIQUE |
+| rides            | idx_rides_created_at               | btree  |
+| rides            | idx_rides_driver_id                | btree  |
+| rides            | idx_rides_passenger_id             | btree  |
+| rides            | idx_rides_status                   | btree  |
 
 ---
 
-**Ultima atualizacao:** 24/02/2026
+**Ultima atualizacao:** 01/03/2026

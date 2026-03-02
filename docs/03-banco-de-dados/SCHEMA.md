@@ -1,14 +1,163 @@
 # UPPI - Schema do Banco de Dados
 
-**Ultima Atualizacao:** 24/02/2026
-**Versao:** 11.0
+**Ultima Atualizacao:** 01/03/2026
+**Versao:** 12.0
 **Banco:** Supabase PostgreSQL 15+ com PostGIS
-**Total de Tabelas:** 73 tabelas (schema exportado diretamente do Supabase em 24/02/2026)
-**Realtime:** Habilitado em rides, price_offers, messages, notifications
+**Tabelas ativas (verificadas em 01/03/2026):** 11 tabelas no schema public
+**Tabelas planejadas (schema alvo):** 73 tabelas (ver secao 2 para todas)
+**RLS Policies ativas:** 16 (verificadas via pg_policies)
+**Indexes ativos:** 17 (verificados via pg_indexes)
+
+> **Nota importante:** O schema alvo completo (73 tabelas, 98+ RLS, 45+ RPC) esta documentado abaixo.
+> O estado real do banco em 01/03/2026 possui 11 tabelas ativas. As demais serao criadas via migrations conforme funcionalidades forem ativadas.
 
 ---
 
-## 1. Enums (Tipos Customizados)
+## 0. Estado Real do Banco em 01/03/2026
+
+### Tabelas existentes no schema public
+
+| Tabela              | Colunas | RLS ativa | Notas                                    |
+|---------------------|---------|-----------|------------------------------------------|
+| `profiles`          | 12      | Sim (5)   | PK=id (FK auth.users), UNIQUE email      |
+| `driver_profiles`   | 19      | Nao       | PK=id, GPS lat/lng, is_available, rating |
+| `rides`             | 20      | Nao       | PK=id, status default 'searching'        |
+| `payments`          | 12      | Sim (2)   | PK=id, status default 'pending'          |
+| `notifications`     | 8       | Sim (1)   | PK=id, type default 'info'               |
+| `coupons`           | 13      | Sim (2)   | PK=id, UNIQUE code, discount_type        |
+| `coupon_uses`       | 6       | Nao       | UNIQUE (coupon_id, user_id)              |
+| `reviews`           | 7       | Nao       | PK=id, rating inteiro 1-5                |
+| `error_logs`        | 8       | Sim (3)   | PK=id, level default 'error', metadata jsonb |
+| `system_settings`   | 5       | Sim (1)   | PK=key (text), 6 registros ativos        |
+| `webhook_endpoints` | 11      | Sim (2)   | PK=id, secret gerado automaticamente     |
+
+### Campos detalhados por tabela
+
+### Campos detalhados por tabela
+
+#### profiles
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | — |
+| email | text | NO | — |
+| full_name | text | YES | — |
+| phone | text | YES | — |
+| avatar_url | text | YES | — |
+| user_type | text | YES | 'passenger' |
+| is_admin | boolean | NO | false |
+| is_banned | boolean | NO | false |
+| banned_at | timestamptz | YES | — |
+| ban_reason | text | YES | — |
+| created_at | timestamptz | YES | now() |
+| updated_at | timestamptz | YES | now() |
+
+#### driver_profiles
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | — |
+| vehicle_brand | text | YES | — |
+| vehicle_model | text | YES | — |
+| vehicle_plate | text | YES | — |
+| vehicle_color | text | YES | — |
+| vehicle_type | text | YES | 'standard' |
+| vehicle_year | integer | YES | — |
+| is_verified | boolean | NO | false |
+| is_available | boolean | NO | false |
+| current_lat | float8 | YES | — |
+| current_lng | float8 | YES | — |
+| total_earnings | numeric | YES | 0 |
+| rating | numeric | YES | 5.0 |
+| total_rides | integer | YES | 0 |
+| cnh_number | text | YES | — |
+| cnh_expiry | date | YES | — |
+| document_url | text | YES | — |
+| created_at | timestamptz | YES | now() |
+| updated_at | timestamptz | YES | now() |
+
+#### rides
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| passenger_id | uuid | YES | — |
+| driver_id | uuid | YES | — |
+| pickup_address | text | YES | — |
+| dropoff_address | text | YES | — |
+| pickup_lat | float8 | YES | — |
+| pickup_lng | float8 | YES | — |
+| dropoff_lat | float8 | YES | — |
+| dropoff_lng | float8 | YES | — |
+| distance_km | numeric | YES | — |
+| estimated_duration_minutes | integer | YES | — |
+| passenger_price_offer | numeric | YES | — |
+| final_price | numeric | YES | 0 |
+| status | text | NO | 'searching' |
+| payment_method | text | YES | 'pix' |
+| created_at | timestamptz | YES | now() |
+| started_at | timestamptz | YES | — |
+| completed_at | timestamptz | YES | — |
+| cancelled_at | timestamptz | YES | — |
+| cancellation_reason | text | YES | — |
+
+#### payments
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| ride_id | uuid | YES | — |
+| passenger_id | uuid | YES | — |
+| driver_id | uuid | YES | — |
+| amount | numeric | NO | 0 |
+| platform_fee | numeric | YES | 0 |
+| driver_earnings | numeric | YES | 0 |
+| status | text | NO | 'pending' |
+| payment_method | text | YES | 'pix' |
+| gateway_transaction_id | text | YES | — |
+| created_at | timestamptz | YES | now() |
+| paid_at | timestamptz | YES | — |
+
+#### system_settings
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| key | text | NO | — (PK) |
+| value | text | NO | — |
+| description | text | YES | — |
+| updated_at | timestamptz | YES | now() |
+| updated_by | uuid | YES | — |
+
+#### coupons
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| code | text | NO | — (UNIQUE) |
+| description | text | YES | — |
+| discount_type | text | NO | 'percentage' |
+| discount_value | numeric | NO | — |
+| min_ride_value | numeric | YES | 0 |
+| max_discount | numeric | YES | — |
+| max_uses | integer | YES | 100 |
+| used_count | integer | YES | 0 |
+| is_active | boolean | NO | true |
+| expires_at | timestamptz | YES | — |
+| created_by | uuid | YES | — |
+| created_at | timestamptz | YES | now() |
+
+#### webhook_endpoints
+| Coluna | Tipo | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| url | text | NO | — |
+| events | text[] | NO | '{}' |
+| secret | text | NO | encode(gen_random_bytes(32),'hex') |
+| is_active | boolean | NO | true |
+| last_triggered_at | timestamptz | YES | — |
+| last_status_code | integer | YES | — |
+| total_deliveries | integer | YES | 0 |
+| failed_deliveries | integer | YES | 0 |
+| created_by | uuid | YES | — |
+| created_at | timestamptz | YES | now() |
+
+---
+
+## 1. Enums (Tipos Customizados — schema alvo)
 
 ```sql
 -- Tipo de usuario

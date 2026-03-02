@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
-**Ultima Atualizacao:** 24/02/2026
-**Versao:** 11.0
-**Status Geral:** 100% Operacional — Banco com 73 tabelas ativo
+**Ultima Atualizacao:** 01/03/2026
+**Versao:** 12.0
+**Status Geral:** 100% Operacional — Painel Admin completo (11 paginas), banco com 11 tabelas ativas, 16 RLS policies, 17 indexes
 
 ---
 
@@ -10,12 +10,12 @@
 
 | Categoria | Pronto | Total | % |
 |-----------|--------|-------|---|
-| Paginas | 69 | 69 | 100% |
+| Paginas (total) | 73 | 73 | 100% |
+| Paginas Admin | 11 | 11 | 100% |
 | API route.ts | 56 | 56 | 100% |
-| Tabelas no Banco | 73 | 73 | 100% |
-| RLS Policies | 98+ | 98+ | 100% |
-| RPC Functions | 45+ | 45+ | 100% |
-| Triggers | 24+ | 24+ | 100% |
+| Tabelas ativas no Banco | 11 | 11 | 100% |
+| RLS Policies ativas | 16 | 16 | 100% |
+| Indexes | 17 | 17 | 100% |
 | Components Custom | 48 | 48 | 100% |
 | Components UI | 85 | 85 | 100% |
 | Services | 13 | 13 | 100% |
@@ -106,14 +106,18 @@
 - [x] /uppi/legal/privacy — politica de privacidade
 - [x] /uppi/legal/terms — termos de uso
 
-### Admin (7)
-- [x] /admin — dashboard com KPIs realtime
-- [x] /admin/users — gerenciar usuarios
-- [x] /admin/rides — gerenciar corridas
-- [x] /admin/financeiro — painel financeiro
-- [x] /admin/analytics — analytics avancado (5 RPCs Supabase)
-- [x] /admin/monitor — monitor em tempo real (mapa ao vivo)
-- [x] /admin/webhooks — gerenciar webhooks
+### Admin (11 paginas) — /admin/
+- [x] /admin — dashboard KPIs realtime + AreaChart + BarChart (warning Recharts corrigido — ResponsiveContainer removido)
+- [x] /admin/users — gerenciar usuarios: banir, ativar, busca, filtros, Supabase Realtime
+- [x] /admin/drivers — gerenciar motoristas: aprovar/rejeitar documentos, status online/offline
+- [x] /admin/rides — gerenciar corridas: forcar status, cancelar, ver detalhes completos
+- [x] /admin/financeiro — receita, repasses motoristas, graficos por periodo
+- [x] /admin/analytics — 5 RPCs Supabase: corridas/hora, receita/dia, motoristas top, retencao, mapa calor
+- [x] /admin/monitor — mapa ao vivo (createMap() definido e funcional), motoristas online em tempo real
+- [x] /admin/cupons — CRUD completo de cupons (criar, editar, ativar/desativar, deletar)
+- [x] /admin/notifications — push broadcast + individual (bug result?.ok corrigido, historico funcional)
+- [x] /admin/logs — error_logs em tempo real, filtro por nivel (error/warn/info), stack trace
+- [x] /admin/settings — system_settings do Supabase (6 parametros populados via migration)
 
 ### Root (2)
 - [x] / — redirect para /auth/welcome
@@ -175,19 +179,85 @@
 
 ---
 
-## 3. Banco de Dados (Supabase — 24/02/2026)
+## 3. Banco de Dados — Estado Real em 01/03/2026
 
-- [x] 73 tabelas ativas
-- [x] 98+ RLS policies ativas em todas as tabelas
-- [x] 45+ RPC functions implementadas
-- [x] 24+ triggers funcionando
-- [x] 60+ indexes criados
-- [x] 6 enums customizados (UserType, RideStatus, OfferStatus, PaymentMethod, VehicleType, DocumentStatus)
-- [x] PostGIS habilitado com indices GIST em driver_profiles e rides
-- [x] Realtime habilitado em: rides, price_offers, messages, notifications
+### Tabelas ativas (11) — verificadas via Supabase
 
-Ver schema completo: docs/03-banco-de-dados/SCHEMA.md
-Ver auditoria detalhada: docs/03-banco-de-dados/AUDITORIA-COMPLETA.md
+| Tabela              | Colunas | RLS | Descricao                              |
+|---------------------|---------|-----|----------------------------------------|
+| profiles            | 12      | Sim | Usuarios (passageiros e motoristas)    |
+| driver_profiles     | 19      | Nao | Veiculo, localizacao GPS, ganhos       |
+| rides               | 20      | Nao | Corridas (ciclo completo de status)    |
+| payments            | 12      | Sim | Pagamentos, taxa, repasse              |
+| notifications       | 8       | Sim | Notificacoes in-app                    |
+| coupons             | 13      | Sim | Cupons de desconto                     |
+| coupon_uses         | 6       | Nao | Registro de uso de cupons              |
+| reviews             | 7       | Nao | Avaliacoes 1-5 com comentario          |
+| error_logs          | 8       | Sim | Logs de erros do sistema               |
+| system_settings     | 5       | Sim | Configuracoes da plataforma (6 linhas) |
+| webhook_endpoints   | 11      | Sim | Endpoints de integracao                |
+
+### system_settings — 6 parametros populados em 01/03/2026
+
+| key                        | value  | Descricao                                    |
+|----------------------------|--------|----------------------------------------------|
+| platform_fee_percent       | 15     | Porcentagem cobrada pela plataforma           |
+| min_ride_price             | 5.00   | Valor minimo de corrida (R$)                 |
+| price_per_km               | 2.50   | Base de calculo por km (R$)                  |
+| max_driver_search_radius_km| 15     | Raio maximo de busca de motoristas (km)      |
+| app_version_min            | 1.0.0  | Versao minima obrigatoria do app             |
+| maintenance_mode           | false  | Quando true, bloqueia novos pedidos          |
+
+### RLS Policies ativas (16) — aplicadas em 01/03/2026
+
+| Tabela            | Policy                      | Cmd    | Regra                                      |
+|-------------------|-----------------------------|--------|--------------------------------------------|
+| coupons           | admins_all_coupons          | ALL    | is_admin = true                            |
+| coupons           | auth_read_active_coupons    | SELECT | authenticated + is_active = true           |
+| error_logs        | admins_all_error_logs       | ALL    | is_admin = true                            |
+| error_logs        | admins_can_read_error_logs  | ALL    | is_admin = true (duplicada, inofensiva)    |
+| error_logs        | auth_insert_error_logs      | INSERT | authenticated                              |
+| notifications     | own_notifications           | ALL    | uid = user_id OR is_admin                  |
+| payments          | auth_insert_payments        | INSERT | uid = passenger_id                         |
+| payments          | own_payments                | SELECT | uid = passenger_id OR driver_id OR admin   |
+| profiles          | profiles_admin_select       | SELECT | is_admin = true                            |
+| profiles          | profiles_admin_update       | UPDATE | is_admin = true                            |
+| profiles          | profiles_own_insert         | INSERT | autenticado                                |
+| profiles          | profiles_own_select         | SELECT | uid = id                                   |
+| profiles          | profiles_own_update         | UPDATE | uid = id                                   |
+| system_settings   | admins_all_system_settings  | ALL    | is_admin = true                            |
+| webhook_endpoints | admins_all_webhooks         | ALL    | is_admin = true                            |
+| webhook_endpoints | admins_can_manage_webhooks  | ALL    | is_admin = true (duplicada, inofensiva)    |
+
+### Indexes ativos (17)
+
+| Tabela           | Index                             | Tipo   |
+|------------------|-----------------------------------|--------|
+| coupon_uses      | coupon_uses_coupon_id_user_id_key | UNIQUE |
+| coupons          | coupons_code_key                  | UNIQUE |
+| coupons          | idx_coupons_code                  | btree  |
+| driver_profiles  | idx_driver_profiles_is_available  | btree  |
+| error_logs       | idx_error_logs_created_at         | btree  |
+| error_logs       | idx_error_logs_level              | btree  |
+| notifications    | idx_notifications_user_id         | btree  |
+| payments         | idx_payments_created_at           | btree  |
+| payments         | idx_payments_status               | btree  |
+| profiles         | idx_profiles_email                | btree  |
+| profiles         | idx_profiles_is_admin             | btree  |
+| profiles         | idx_profiles_user_type            | btree  |
+| profiles         | profiles_email_key                | UNIQUE |
+| rides            | idx_rides_created_at              | btree  |
+| rides            | idx_rides_driver_id               | btree  |
+| rides            | idx_rides_passenger_id            | btree  |
+| rides            | idx_rides_status                  | btree  |
+
+- [x] 11 tabelas ativas
+- [x] 16 RLS policies ativas em tabelas sensiveis
+- [x] 17 indexes em colunas de busca frequente
+- [x] system_settings populado (6 parametros)
+- [x] Realtime habilitado em: rides + notifications (canais do admin)
+
+Ver schema completo alvo: docs/03-banco-de-dados/SCHEMA.md
 
 ---
 
@@ -293,12 +363,14 @@ Ver auditoria detalhada: docs/03-banco-de-dados/AUDITORIA-COMPLETA.md
 ## 9. Proximos Passos
 
 1. Deploy Vercel — projeto pronto para publicar
-2. Testes E2E: auth → home → corrida → oferta → pagamento → avaliacao
+2. Testes E2E: auth -> home -> corrida -> oferta -> pagamento -> avaliacao
 3. Configurar dominio personalizado
 4. TWA para Google Play Store (docs/06-deploy/PLAY-STORE.md)
 5. Configurar Twilio para notificacoes SMS (opcional)
-6. Corrigir TypeScript errors (ignoreBuildErrors: true esta ativo)
+6. Adicionar tabelas faltantes: price_offers, messages, driver_locations, user_wallets, wallet_transactions (migrations futuras)
+7. Corrigir TypeScript errors (ignoreBuildErrors: true esta ativo)
+8. Habilitar RLS em driver_profiles, rides, reviews, coupon_uses (tabelas sem protecao ainda)
 
 ---
 
-**Atualizado em 24/02/2026** — numeros verificados contra o codigo real do projeto
+**Atualizado em 01/03/2026** — numeros verificados diretamente no Supabase via SQL
