@@ -139,15 +139,15 @@ export default function AdminMonitorPage() {
     ] = await Promise.all([
       supabase
         .from('rides')
-        .select('*, passenger:profiles!rides_passenger_id_fkey(full_name, phone), driver:profiles!rides_driver_id_fkey(full_name, phone)')
-        .in('status', ['searching', 'accepted', 'in_progress'])
+        .select('*, passenger:profiles!passenger_id(full_name, phone), driver:profiles!driver_id(full_name, phone)')
+        .in('status', ['searching', 'pending', 'negotiating', 'accepted', 'in_progress'])
         .order('created_at', { ascending: false })
         .limit(50),
       supabase
         .from('profiles')
-        .select('id, full_name, phone, avatar_url, driver_profiles!inner(vehicle_brand, vehicle_model, vehicle_plate, is_available, current_lat, current_lng, last_seen_at)')
+        .select('id, full_name, phone, avatar_url, driver_profiles!inner(vehicle_brand, vehicle_model, vehicle_plate, is_online, lat, lng)')
         .eq('user_type', 'driver')
-        .eq('driver_profiles.is_available', true)
+        .eq('driver_profiles.is_online', true)
         .limit(100),
       supabase
         .from('rides')

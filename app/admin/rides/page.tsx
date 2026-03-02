@@ -57,7 +57,7 @@ export default function RidesPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('rides')
-      .select('*, passenger:profiles!rides_passenger_id_fkey(full_name, phone), driver:profiles!rides_driver_id_fkey(full_name, phone)')
+      .select('*, passenger:profiles!passenger_id(full_name, phone), driver:profiles!driver_id(full_name, phone)')
       .order('created_at', { ascending: false })
       .limit(200)
     if (data) setRides(data)

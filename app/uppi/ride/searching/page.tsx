@@ -142,7 +142,7 @@ export default function SearchingDriverPage() {
 
   const sub = (id: string) => {
     supabase.channel(`ride-offers-${id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'price_offers', filter: `ride_id=eq.${id}` }, async (pl) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ride_offers', filter: `ride_id=eq.${id}` }, async (pl) => {
         const o = pl.new
         const { data: drv } = await supabase.from('profiles').select('full_name, avatar_url, rating, total_rides, driver_profile:driver_profiles(vehicle_type, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, current_location)').eq('id', o.driver_id).single()
         const dp = drv?.driver_profile?.[0] as DriverProfileInfo | undefined
@@ -178,7 +178,7 @@ export default function SearchingDriverPage() {
   }
 
   const reject = async (offer: OfferWithDriver) => {
-    await supabase.from('price_offers').update({ status: 'rejected' }).eq('id', offer.id)
+    await supabase.from('ride_offers').update({ status: 'rejected' }).eq('id', offer.id)
     setOffers(prev => prev.filter(o => o.id !== offer.id))
     if (offers.length <= 1) { setStatus('searching'); setSheetUp(false) }
   }

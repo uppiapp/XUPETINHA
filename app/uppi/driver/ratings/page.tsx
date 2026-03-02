@@ -36,8 +36,8 @@ export default function DriverRatingsPage() {
       channel = supabase
         .channel(`driver-reviews-${user.id}`)
         .on('postgres_changes', {
-          event: 'INSERT', schema: 'public', table: 'driver_reviews',
-          filter: `driver_id=eq.${user.id}`,
+          event: 'INSERT', schema: 'public', table: 'reviews',
+          filter: `reviewee_id=eq.${user.id}`,
         }, () => loadRatings())
         .subscribe()
     }
@@ -52,9 +52,10 @@ export default function DriverRatingsPage() {
       if (!user) { router.push('/onboarding/splash'); return }
 
       const { data } = await supabase
-        .from('driver_reviews')
+        .from('reviews')
         .select('*, reviewer:profiles!reviewer_id(full_name, avatar_url)')
-        .eq('driver_id', user.id)
+        .eq('reviewee_id', user.id)
+        .eq('is_driver_review', true)
         .order('created_at', { ascending: false })
         .limit(50)
 

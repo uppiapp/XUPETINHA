@@ -128,21 +128,22 @@ export default function AdminDashboard() {
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('user_type', 'driver'),
       supabase.from('rides').select('*', { count: 'exact', head: true }),
       supabase.from('rides').select('*', { count: 'exact', head: true }).in('status', ['accepted', 'in_progress', 'searching']),
-      supabase.from('driver_profiles').select('*', { count: 'exact', head: true }).eq('is_available', true),
+      supabase.from('driver_profiles').select('*', { count: 'exact', head: true }).eq('is_online', true),
       supabase.from('rides').select('*', { count: 'exact', head: true }).gte('created_at', todayISO),
       supabase.from('rides').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').gte('created_at', todayISO),
-      supabase.from('driver_profiles').select('*', { count: 'exact', head: true }).eq('is_verified', false),
-      supabase.from('rides').select('id, status, pickup_address, dropoff_address, final_price, created_at, passenger:profiles!rides_passenger_id_fkey(full_name), driver:profiles!rides_driver_id_fkey(full_name)').order('created_at', { ascending: false }).limit(10),
+      supabase.from('driver_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('rides').select('id, status, pickup_address, dropoff_address, final_price, created_at, passenger:profiles!passenger_id(full_name), driver:profiles!driver_id(full_name)').order('created_at', { ascending: false }).limit(10),
       supabase.from('rides').select('created_at').gte('created_at', sevenDaysAgo.toISOString()),
-      supabase.from('payments').select('amount, created_at').eq('status', 'completed').gte('created_at', sevenDaysAgo.toISOString()),
+      supabase.from('wallet_transactions').select('amount, created_at').in('type', ['ride', 'deposit']).gte('created_at', sevenDaysAgo.toISOString()),
       supabase.from('rides').select('created_at').gte('created_at', todayISO),
-      supabase.from('payments').select('amount').eq('status', 'completed'),
+      supabase.from('rides').select('final_price').eq('status', 'completed'),
     ])
 
-    const totalRevenue = (allPayments || []).reduce((s, p) => s + Number(p.amount || 0), 0)
+    // rides com final_price = receita real; wallet_transactions para semana
+    const totalRevenue = (allPayments || []).reduce((s, p: any) => s + Number(p.final_price || 0), 0)
     const todayRevenue = (weekPayments || [])
-      .filter(p => new Date(p.created_at) >= todayStart)
-      .reduce((s, p) => s + Number(p.amount || 0), 0)
+      .filter((p: any) => new Date(p.created_at) >= todayStart)
+      .reduce((s: number, p: any) => s + Number(p.amount || 0), 0)
 
     setStats({
       totalUsers: totalUsers || 0,
@@ -171,8 +172,8 @@ export default function AdminDashboard() {
       if (weekMap[key]) weekMap[key].corridas++
     }
     for (const p of weekPayments || []) {
-      const key = new Date(p.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-      if (weekMap[key]) weekMap[key].receita += Number(p.amount || 0)
+      const key = new Date((p as any).created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      if (weekMap[key]) weekMap[key].receita += Number((p as any).amount || 0)
     }
     setWeeklyData(Object.entries(weekMap).map(([day, v]) => ({ day, ...v })))
 
@@ -204,7 +205,7 @@ export default function AdminDashboard() {
     channelRef.current = supabase
       .channel('admin-dashboard')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallet_transactions' }, fetchStats)
       .subscribe()
     return () => { if (channelRef.current) supabase.removeChannel(channelRef.current) }
   }, [fetchStats])

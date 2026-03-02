@@ -34,10 +34,6 @@ export default function DriverWalletPage() {
           event: '*', schema: 'public', table: 'wallet_transactions',
           filter: `user_id=eq.${user.id}`,
         }, () => loadWallet())
-        .on('postgres_changes', {
-          event: 'UPDATE', schema: 'public', table: 'user_wallets',
-          filter: `user_id=eq.${user.id}`,
-        }, () => loadWallet())
         .subscribe()
     }
 
@@ -50,22 +46,30 @@ export default function DriverWalletPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/onboarding/splash'); return }
 
-      const [{ data: wallet }, { data: txs }] = await Promise.all([
-        supabase.from('user_wallets').select('balance').eq('user_id', user.id).single(),
-        supabase.from('wallet_transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(30),
-      ])
+      const { data: txs } = await supabase
+        .from('wallet_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(30)
 
-      setBalance(wallet?.balance || 0)
-      setTransactions(txs || [])
+      const list = txs || []
+      setTransactions(list)
 
-      // Saldo pendente: corridas completadas ainda não liquidadas
-      const pending = (txs || [])
-        .filter(t => t.status === 'pending' && t.type === 'credit')
-        .reduce((s, t) => s + t.amount, 0)
+      // Calcular saldo a partir das transações (créditos - débitos)
+      const calculatedBalance = list.reduce((s, t) => {
+        const amt = Math.abs(Number(t.amount))
+        if (['ride', 'refund', 'bonus', 'cashback', 'referral', 'deposit'].includes(t.type)) return s + amt
+        if (['withdrawal'].includes(t.type)) return s - amt
+        return s
+      }, 0)
+      setBalance(calculatedBalance)
+
+      // Saldo pendente: corridas de hoje ainda não processadas
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+      const pending = list
+        .filter(t => t.type === 'ride' && new Date(t.created_at) >= todayStart)
+        .reduce((s, t) => s + Math.abs(Number(t.amount)), 0)
       setPendingBalance(pending)
     } finally {
       setLoading(false)
@@ -84,12 +88,10 @@ export default function DriverWalletPage() {
       await supabase.from('wallet_transactions').insert({
         user_id: user.id,
         type: 'withdrawal',
-        amount: -amount,
+        amount: amount,
+        balance_after: balance - amount,
         description: 'Saque para conta bancária',
-        status: 'pending',
       })
-
-      await supabase.from('user_wallets').update({ balance: balance - amount }).eq('user_id', user.id)
       setShowWithdraw(false)
       setWithdrawAmount('')
       await loadWallet()
