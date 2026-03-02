@@ -37,7 +37,11 @@ export default function AdminLoginPage() {
       }
 
       // Verificar is_admin via API Route (usa service_role, ignora RLS)
-      const checkRes = await fetch('/api/admin/check')
+      const checkRes = await fetch('/api/admin/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: authData.user.id }),
+      })
       const checkData = await checkRes.json()
 
       if (!checkData.is_admin) {
