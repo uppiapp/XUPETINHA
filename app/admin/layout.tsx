@@ -30,13 +30,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single()
+      // Usar API Route com service_role para ignorar RLS
+      try {
+        const res = await fetch('/api/admin/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id }),
+        })
+        const data = await res.json()
 
-      if (!profile?.is_admin) {
+        if (!data.is_admin) {
+          await supabase.auth.signOut()
+          router.replace('/admin/login')
+          return
+        }
+      } catch {
         router.replace('/admin/login')
         return
       }

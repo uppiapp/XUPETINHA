@@ -27,6 +27,7 @@ export default function AdminLoginPage() {
       })
 
       if (authError) {
+        console.log('[v0] signInWithPassword error:', authError.message)
         setError('Email ou senha incorretos.')
         return
       }
@@ -36,6 +37,8 @@ export default function AdminLoginPage() {
         return
       }
 
+      console.log('[v0] User autenticado:', authData.user.id)
+
       // Verificar is_admin via API Route (usa service_role, ignora RLS)
       const checkRes = await fetch('/api/admin/check', {
         method: 'POST',
@@ -43,6 +46,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ user_id: authData.user.id }),
       })
       const checkData = await checkRes.json()
+      console.log('[v0] checkData:', checkData, 'status:', checkRes.status)
 
       if (!checkData.is_admin) {
         await supabase.auth.signOut()
