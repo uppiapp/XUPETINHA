@@ -1,8 +1,8 @@
 # UPPI - Painel Administrativo
 
-**Ultima Atualizacao:** 01/03/2026
-**Versao:** 2.0
-**Total de Paginas:** 17
+**Ultima Atualizacao:** 02/03/2026
+**Versao:** 3.0
+**Total de Paginas:** 28
 **Rota base:** /admin
 **Autenticacao:** profiles.is_admin = true (verificado em layout.tsx via requireAdmin)
 
@@ -10,31 +10,73 @@
 
 ## 1. Visao Geral
 
-O painel admin e uma aplicacao Next.js completa com **17 paginas**, sidebar com 4 grupos de navegacao, header com notificacoes em tempo real e tema escuro proprio. Controla 100% do app em tempo real via Supabase Realtime.
+O painel admin e uma aplicacao Next.js completa com **28 paginas**, sidebar com **5 grupos** de navegacao, header com notificacoes em tempo real e tema escuro proprio. Controla 100% do app em tempo real via Supabase Realtime.
 
 ### Componentes base
 | Arquivo | Descricao |
 |---------|-----------|
 | `app/admin/layout.tsx` | Layout raiz: protecao de rota + AdminSidebar + AdminHeader |
-| `components/admin/admin-sidebar.tsx` | Sidebar com 4 grupos, 17 links, icones Lucide |
+| `components/admin/admin-sidebar.tsx` | Sidebar com 5 grupos, 28 links, icones Lucide |
 | `components/admin/admin-header.tsx` | Header com busca global, notificacoes Realtime, avatar do admin |
 
-### Estrutura da Sidebar (4 grupos)
+### Estrutura da Sidebar (5 grupos)
 ```
-Visao Geral      → Dashboard, Analytics, Monitor ao Vivo
-Gestao           → Usuarios, Motoristas, Corridas, Ofertas de Preco, Avaliacoes, Cupons, Indicacoes
-Operacoes        → Financeiro, Pagamentos, Mensagens, Notificacoes, Suporte
-Sistema          → Webhooks, Logs de Erro, Configuracoes
+Visao Geral  → Dashboard, Analytics, Monitor ao Vivo, Central de Emergencia
+Usuarios     → Passageiros, Motoristas, Ganhos Motoristas, Avaliacoes, Conquistas, Leaderboard, Indicacoes
+Corridas     → Corridas, Corridas em Grupo, Cidade a Cidade, Entregas, Ofertas de Preco
+Operacoes    → Financeiro, Pagamentos, Cupons, Mensagens, Notificacoes, Suporte, Feed Social
+Sistema      → Webhooks, Logs de Erro, Configuracoes
 ```
 
 ---
 
-## 2. Paginas (17)
+## 2. Paginas (28)
 
-### PAGINAS ORIGINAIS (11)
+### GRUPO VISAO GERAL (4)
+| Rota | Arquivo | Realtime | Descricao |
+|------|---------|----------|-----------|
+| `/admin` | `page.tsx` | Sim | Dashboard KPIs + AreaChart + BarChart |
+| `/admin/analytics` | `analytics/page.tsx` | Nao | 5 RPCs Supabase: corridas/hora, receita/dia, top drivers, retencao, heatmap |
+| `/admin/monitor` | `monitor/page.tsx` | Sim | Mapa Google Maps com motoristas online ao vivo |
+| `/admin/emergency` | `emergency/page.tsx` | Sim | Central de alertas SOS: active/acknowledged/resolved, som de alerta, link para Maps |
 
-### 2.1 Dashboard — /admin
-**Arquivo:** `app/admin/page.tsx` | Realtime: Sim
+### GRUPO USUARIOS (7)
+| Rota | Arquivo | Realtime | Descricao |
+|------|---------|----------|-----------|
+| `/admin/users` | `users/page.tsx` | Sim | Passageiros: banir, ativar, busca, filtros |
+| `/admin/drivers` | `drivers/page.tsx` | Sim | Motoristas: aprovar/rejeitar documentos |
+| `/admin/drivers/earnings` | `drivers/earnings/page.tsx` | Sim | Ganhos consolidados: BarChart semanal, top motorista, tabela ordenavel |
+| `/admin/reviews` | `reviews/page.tsx` | Nao | Avaliacoes: distribuicao por estrela, remover abusivas |
+| `/admin/achievements` | `achievements/page.tsx` | Nao | Conquistas + Leaderboard combinados: pontos, streak, ranking |
+| `/admin/leaderboard` | `leaderboard/page.tsx` | Nao | Ranking global: 4 categorias, podio visual ouro/prata/bronze |
+| `/admin/referrals` | `referrals/page.tsx` | Nao | Indicacoes: historico, top indicadores, taxa de conversao |
+
+### GRUPO CORRIDAS (5)
+| Rota | Arquivo | Realtime | Descricao |
+|------|---------|----------|-----------|
+| `/admin/rides` | `rides/page.tsx` | Sim | Corridas: forcar status, cancelar, filtros |
+| `/admin/group-rides` | `group-rides/page.tsx` | Sim | Corridas em grupo: codigo convite, membros, divisao de custos |
+| `/admin/cidade-a-cidade` | `cidade-a-cidade/page.tsx` | Sim | Viagens intermunicipais: distancia, cidades origem/destino |
+| `/admin/entregas` | `entregas/page.tsx` | Sim | Pedidos de entrega: tipo de pacote, remetente, entregador, rastreio |
+| `/admin/price-offers` | `price-offers/page.tsx` | Sim | Ofertas ao vivo: passageiro vs motorista, ping animado em pendentes |
+
+### GRUPO OPERACOES (7)
+| Rota | Arquivo | Realtime | Descricao |
+|------|---------|----------|-----------|
+| `/admin/financeiro` | `financeiro/page.tsx` | Nao | Receita, repasses, graficos por periodo |
+| `/admin/payments` | `payments/page.tsx` | Sim | Transacoes + carteira: KPIs receita, aprovar/rejeitar saques |
+| `/admin/cupons` | `cupons/page.tsx` | Nao | CRUD cupons: criar, editar, ativar/desativar |
+| `/admin/messages` | `messages/page.tsx` | Sim | Moderacao de chats por corrida, deletar mensagens |
+| `/admin/notifications` | `notifications/page.tsx` | Nao | Push broadcast + individual (bug result?.ok corrigido) |
+| `/admin/suporte` | `suporte/page.tsx` | Sim | Tickets: open/in_progress/resolved, notas internas |
+| `/admin/social` | `social/page.tsx` | Sim | Feed social: moderar posts, ver engajamento |
+
+### GRUPO SISTEMA (3)
+| Rota | Arquivo | Realtime | Descricao |
+|------|---------|----------|-----------|
+| `/admin/webhooks` | `webhooks/page.tsx` | Nao | Endpoints de integracao, secret, historico de entregas |
+| `/admin/logs` | `logs/page.tsx` | Sim | error_logs: filtro por nivel, stack trace expansivel |
+| `/admin/settings` | `settings/page.tsx` | Nao | system_settings: 6 parametros, maintenance_mode |
 
 - KPIs: total usuarios/motoristas/corridas, corridas ativas, motoristas online, receita dia/total, corridas hoje, taxa conclusao
 - AreaChart: corridas nos ultimos 7 dias (dados reais do banco)

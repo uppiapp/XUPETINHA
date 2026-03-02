@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 13.0
-**Status Geral:** 100% Operacional — Painel Admin completo (17 paginas), banco com 11 tabelas ativas, 16 RLS policies, 17 indexes
+**Versao:** 14.0
+**Status Geral:** 100% Operacional — Painel Admin completo (28 paginas, 5 grupos), banco com 11 tabelas ativas, 16 RLS policies, 17 indexes
 
 ---
 
@@ -10,8 +10,8 @@
 
 | Categoria | Pronto | Total | % |
 |-----------|--------|-------|---|
-| Paginas (total) | 79 | 79 | 100% |
-| Paginas Admin | 17 | 17 | 100% |
+| Paginas (total) | 90 | 90 | 100% |
+| Paginas Admin | 28 | 28 | 100% |
 | API route.ts | 56 | 56 | 100% |
 | Tabelas ativas no Banco | 11 | 11 | 100% |
 | RLS Policies ativas | 16 | 16 | 100% |
@@ -106,24 +106,43 @@
 - [x] /uppi/legal/privacy — politica de privacidade
 - [x] /uppi/legal/terms — termos de uso
 
-### Admin (17 paginas) — /admin/
-- [x] /admin — dashboard KPIs realtime + AreaChart + BarChart (warning Recharts corrigido — ResponsiveContainer removido)
-- [x] /admin/users — gerenciar usuarios: banir, ativar, busca, filtros, Supabase Realtime
-- [x] /admin/drivers — gerenciar motoristas: aprovar/rejeitar documentos, status online/offline
-- [x] /admin/rides — gerenciar corridas: forcar status, cancelar, ver detalhes completos
-- [x] /admin/financeiro — receita, repasses motoristas, graficos por periodo
-- [x] /admin/analytics — 5 RPCs Supabase: corridas/hora, receita/dia, motoristas top, retencao, mapa calor
-- [x] /admin/monitor — mapa ao vivo (createMap() definido e funcional), motoristas online em tempo real
-- [x] /admin/cupons — CRUD completo de cupons (criar, editar, ativar/desativar, deletar)
-- [x] /admin/notifications — push broadcast + individual (bug result?.ok corrigido, historico funcional)
-- [x] /admin/logs — error_logs em tempo real, filtro por nivel (error/warn/info), stack trace
-- [x] /admin/settings — system_settings do Supabase (6 parametros populados via migration)
-- [x] /admin/messages — moderacao de chats (tabela messages, Realtime, deletar mensagens)
-- [x] /admin/payments — transacoes de corridas + carteira (tabelas payments + wallet_transactions)
-- [x] /admin/reviews — moderacao de avaliacoes (filtro por estrela, remover abusivas)
-- [x] /admin/suporte — suporte ao cliente: tickets, prioridade, notas internas, Realtime
-- [x] /admin/price-offers — ofertas de preco em tempo real (ping animado, comparacao passageiro vs motorista)
-- [x] /admin/referrals — indicacoes + ranking top indicadores
+### Admin (28 paginas, 5 grupos) — /admin/
+
+**Visao Geral (4)**
+- [x] /admin — dashboard KPIs realtime + AreaChart + BarChart
+- [x] /admin/analytics — 5 RPCs Supabase: corridas/hora, receita/dia, top drivers, retencao, heatmap
+- [x] /admin/monitor — mapa ao vivo, motoristas online (createMap() corrigido)
+- [x] /admin/emergency — Central SOS: active/acknowledged/resolved, som de alerta, link Maps
+
+**Usuarios (7)**
+- [x] /admin/users — passageiros: banir, ativar, busca, filtros
+- [x] /admin/drivers — motoristas: aprovar/rejeitar documentos
+- [x] /admin/drivers/earnings — ganhos: BarChart semanal, top motorista, tabela ordenavel
+- [x] /admin/reviews — avaliacoes: distribuicao por estrela, remover abusivas
+- [x] /admin/achievements — conquistas + leaderboard: pontos, streak, ranking
+- [x] /admin/leaderboard — ranking global: 4 categorias, podio ouro/prata/bronze
+- [x] /admin/referrals — indicacoes: historico, top indicadores, taxa conversao
+
+**Corridas (5)**
+- [x] /admin/rides — corridas: forcar status, cancelar, filtros
+- [x] /admin/group-rides — corridas em grupo: codigo convite, membros, divisao custos
+- [x] /admin/cidade-a-cidade — viagens intermunicipais: distancia, cidades
+- [x] /admin/entregas — pedidos entrega: tipo pacote, remetente, entregador
+- [x] /admin/price-offers — ofertas ao vivo: passageiro vs motorista, ping em pendentes
+
+**Operacoes (7)**
+- [x] /admin/financeiro — receita, repasses, graficos por periodo
+- [x] /admin/payments — transacoes + carteira: aprovar/rejeitar saques
+- [x] /admin/cupons — CRUD cupons: criar, editar, ativar/desativar
+- [x] /admin/messages — moderacao chats, deletar mensagens (Realtime)
+- [x] /admin/notifications — push broadcast + individual (bug result?.ok corrigido)
+- [x] /admin/suporte — tickets: open/in_progress/resolved, notas internas (Realtime)
+- [x] /admin/social — feed social: moderar posts, ver engajamento (Realtime)
+
+**Sistema (3)**
+- [x] /admin/webhooks — endpoints de integracao, secret, historico
+- [x] /admin/logs — error_logs: filtro por nivel, stack trace (Realtime)
+- [x] /admin/settings — system_settings: 6 parametros, maintenance_mode
 
 ### Root (2)
 - [x] / — redirect para /auth/welcome

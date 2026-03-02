@@ -29,6 +29,11 @@ import {
   Rss,
   Trophy,
   TrendingUp,
+  Truck,
+  MapPin,
+  Award,
+  ShieldAlert,
+  UserCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -40,22 +45,29 @@ const navGroups = [
       { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
       { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
       { href: '/admin/monitor', icon: Radio, label: 'Monitor ao Vivo' },
+      { href: '/admin/emergency', icon: ShieldAlert, label: 'Central de Emergencia' },
     ],
   },
   {
-    label: 'Gestao',
+    label: 'Usuarios',
     items: [
-      { href: '/admin/users', icon: Users, label: 'Usuarios' },
+      { href: '/admin/users', icon: Users, label: 'Passageiros' },
       { href: '/admin/drivers', icon: UserCog, label: 'Motoristas' },
       { href: '/admin/drivers/earnings', icon: TrendingUp, label: 'Ganhos Motoristas' },
+      { href: '/admin/reviews', icon: Star, label: 'Avaliacoes' },
+      { href: '/admin/achievements', icon: Award, label: 'Conquistas' },
+      { href: '/admin/leaderboard', icon: Trophy, label: 'Leaderboard' },
+      { href: '/admin/referrals', icon: UserCheck, label: 'Indicacoes' },
+    ],
+  },
+  {
+    label: 'Corridas',
+    items: [
       { href: '/admin/rides', icon: Car, label: 'Corridas' },
       { href: '/admin/group-rides', icon: Users2, label: 'Corridas em Grupo' },
+      { href: '/admin/cidade-a-cidade', icon: MapPin, label: 'Cidade a Cidade' },
+      { href: '/admin/entregas', icon: Truck, label: 'Entregas' },
       { href: '/admin/price-offers', icon: Tag, label: 'Ofertas de Preco' },
-      { href: '/admin/reviews', icon: Star, label: 'Avaliacoes' },
-      { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
-      { href: '/admin/referrals', icon: Users2, label: 'Indicacoes' },
-      { href: '/admin/social', icon: Rss, label: 'Feed Social' },
-      { href: '/admin/leaderboard', icon: Trophy, label: 'Leaderboard' },
     ],
   },
   {
@@ -63,9 +75,11 @@ const navGroups = [
     items: [
       { href: '/admin/financeiro', icon: DollarSign, label: 'Financeiro' },
       { href: '/admin/payments', icon: CreditCard, label: 'Pagamentos' },
+      { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
       { href: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
       { href: '/admin/notifications', icon: Bell, label: 'Notificacoes' },
       { href: '/admin/suporte', icon: HeadphonesIcon, label: 'Suporte' },
+      { href: '/admin/social', icon: Rss, label: 'Feed Social' },
     ],
   },
   {
