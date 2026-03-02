@@ -72,27 +72,36 @@ export default function AdminNotificationsPage() {
     setResult(null)
 
     try {
+      let ok = false
+      let msg = ''
+
       if (target === 'user' && selectedUser) {
-        // Envia para usuário específico
         const res = await fetch('/api/v1/push/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: selectedUser.id, title, body }),
         })
         const json = await res.json()
-        setResult({ ok: res.ok, msg: res.ok ? `Enviado para ${selectedUser.full_name} (${json.sent ?? 0} dispositivo(s))` : json.error })
+        ok = res.ok
+        msg = res.ok
+          ? `Enviado para ${selectedUser.full_name} (${json.sent ?? 0} dispositivo(s))`
+          : json.error ?? 'Erro ao enviar'
       } else {
-        // Broadcast
         const res = await fetch('/api/v1/push/broadcast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ target, title, body }),
         })
         const json = await res.json()
-        setResult({ ok: res.ok, msg: res.ok ? `Enviado para ${json.sent ?? 0} dispositivo(s)` : json.error })
+        ok = res.ok
+        msg = res.ok
+          ? `Enviado para ${json.sent ?? 0} dispositivo(s)`
+          : json.error ?? 'Erro ao enviar'
       }
 
-      if (result?.ok !== false) {
+      setResult({ ok, msg })
+
+      if (ok) {
         const targetLabel = TARGETS.find(t => t.key === target)?.label ?? target
         setHistory(prev => [{ title, target: targetLabel, at: new Date().toLocaleTimeString('pt-BR') }, ...prev.slice(0, 9)])
         setTitle('')

@@ -89,6 +89,21 @@ export default function MonitorPage() {
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return
 
+    const createMap = () => {
+      if (!mapRef.current || mapInstance.current) return
+      mapInstance.current = new window.google.maps.Map(mapRef.current, {
+        center: { lat: -15.7801, lng: -47.9292 }, // Brasília como centro padrão
+        zoom: 12,
+        mapId: 'admin-monitor-map',
+        styles: darkMapStyle,
+        disableDefaultUI: false,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+      })
+    }
+
     const initMap = async () => {
       if (!window.google?.maps) {
         const script = document.createElement('script')
