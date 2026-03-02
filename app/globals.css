@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Paradise PIX tokens */
+  --pix-bg: #f4f6fb;
+  --pix-card: #ffffff;
+  --pix-surface: #f8f9fc;
+  --pix-border: #e4e8f0;
+  --pix-fg: #0f1729;
+  --pix-muted: #7a8499;
+  --pix-accent: #1a56e8;
+  --pix-accent-hover: #1444cc;
+  --pix-success: #16a34a;
+  --pix-success-bg: #f0fdf4;
+}
+
 html {
   height: 100dvh;
   overflow: hidden;
