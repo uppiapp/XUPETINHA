@@ -15,6 +15,7 @@ import {
   LogOut,
   Shield,
   Activity,
+  ShieldAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +25,8 @@ const navItems = [
   { href: '/admin/rides', icon: Car, label: 'Corridas' },
   { href: '/admin/financeiro', icon: DollarSign, label: 'Financeiro' },
   { href: '/admin/monitor', icon: Radio, label: 'Monitor Realtime' },
-  { href: '/admin/notifications', icon: Bell, label: 'Notificações' },
+  { href: '/admin/notifications', icon: Bell, label: 'Notificacoes' },
+  { href: '/admin/logs', icon: ShieldAlert, label: 'Logs de Erro' },
 ]
 
 export function AdminSidebar() {

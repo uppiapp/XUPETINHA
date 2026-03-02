@@ -36,14 +36,11 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Verificar se o usuario e admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_admin, full_name')
-        .eq('id', authData.user.id)
-        .single()
+      // Verificar is_admin via API Route (usa service_role, ignora RLS)
+      const checkRes = await fetch('/api/admin/check')
+      const checkData = await checkRes.json()
 
-      if (profileError || !profile?.is_admin) {
+      if (!checkData.is_admin) {
         await supabase.auth.signOut()
         setError('Acesso negado. Esta conta nao tem permissao de administrador.')
         return
