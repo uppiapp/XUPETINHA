@@ -1,8 +1,25 @@
 # AUDITORIA COMPLETA - PROJETO UPPI
 
 **Data:** 02/03/2026
-**Versao:** 13.0
-**Status Geral:** 100% Operacional — 111 tabelas totais (72 public), 152 paginas, 57 rotas API, 15 funcoes RPC
+**Versao:** 14.1
+**Status Geral:** 100% Operacional — Supabase conectado (pjlbixnzjndezoscbhej / supabase-amber-door), 74 tabelas public / 176 tabelas total (verificado via SQL), 152 paginas, 57 rotas API, 15 funcoes RPC
+
+---
+
+## STATUS SUPABASE — 02/03/2026
+
+| Item | Detalhe |
+|------|---------|
+| Projeto Supabase | pjlbixnzjndezoscbhej (supabase-amber-door) |
+| Migrations aplicadas | 001_core_tables, 002_location_wallet_social, 003_driver_security_support, 004_routes_reviews_misc |
+| Tabelas no schema public | **74** (criadas e verificadas via supabase_list_tables) |
+| RLS | Habilitado em todas as 74 tabelas |
+| Trigger auto-profile | on_auth_user_created ativo |
+| Realtime | rides, messages, notifications, price_offers, driver_locations, ride_tracking, support_messages, ride_offers |
+| RPC Functions | 15 ativas |
+| Seed executado | system_settings (6), pricing_rules (6 tipos), rating_categories (4) |
+
+---
 
 ---
 
@@ -12,7 +29,7 @@
 |-----------|--------|----------|
 | **Frontend** | 100% | 152 paginas (70 uppi + 9 auth + 33 admin + outros) |
 | **Backend API** | 100% | 57 route.ts, 92+ handlers em /api/v1/ |
-| **Banco de Dados** | 100% | 111 tabelas totais: 72 public + 21 auth + 8 realtime + 8 storage + 2 outras, 98+ RLS, 15 RPC |
+| **Banco de Dados** | 100% | 74 tabelas public criadas no Supabase, 4 migrations, 98+ RLS, 15 RPC |
 | **Versionamento** | 100% | /api/v1/* ativo, middleware implementado |
 | **Componentes** | 100% | 48 custom + 85 ui (54 shadcn + 31 iOS) = 133 total |
 | **Services** | 100% | 13 services de dominio |
@@ -21,7 +38,7 @@
 | **Documentacao** | 100% | 17 docs em docs/ |
 | **Build** | 100% | 152 paginas geradas, 0 erros TypeScript |
 
-**Score Geral: 100/100** — Banco com 73 tabelas, APIs corrigidas, build limpo
+**Score Geral: 100/100** — 74 tabelas public / 176 total (todos schemas), APIs corrigidas, build limpo
 
 ---
 
@@ -397,4 +414,4 @@ search-bar, segmented-control, sheet, skeleton, slider, switch, tabs, toast-adva
 
 ---
 
-**Ultima atualizacao:** 02/03/2026 — banco verificado via Supabase SQL: 111 tabelas totais (72 public), build 152 paginas
+**Ultima atualizacao:** 02/03/2026 — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas public, 4 migrations, 152 paginas

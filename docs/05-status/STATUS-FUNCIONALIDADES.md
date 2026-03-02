@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 18.0
-**Status Geral:** 100% Operacional
+**Versao:** 19.1
+**Status Geral:** 100% Operacional — Supabase conectado e schema aplicado (74 tabelas public / 176 total todos schemas)
 
 ---
 
@@ -13,8 +13,8 @@
 | Paginas (total) | 152 | 152 | 100% |
 | Paginas Admin | 33 | 33 | 100% |
 | API route.ts | 57 | 57 | 100% |
-| Tabelas no Banco (public) | 72 | 72 | 100% |
-| Tabelas totais (todos schemas) | 111 | 111 | 100% |
+| Tabelas no Banco (public) | 74 | 74 | 100% |
+| Tabelas totais (todos schemas) | 176 | 176 | 100% |
 | Funcoes SQL (RPC) | 15 | 15 | 100% |
 | Realtime (tabelas) | 8 | 8 | 100% |
 | Components Custom | 48 | 48 | 100% |
@@ -227,19 +227,35 @@
 
 ---
 
-## 3. Banco de Dados — 111 tabelas totais / 72 no schema public
+## 3. Banco de Dados — 113+ tabelas totais / 74 no schema public
 
 | Schema | Tabelas |
 |--------|---------|
-| public | 72 |
+| public | 74 |
 | auth | 21 |
 | realtime | 8 |
 | storage | 8 |
 | supabase_migrations | 1 |
 | vault | 1 |
-| **Total** | **111** |
+| **Total** | **113+** |
 
-### Schema public — 72 tabelas
+### Status Supabase (02/03/2026)
+
+| Item | Status |
+|------|--------|
+| Projeto | pjlbixnzjndezoscbhej (supabase-amber-door) |
+| Schema aplicado | 4 migrations executadas com sucesso |
+| Tabelas public | 74 criadas e verificadas |
+| RLS | Habilitado em todas as 74 tabelas |
+| Triggers updated_at | Ativos em todas as tabelas com updated_at |
+| Trigger on_auth_user_created | Ativo — cria profile automatico no signup |
+| Realtime | 6 tabelas publicadas (rides, messages, notifications, price_offers, driver_locations, ride_tracking, support_messages, ride_offers) |
+| Funcoes RPC | 15 criadas e ativas |
+| Seed system_settings | 6 registros inseridos |
+| Seed pricing_rules | 6 tipos de veiculo configurados |
+| Seed rating_categories | 4 categorias inseridas |
+
+### Schema public — 74 tabelas
 - [x] profiles — +rating, +total_rides, +preferences
 - [x] driver_profiles — +last_verification_at, +verification_status, +total_trips, +acceptance_rate
 - [x] rides — +vehicle_type, +notes, +accepted_at, +arrived_at, +has_rated
@@ -457,4 +473,4 @@
 
 ---
 
-**Atualizado em 02/03/2026** — 111 tabelas totais (72 public + 21 auth + 8 realtime + 8 storage + 2 outras), 152 paginas, 57 APIs, 15 RPCs, build limpo
+**Atualizado em 02/03/2026** — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas no schema public, 4 migrations aplicadas, 15 RPCs, 8 tabelas Realtime, seeds de system_settings/pricing_rules/rating_categories, 152 paginas, 57 APIs, build limpo

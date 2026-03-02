@@ -1,16 +1,25 @@
 # UPPI - Schema do Banco de Dados
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 14.0
-**Banco:** Supabase PostgreSQL 15+ com PostGIS
-**Tabelas totais:** 111 (todos os schemas)
-**Tabelas no schema public (dominio):** 72
+**Versao:** 15.2
+**Banco:** Supabase PostgreSQL 15+ com PostGIS 3.3.7
+**Projeto Supabase:** pjlbixnzjndezoscbhej (supabase-amber-door)
+**Migrations aplicadas:** 4 (001 a 004) — verificadas em 02/03/2026
+**Tabelas totais:** 176 (todos os schemas — verificado via SQL em 02/03/2026)
+**Tabelas no schema public (dominio):** 74
+**Tabelas pg_catalog (PostgreSQL interno):** 64
 **Tabelas auth (Supabase):** 21
-**Tabelas realtime (Supabase):** 8
 **Tabelas storage (Supabase):** 8
-**RLS Policies:** 98+ ativas
-**Funcoes RPC:** 15 ativas
-**Indexes:** 60+
+**Tabelas information_schema:** 4
+**Tabelas realtime (Supabase):** 3
+**Tabelas supabase_migrations:** 1
+**Tabelas vault:** 1
+**RLS policies ativas:** 145 (em 73 tabelas — verificado via SQL)
+**Triggers ativos:** 20 (schema public)
+**Funcoes RPC callable:** 15
+**Tabelas com Realtime:** 8 (supabase_realtime publication)
+**Extensoes instaladas:** 7 (postgis, pgcrypto, uuid-ossp, pg_graphql, pg_stat_statements, supabase_vault, plpgsql)
+**Analise detalhada:** docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
 
 ---
 
@@ -18,15 +27,17 @@
 
 | Schema | Tabelas | Descricao |
 |--------|---------|-----------|
-| **public** | **72** | Dominio da aplicacao (perfis, corridas, pagamentos, etc.) |
+| **public** | **74** | Dominio da aplicacao — criadas via 4 migrations em 02/03/2026 |
+| pg_catalog | 64 | Catalog interno do PostgreSQL (tabelas do sistema) |
 | auth | 21 | Gerenciadas pelo Supabase Auth (users, sessions, tokens, etc.) |
-| realtime | 8 | Gerenciadas pelo Supabase Realtime |
 | storage | 8 | Gerenciadas pelo Supabase Storage (objects, buckets, etc.) |
-| supabase_migrations | 1 | Controle interno de migracoes |
+| information_schema | 4 | Views do sistema PostgreSQL |
+| realtime | 3 | Gerenciadas pelo Supabase Realtime |
+| supabase_migrations | 1 | Controle interno de migracoes (4 migrations aplicadas) |
 | vault | 1 | Segredos criptografados |
-| **Total geral** | **111** | |
+| **Total geral** | **176** | Verificado via SQL: SELECT table_schema, COUNT(*) em 02/03/2026 |
 
-### Schema public — tabelas por grupo (72 total)
+### Schema public — tabelas por grupo (74 total)
 
 | Grupo | Tabelas |
 |-------|---------|
@@ -424,4 +435,4 @@ profiles (passenger)
 
 ---
 
-**Atualizado em 02/03/2026** — 111 tabelas totais verificadas via Supabase SQL (72 public + 39 sistema)
+**Atualizado em 02/03/2026** — Supabase pjlbixnzjndezoscbhej: 4 migrations aplicadas, 74 tabelas public verificadas, 15 RPCs, seeds executados

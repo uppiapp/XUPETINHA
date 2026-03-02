@@ -1,8 +1,9 @@
 # UPPI - Indice Completo do Projeto
 
 **Ultima atualizacao:** 02/03/2026
-**Versao:** 13.0
-**Arquitetura:** Frontend + Backend + Banco de Dados (111 tabelas total / 72 public) + API (57 routes) + Auth + Realtime + Admin
+**Versao:** 14.3
+**Arquitetura:** Frontend + Backend + Banco (74 tabelas public / 176 total / 145 RLS policies / 20 triggers / 15 RPCs) + API (57 routes) + Auth + Realtime (8 tabelas) + Admin
+**Supabase:** pjlbixnzjndezoscbhej (supabase-amber-door) — 4 migrations — 7 extensoes — analise completa: docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
 
 ---
 
@@ -14,6 +15,7 @@ docs/
   AUDITORIA-PROJETO.md                       Auditoria completa: paginas, APIs, componentes, hooks
   AUDITORIA-PROJETO-v2.md                    Auditoria v2 (banco 73 tabelas, APIs corrigidas)
   CONFIGURACAO-COMPLETA.md                   Env vars, integracoes, proximos passos
+  SUPABASE-CONEXAO.md                        Conexao Supabase: projeto, migrations, RPCs, variaveis
   VAPID-SETUP.md                             Setup Web Push (VAPID) para push notifications
   PAINEL-ADMIN.md                            Painel admin completo: 33 paginas
 
@@ -390,24 +392,36 @@ package.json                                 Dependencias completas
 
 ## 5. Banco de Dados - Estado Real (02/03/2026)
 
-| Categoria              | Quantidade | Observacao                                           |
-|------------------------|-----------|------------------------------------------------------|
-| Tabelas (schema public)| 72        | Todas ativas no schema public                        |
-| Tabelas (auth)         | 21        | Gerenciadas pelo Supabase Auth                       |
-| Tabelas (realtime)     | 8         | Gerenciadas pelo Supabase Realtime                   |
-| Tabelas (storage)      | 8         | Gerenciadas pelo Supabase Storage                    |
-| Tabelas (migrations)   | 1         | supabase_migrations                                  |
-| Tabelas (vault)        | 1         | Segredos criptografados                              |
-| **Total geral**        | **111**   | Todos os schemas                                     |
-| RLS Policies           | 98+       | Nas tabelas criticas do schema public                |
+| Categoria              | Quantidade | Observacao                                              |
+|------------------------|-----------|--------------------------------------------------------------|
+| Tabelas (schema public)| 74        | Criadas via 4 migrations no Supabase (02/03/2026)           |
+| Tabelas (pg_catalog)   | 64        | Catalog interno do PostgreSQL                               |
+| Tabelas (auth)         | 21        | Gerenciadas pelo Supabase Auth                              |
+| Tabelas (storage)      | 8         | Gerenciadas pelo Supabase Storage                           |
+| Tabelas (information_schema) | 4   | Views do sistema PostgreSQL                                 |
+| Tabelas (realtime)     | 3         | Gerenciadas pelo Supabase Realtime                          |
+| Tabelas (migrations)   | 1         | supabase_migrations                                         |
+| Tabelas (vault)        | 1         | Segredos criptografados                                     |
+| **Total geral**        | **176**   | Todos os schemas — verificado via SQL em 02/03/2026         |
+| RLS Policies           | 98+       | Todas as 74 tabelas com RLS habilitado               |
 | Funcoes SQL (RPC)      | 15        | find_nearby_drivers, calculate_wallet_balance, etc.  |
 | Triggers               | 24+       | updated_at, rating, streaks, etc.                    |
 | Indexes                | 60+       | Performance em busca e filtros                       |
 | Realtime (publicadas)  | 8         | rides, driver_locations, messages, notifications,    |
 |                        |           | price_offers, support_messages, ride_tracking,       |
 |                        |           | ride_offers                                          |
-| system_settings        | 6 registros | Populado via migration                             |
-| rating_categories      | seed ativo  | Direcao, Trajeto, Respeito, Comportamento           |
+| system_settings        | 6 registros | Populado via migration (001_core_tables)            |
+| pricing_rules          | 6 registros | 6 tipos de veiculo                                  |
+| rating_categories      | 4 registros | Direcao, Trajeto, Respeito, Comportamento           |
+
+### Migrations aplicadas no Supabase (pjlbixnzjndezoscbhej)
+
+| Migration | Conteudo | Status |
+|-----------|---------|--------|
+| 001_core_tables | profiles, driver_profiles, rides, price_offers, messages, ratings, favorites, notifications + trigger on_auth_user_created | Aplicada |
+| 002_location_wallet_social | driver_locations, ride_tracking, ride_stops, location_history, hot_zones, user_wallets, wallet_transactions, payments, coupons, coupon_uses, user_coupons, social_posts, social_post_likes, post_comments, social_follows, user_social_stats, user_achievements, referral_achievements, leaderboard, rating_categories (seed) | Aplicada |
+| 003_driver_security_support | driver_verifications, vehicles, drivers, driver_route_segments, emergency_contacts, emergency_alerts, ride_recordings, recording_consents, user_recording_preferences, group_rides, group_ride_participants, scheduled_rides, ride_offers, support_tickets, support_messages, referrals, subscriptions, promotions, sms_templates, sms_deliveries, sms_logs, webhook_endpoints, webhook_deliveries, admin_logs, error_logs, system_settings (seed), push_subscriptions, notification_preferences, user_sms_preferences, user_onboarding | Aplicada |
+| 004_routes_reviews_misc | popular_routes, driver_popular_routes, route_history, address_search_history, reviews, driver_reviews, rating_helpful_votes, rating_reports, reports, pricing_rules (seed), avatars, users, campaigns, faqs, legal_documents + 15 RPCs | Aplicada |
 
 ---
 
@@ -430,4 +444,4 @@ package.json                                 Dependencias completas
 
 ---
 
-**Ultima atualizacao:** 02/03/2026 — 111 tabelas no total (72 public + 21 auth + 8 realtime + 8 storage + 2 outras), 152 paginas, 57 APIs, 15 funcoes RPC
+**Ultima atualizacao:** 02/03/2026 — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas public / 176 tabelas total (todos schemas), 4 migrations aplicadas, 152 paginas, 57 APIs, 15 funcoes RPC
