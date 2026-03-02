@@ -63,8 +63,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     return defaultResponse
-  } catch (error) {
-    console.error('[v0] Middleware error:', error)
+  } catch {
     return defaultResponse
   }
 }
