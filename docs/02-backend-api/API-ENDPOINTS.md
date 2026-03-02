@@ -1,11 +1,11 @@
-# UPPI - API Endpoints (92 handlers em 56 route.ts)
+# UPPI - API Endpoints (92 handlers em 57 route.ts)
 
-**Ultima Atualizacao:** 24/02/2026  
-**Versao:** 11.0  
-**Base URL:** `/api/v1` (versionamento obrigatorio)  
-**Auth:** Supabase Auth (Bearer Token via cookie)  
-**Rate Limiting:** Sliding window em todas as rotas  
-**Status:** Supabase conectado, 73 tabelas ativas, 56 route.ts 100% implementados
+**Ultima Atualizacao:** 02/03/2026
+**Versao:** 12.0
+**Base URL:** `/api/v1` (versionamento obrigatorio)
+**Auth:** Supabase Auth (Bearer Token via cookie)
+**Rate Limiting:** Sliding window em todas as rotas
+**Status:** Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 total, 57 route.ts 100% implementados
 
 ---
 
@@ -53,7 +53,7 @@ X-Latest-Version: v1
 | Outros | 8 | 14 | 60 req/min |
 | Admin | 4 | 5 | 60 req/min |
 | Health | 1 | 1 | Sem limite |
-| **Total** | **56** | **92** | |
+| **Total** | **57** | **92** | |
 
 > Rotas completas: rides, rides/[id]/status, rides/[id]/cancel, offers, offers/[id]/accept, reviews, reviews/enhanced, reviews/driver, ratings, profile, driver/location, driver/documents, driver/verify, drivers/nearby, drivers/hot-zones, subscriptions, wallet, coupons, social/posts, social/posts/[id]/like, social/posts/[id]/comments, notifications, notifications/send, sms/send, sms/status, messages, recordings/upload, emergency, favorites, geocode, places/autocomplete, places/details, distance, routes/alternatives, stats, referrals, group-rides, group-rides/join, leaderboard, achievements, webhooks, webhooks/process, admin/setup, admin/create-first, auth/verify, health
 
@@ -1015,5 +1015,5 @@ O token de sessao e gerenciado automaticamente via cookies pelo middleware Supab
 ---
 
 > Funcoes SQL (RPCs) chamadas pelas APIs: ver docs/03-banco-de-dados/AUDITORIA-COMPLETA.md
-> Tabelas e RLS (73 tabelas, 98+ policies): ver docs/03-banco-de-dados/SCHEMA.md
+> Tabelas e RLS (74 tabelas public / 176 total, 145 policies): ver docs/03-banco-de-dados/SCHEMA.md
 > Adicionar novos endpoints: ver docs/02-backend-api/VERSIONAMENTO.md

@@ -1,8 +1,8 @@
 # AUDITORIA COMPLETA - PROJETO UPPI
 
 **Data:** 02/03/2026
-**Versao:** 14.1
-**Status Geral:** 100% Operacional — Supabase conectado (pjlbixnzjndezoscbhej / supabase-amber-door), 74 tabelas public / 176 tabelas total (verificado via SQL), 152 paginas, 57 rotas API, 15 funcoes RPC
+**Versao:** 14.2
+**Status Geral:** 100% Operacional — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 tabelas total (verificado via SQL), 152 paginas, 57 rotas API, 15 funcoes RPC
 
 ---
 
@@ -10,14 +10,18 @@
 
 | Item | Detalhe |
 |------|---------|
-| Projeto Supabase | pjlbixnzjndezoscbhej (supabase-amber-door) |
-| Migrations aplicadas | 001_core_tables, 002_location_wallet_social, 003_driver_security_support, 004_routes_reviews_misc |
-| Tabelas no schema public | **74** (criadas e verificadas via supabase_list_tables) |
-| RLS | Habilitado em todas as 74 tabelas |
+| Projeto Supabase | nhdupekrvafpqlsbpznq (supabase-gray-book) — ATUAL |
+| Projeto anterior | pjlbixnzjndezoscbhej (supabase-amber-door) — migrado em 02/03/2026 |
+| Migrations aplicadas | 001_core_tables, 002_location_wallet_social, 003_driver_security_support, 004_routes_reviews_misc_rpcs |
+| Tabelas no schema public | **74** (criadas via 4 migrations em 02/03/2026) |
+| Tabelas totais (todos schemas) | **176** (verificado via SQL: public 74 + pg_catalog 64 + auth 21 + storage 8 + information_schema 4 + realtime 3 + migrations 1 + vault 1) |
+| RLS | Habilitado em todas as 74 tabelas — 145 policies ativas |
 | Trigger auto-profile | on_auth_user_created ativo |
+| Triggers totais | 20 (schema public) |
 | Realtime | rides, messages, notifications, price_offers, driver_locations, ride_tracking, support_messages, ride_offers |
 | RPC Functions | 15 ativas |
 | Seed executado | system_settings (6), pricing_rules (6 tipos), rating_categories (4) |
+| Extensoes instaladas | 7 (postgis, pgcrypto, uuid-ossp, pg_graphql, pg_stat_statements, supabase_vault, plpgsql) |
 
 ---
 
@@ -29,13 +33,13 @@
 |-----------|--------|----------|
 | **Frontend** | 100% | 152 paginas (70 uppi + 9 auth + 33 admin + outros) |
 | **Backend API** | 100% | 57 route.ts, 92+ handlers em /api/v1/ |
-| **Banco de Dados** | 100% | 74 tabelas public criadas no Supabase, 4 migrations, 98+ RLS, 15 RPC |
+| **Banco de Dados** | 100% | 74 tabelas public / 176 total — Supabase nhdupekrvafpqlsbpznq, 4 migrations, 145 RLS policies, 15 RPC |
 | **Versionamento** | 100% | /api/v1/* ativo, middleware implementado |
 | **Componentes** | 100% | 48 custom + 85 ui (54 shadcn + 31 iOS) = 133 total |
 | **Services** | 100% | 13 services de dominio |
 | **Hooks** | 100% | 12 hooks customizados |
 | **Integracoes** | 100% | Supabase + Google Maps + Web Push VAPID + Resend |
-| **Documentacao** | 100% | 17 docs em docs/ |
+| **Documentacao** | 100% | 19 docs em docs/ |
 | **Build** | 100% | 152 paginas geradas, 0 erros TypeScript |
 
 **Score Geral: 100/100** — 74 tabelas public / 176 total (todos schemas), APIs corrigidas, build limpo
@@ -249,26 +253,27 @@
 
 ---
 
-## 3. BANCO DE DADOS — 111 tabelas totais (02/03/2026)
+## 3. BANCO DE DADOS — 74 tabelas no schema public / 176 total
 
 | Schema | Tabelas | Descricao |
 |--------|---------|-----------|
-| public | 72 | Todas as tabelas do dominio da aplicacao |
+| public | 74 | Todas as tabelas do dominio da aplicacao |
+| pg_catalog | 64 | Catalog interno do PostgreSQL |
 | auth | 21 | Gerenciadas automaticamente pelo Supabase Auth |
-| realtime | 8 | Gerenciadas automaticamente pelo Supabase Realtime |
 | storage | 8 | Gerenciadas automaticamente pelo Supabase Storage |
+| information_schema | 4 | Views do sistema PostgreSQL |
+| realtime | 3 | Gerenciadas automaticamente pelo Supabase Realtime |
 | supabase_migrations | 1 | Controle de migracoes |
 | vault | 1 | Segredos criptografados |
-| **Total** | **111** | |
+| **Total** | **176** | Verificado via SQL em 02/03/2026 |
 
-- **72 tabelas public** ativas (verificadas via Supabase SQL)
-- **98+ RLS policies** nas tabelas criticas do schema public
+- **74 tabelas public** ativas (criadas via 4 migrations — 02/03/2026, Supabase nhdupekrvafpqlsbpznq)
+- **145 RLS policies** ativas (verificado via SQL)
 - **15 funcoes RPC** ativas
-- **60+ indexes** de performance
+- **20 triggers** no schema public
 - **8 tabelas Realtime** publicadas
-- PostGIS habilitado
-- system_settings: 6 registros
-- rating_categories: seed ativo
+- **7 extensoes** instaladas (postgis, pgcrypto, uuid-ossp, pg_graphql, pg_stat_statements, supabase_vault, plpgsql)
+- system_settings: 6 registros | pricing_rules: 6 tipos | rating_categories: 4 seed
 
 Ver schema completo: docs/03-banco-de-dados/SCHEMA.md
 
@@ -414,4 +419,4 @@ search-bar, segmented-control, sheet, skeleton, slider, switch, tabs, toast-adva
 
 ---
 
-**Ultima atualizacao:** 02/03/2026 — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas public, 4 migrations, 152 paginas
+**Ultima atualizacao:** 02/03/2026 — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 total, 145 RLS policies, 20 triggers, 15 RPCs, 4 migrations, 152 paginas, 57 APIs, build limpo

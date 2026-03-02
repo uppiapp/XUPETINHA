@@ -1,21 +1,20 @@
 # UPPI - Indice Completo do Projeto
 
 **Ultima atualizacao:** 02/03/2026
-**Versao:** 14.4
+**Versao:** 14.5
 **Arquitetura:** Frontend + Backend + Banco (74 tabelas public / 176 total / 145 RLS policies / 20 triggers / 15 RPCs) + API (57 routes) + Auth + Realtime (8 tabelas) + Admin
 **Supabase:** nhdupekrvafpqlsbpznq (supabase-gray-book) — 4 migrations — analise completa: docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
 **URL Supabase:** https://nhdupekrvafpqlsbpznq.supabase.co
 
 ---
 
-## 1. Documentacao (docs/) — 17 documentos
+## 1. Documentacao (docs/) — 19 documentos
 
 ```
 docs/
   INDICE.md                                  <-- Voce esta aqui (mapa completo do projeto)
-  AUDITORIA-PROJETO.md                       Auditoria completa: paginas, APIs, componentes, hooks
-  AUDITORIA-PROJETO-v2.md                    Auditoria v2 (banco 73 tabelas, APIs corrigidas)
-  CONFIGURACAO-COMPLETA.md                   Env vars, integracoes, proximos passos
+  AUDITORIA-PROJETO.md                       Auditoria completa: paginas, APIs, componentes, hooks (v14.2)
+  CONFIGURACAO-COMPLETA.md                   Env vars, integracoes, proximos passos (v12.0)
   SUPABASE-CONEXAO.md                        Conexao Supabase: projeto, migrations, RPCs, variaveis
   VAPID-SETUP.md                             Setup Web Push (VAPID) para push notifications
   PAINEL-ADMIN.md                            Painel admin completo: 33 paginas
@@ -29,9 +28,10 @@ docs/
     VERSIONAMENTO.md                         Padrao /api/v1/, middleware, headers de versao
 
   03-banco-de-dados/
-    AUDITORIA-COMPLETA.md                    Schema alvo completo (73 tabelas, 98+ RLS, 45+ RPC)
-    SCHEMA.md                                Estado real (73 tabelas ativas em 02/03/2026) +
-                                             campos detalhados, RLS, indexes, funcoes SQL
+    ANALISE-SCHEMAS-COMPLETA.md             Analise detalhada: 74 tabelas, 145 RLS, 20 triggers, 7 extensoes
+    AUDITORIA-COMPLETA.md                   Schema codigo vs banco (v12.0 — 74 tabelas, 4 migrations)
+    SCHEMA.md                               Estado real (74 tabelas / 176 total em 02/03/2026) +
+                                            campos detalhados, RLS, indexes, funcoes SQL
 
   04-infraestrutura/
     GOOGLE-MAPS.md                           Setup, hooks, componentes, troubleshooting
@@ -39,7 +39,7 @@ docs/
     TESTE-REALTIME.md                        Guia de teste Supabase Realtime (passo a passo)
 
   05-status/
-    STATUS-FUNCIONALIDADES.md                Checklist completo: 73 tabelas, 15 funcoes RPC,
+    STATUS-FUNCIONALIDADES.md                Checklist completo: 74 tabelas, 15 funcoes RPC,
                                              152 paginas, 57 APIs, 8 tabelas Realtime (02/03/2026)
 
   06-deploy/
@@ -404,7 +404,7 @@ package.json                                 Dependencias completas
 | Tabelas (migrations)   | 1         | supabase_migrations                                         |
 | Tabelas (vault)        | 1         | Segredos criptografados                                     |
 | **Total geral**        | **176**   | Todos os schemas — verificado via SQL em 02/03/2026         |
-| RLS Policies           | 98+       | Todas as 74 tabelas com RLS habilitado               |
+| RLS Policies           | 145       | Todas as 74 tabelas com RLS habilitado (verificado via SQL)  |
 | Funcoes SQL (RPC)      | 15        | find_nearby_drivers, calculate_wallet_balance, etc.  |
 | Triggers               | 24+       | updated_at, rating, streaks, etc.                    |
 | Indexes                | 60+       | Performance em busca e filtros                       |
@@ -445,4 +445,4 @@ package.json                                 Dependencias completas
 
 ---
 
-**Ultima atualizacao:** 02/03/2026 — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas public / 176 tabelas total (todos schemas), 4 migrations aplicadas, 152 paginas, 57 APIs, 15 funcoes RPC
+**Ultima atualizacao:** 02/03/2026 — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 tabelas total (todos schemas), 145 RLS policies, 20 triggers, 4 migrations aplicadas, 152 paginas, 57 APIs, 15 funcoes RPC

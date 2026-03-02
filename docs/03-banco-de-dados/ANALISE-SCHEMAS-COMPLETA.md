@@ -1,7 +1,7 @@
 # Analise Completa de Todos os Schemas — Supabase UPPI
 
 **Data:** 02/03/2026
-**Projeto:** pjlbixnzjndezoscbhej (supabase-amber-door)
+**Projeto:** nhdupekrvafpqlsbpznq (supabase-gray-book) — migrado de pjlbixnzjndezoscbhej (supabase-amber-door) em 02/03/2026
 **Verificado via SQL:** SELECT direto no banco em 02/03/2026
 
 ---
@@ -51,7 +51,7 @@
 | Legal | faqs, legal_documents |
 | PostGIS (sistema) | spatial_ref_sys |
 
-### RLS Policies (145 policies em 73 tabelas)
+### RLS Policies (145 policies em 74 tabelas — schema public)
 
 | Tabela | Policies | Tabela | Policies |
 |--------|----------|--------|----------|
@@ -65,7 +65,7 @@
 | group_ride_participants | 3 | user_achievements | 3 |
 | price_offers | 3 | ... (demais com 1-2 policies) | |
 
-**Total: 145 RLS policies ativas — todas as 73 tabelas com RLS protegidas**
+**Total: 145 RLS policies ativas — todas as 74 tabelas do schema public com RLS protegidas**
 
 ### Triggers no schema public (20 triggers)
 
@@ -282,4 +282,4 @@ Views padrao SQL para introspecao do banco.
 
 ---
 
-**Gerado em 02/03/2026** — Analise via SQL direto no Supabase pjlbixnzjndezoscbhej
+**Gerado em 02/03/2026** — Analise via SQL direto no Supabase nhdupekrvafpqlsbpznq (supabase-gray-book)

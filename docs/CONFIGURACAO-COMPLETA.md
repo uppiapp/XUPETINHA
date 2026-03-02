@@ -1,8 +1,24 @@
 # UPPI - Configuracao Completa
 
-**Data:** 24/02/2026  
-**Versao:** 11.0  
-**Status:** Operacional — Banco ativo, 73 tabelas, pronto para testes E2E e deploy
+**Data:** 02/03/2026
+**Versao:** 12.0
+**Status:** Operacional — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 total, 4 migrations aplicadas, pronto para testes E2E e deploy
+
+---
+
+## Estado do Banco de Dados (02/03/2026)
+
+| Item | Valor |
+|------|-------|
+| Projeto Supabase | nhdupekrvafpqlsbpznq (supabase-gray-book) |
+| URL | https://nhdupekrvafpqlsbpznq.supabase.co |
+| Tabelas no schema public | 74 |
+| Tabelas totais (todos schemas) | 176 |
+| RLS policies ativas | 145 |
+| Triggers no schema public | 20 |
+| Funcoes RPC | 15 |
+| Tabelas com Realtime | 8 |
+| Extensoes instaladas | 7 |
 
 ---
 
@@ -59,19 +75,22 @@ Todas as configuracoes essenciais foram concluidas com sucesso:
 - **DELETE /api/v1/social/posts/[id]/comments** - Deletar comentario
 - **Recursos:** Paginacao, contador automatico, notificacoes ao autor
 
-### 4. Banco de Dados ✅
-- **Tabelas:** 73 ativas no Supabase (schema exportado 24/02/2026)
-- **RLS Policies:** 98+ ativas
-- **RPC Functions:** 45+ implementadas
-- **Realtime:** Ativo em 4 tabelas (rides, price_offers, messages, notifications)
-- **PostGIS:** Configurado com indices GIST
-- **Scripts:** 7 fases executadas com sucesso
+### 4. Banco de Dados (02/03/2026)
+- **Projeto:** nhdupekrvafpqlsbpznq (supabase-gray-book) — migrado de pjlbixnzjndezoscbhej em 02/03/2026
+- **Tabelas:** 74 ativas no schema public (4 migrations aplicadas)
+- **Total (todos os schemas):** 176 tabelas verificadas via SQL
+- **RLS Policies:** 145 ativas (em 73 das 74 tabelas)
+- **RPC Functions:** 15 ativas
+- **Realtime:** Ativo em 8 tabelas
+- **Triggers:** 20 no schema public
+- **Seeds executados:** system_settings (6), pricing_rules (6 tipos), rating_categories (4)
 
-### 5. Integracao Supabase ✅
-- **URL:** Configurado
-- **Anon Key:** Configurado
-- **Service Role Key:** Configurado
-- **Status:** Conectado e operacional
+### 5. Integracao Supabase (02/03/2026)
+- **URL:** https://nhdupekrvafpqlsbpznq.supabase.co (supabase-gray-book)
+- **Projeto anterior:** pjlbixnzjndezoscbhej (supabase-amber-door) — migrado
+- **Anon Key:** Configurado via integracao Vercel
+- **Service Role Key:** Configurado via integracao Vercel
+- **Status:** Conectado e operacional — 4 migrations aplicadas
 
 ---
 
@@ -274,4 +293,4 @@ curl http://localhost:3000/api/rides
 
 ---
 
-**Status Final:** ✅ Projeto 100% configurado e pronto para testes E2E
+**Status Final:** Projeto 100% configurado e pronto para testes E2E — Supabase nhdupekrvafpqlsbpznq, 74 tabelas, 57 APIs, 152 paginas, build limpo (02/03/2026)

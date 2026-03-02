@@ -227,17 +227,19 @@
 
 ---
 
-## 3. Banco de Dados — 113+ tabelas totais / 74 no schema public
+## 3. Banco de Dados — 176 tabelas totais / 74 no schema public (02/03/2026)
 
 | Schema | Tabelas |
 |--------|---------|
 | public | 74 |
+| pg_catalog | 64 |
 | auth | 21 |
-| realtime | 8 |
 | storage | 8 |
+| information_schema | 4 |
+| realtime | 3 |
 | supabase_migrations | 1 |
 | vault | 1 |
-| **Total** | **113+** |
+| **Total** | **176** |
 
 ### Status Supabase (02/03/2026)
 
@@ -475,4 +477,4 @@
 
 ---
 
-**Atualizado em 02/03/2026** — Supabase conectado (pjlbixnzjndezoscbhej), 74 tabelas no schema public, 4 migrations aplicadas, 15 RPCs, 8 tabelas Realtime, seeds de system_settings/pricing_rules/rating_categories, 152 paginas, 57 APIs, build limpo
+**Atualizado em 02/03/2026** — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas public / 176 total, 145 RLS policies, 20 triggers, 4 migrations aplicadas, 15 RPCs, 8 tabelas Realtime, seeds de system_settings/pricing_rules/rating_categories, 152 paginas, 57 APIs, build limpo

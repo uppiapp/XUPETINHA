@@ -15,7 +15,7 @@
 **Tabelas realtime (Supabase):** 3
 **Tabelas supabase_migrations:** 1
 **Tabelas vault:** 1
-**RLS policies ativas:** 145 (em 73 tabelas — verificado via SQL)
+**RLS policies ativas:** 145 (em 74 tabelas — verificado via SQL)
 **Triggers ativos:** 20 (schema public)
 **Funcoes RPC callable:** 15
 **Tabelas com Realtime:** 8 (supabase_realtime publication)

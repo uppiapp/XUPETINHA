@@ -1,7 +1,7 @@
 # UPPI - Implementação Completa
 
-**Ultima Atualizacao:** 24/02/2026  
-**Versao:** 11.0
+**Ultima Atualizacao:** 02/03/2026
+**Versao:** 12.0
 
 ## Visão Geral
 
@@ -9,18 +9,18 @@ O Uppi é um app de transporte completo construído com Next.js 16, Supabase e d
 
 ---
 
-> Banco de dados: ver docs/03-banco-de-dados/AUDITORIA-COMPLETA.md (73 tabelas, 98+ RLS, 45+ functions RPC)
+> Banco de dados: ver docs/03-banco-de-dados/AUDITORIA-COMPLETA.md (74 tabelas public / 176 total, 145 RLS policies, 15 RPCs — Supabase nhdupekrvafpqlsbpznq)
 
 ---
 
 ## Stack Técnica
 
-**Frontend:** Next.js 16 (App Router) + React 19 + TypeScript 5  
-**Styling:** Tailwind CSS + shadcn/ui + design iOS-style  
-**Backend:** Next.js API Routes **v1** (`/api/v1/*`) + Supabase PostgreSQL + PostGIS  
-**Banco:** Supabase conectado, 73 tabelas ativas, RLS ativo  
-**Realtime:** Supabase Realtime (ofertas, chat, tracking)  
-**Maps:** Google Maps API + @vis.gl/react-google-maps  
+**Frontend:** Next.js 16 (App Router) + React 19 + TypeScript 5
+**Styling:** Tailwind CSS + shadcn/ui + design iOS-style
+**Backend:** Next.js API Routes **v1** (`/api/v1/*`) + Supabase PostgreSQL + PostGIS
+**Banco:** Supabase nhdupekrvafpqlsbpznq (supabase-gray-book), 74 tabelas ativas, 145 RLS policies
+**Realtime:** Supabase Realtime (8 tabelas: offers, chat, tracking, notifications, etc.)
+**Maps:** Google Maps API + @vis.gl/react-google-maps
 **Auth:** Supabase Auth (sessões via cookies)
 
 ---

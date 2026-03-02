@@ -1,9 +1,9 @@
 # UPPI - AUDITORIA COMPLETA FINAL (CODIGO vs BANCO DE DADOS)
 **Data da Auditoria:** 24/02/2026
-**Ultima Atualizacao:** 24/02/2026
-**Versao:** 11.0
-**Status do Banco:** OPERACIONAL — 73 tabelas ativas no Supabase
-**Total de Arquivos no Projeto:** 490
+**Ultima Atualizacao:** 02/03/2026
+**Versao:** 12.0
+**Status do Banco:** OPERACIONAL — 74 tabelas public / 176 total (todos schemas) — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book)
+**Total de Arquivos no Projeto:** 490+
 
 ---
 
@@ -11,29 +11,28 @@
 
 | Item | Quantidade |
 |------|------------|
-| Tabelas no banco (real) | 73 (exportado do Supabase em 24/02/2026) |
-| RLS Policies ativas | 98+ (em todas as tabelas) |
-| RPC Functions definidas | 45 (em 16 scripts) |
-| Triggers definidos | 24 (em 10 scripts) |
-| Indexes definidos | 60 (em 14 scripts) |
-| API Routes (arquivos) | 38 |
-| Endpoints HTTP totais | 63 |
-| Paginas (page.tsx) | 65 |
-| Components custom | 26 |
-| Components shadcn/ui | 55 |
-| Hooks custom | 8 |
-| Lib utilities | 18 arquivos |
-| Scripts SQL | 25 + 1 JS |
-| Documentacao (MD) | 9 arquivos |
-| Public assets | 4 arquivos |
+| Tabelas no schema public (real) | 74 (4 migrations — 02/03/2026) |
+| Tabelas totais (todos schemas) | 176 (verificado via SQL) |
+| RLS Policies ativas | 145 (verificado via SQL) |
+| Triggers no schema public | 20 |
+| Funcoes RPC definidas | 15 |
+| Extensoes instaladas | 7 |
+| API Routes (arquivos) | 57 |
+| Endpoints HTTP totais | 92 |
+| Paginas (page.tsx) | 152 |
+| Components custom | 48 |
+| Components shadcn/ui | 85 (54 shadcn + 31 iOS) |
+| Hooks custom | 12 |
+| Services de dominio | 13 |
+| Lib utilities | 40+ arquivos |
+| Documentacao (MD) | 19 arquivos |
 | Config files | 4 (next.config.mjs, tailwind.config.ts, postcss.config.mjs, components.json) |
-| Middleware | 1 (middleware.ts) |
+| Middleware | 1 (proxy.ts — Next.js 16) |
 | Layouts | 3 (root, uppi, admin) |
-| Client components | 4 (analytics, recording, referral, supabase) |
 
 ---
 
-## SECAO 1: TODAS AS TABELAS SQL (73 tabelas)
+## SECAO 1: TODAS AS TABELAS SQL (74 tabelas no schema public — 4 migrations em 02/03/2026)
 
 ### 1.1 setup-database.sql (8 tabelas base)
 
@@ -1404,6 +1403,6 @@ accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button,
 
 ---
 
-**FIM DA AUDITORIA - 24/02/2026**
-**Versao 11.0 - 73 tabelas ativas, schema exportado diretamente do Supabase**
+**FIM DA AUDITORIA - 02/03/2026 (atualizado)**
+**Versao 12.0 - 74 tabelas public / 176 total (todos schemas), 145 RLS policies, 20 triggers, 15 RPCs — Supabase nhdupekrvafpqlsbpznq (supabase-gray-book)**
 **Documento atualizado por varredura completa de 264 arquivos do projeto**
