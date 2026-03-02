@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Car, Radio, Users, Navigation,
 } from 'lucide-react'
@@ -99,20 +101,8 @@ export default function MonitorPage() {
       }
     }
 
-    const createMap = () => {
-      if (!mapRef.current) return
-      mapInstance.current = new window.google.maps.Map(mapRef.current, {
-        center: { lat: -1.29, lng: -47.93 }, // Castanhal, PA
-        zoom: 13,
-        disableDefaultUI: true,
-        zoomControl: true,
-        styles: darkMapStyle,
-        mapId: 'admin-monitor-map',
-      })
-    }
-
     initMap()
-  }, [resolvedTheme])
+  }, [])
 
   // Update markers
   useEffect(() => {
