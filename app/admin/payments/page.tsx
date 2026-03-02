@@ -66,12 +66,12 @@ export default function AdminPaymentsPage() {
     const [paymentsRes, walletRes] = await Promise.all([
       supabase
         .from('payments')
-        .select('*, passenger:profiles!payments_passenger_id_fkey(full_name), driver:profiles!payments_driver_id_fkey(full_name)')
+        .select('*, passenger:profiles!passenger_id(full_name), driver:profiles!driver_id(full_name)')
         .order('created_at', { ascending: false })
         .limit(200),
       supabase
         .from('wallet_transactions')
-        .select('*, user:profiles!wallet_transactions_user_id_fkey(full_name)')
+        .select('*, user:profiles!user_id(full_name)')
         .order('created_at', { ascending: false })
         .limit(200),
     ])

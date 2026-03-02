@@ -95,12 +95,21 @@ export default function ChatPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Buscar o receiver_id da corrida
+      const { data: rideData } = await supabase
+        .from('rides')
+        .select('passenger_id, driver_id')
+        .eq('id', params.id)
+        .single()
+      const receiverId = rideData?.passenger_id === user.id ? rideData?.driver_id : rideData?.passenger_id
+
       const { error } = await supabase
         .from('messages')
         .insert({
           ride_id: params.id,
           sender_id: user.id,
-          message: newMessage.trim()
+          receiver_id: receiverId,
+          content: newMessage.trim()
         })
 
       if (error) throw error

@@ -165,7 +165,7 @@ export default function DriverPage() {
 
       // Total de offers feitas hoje para calcular taxa real
       const { data: allOffers } = await supabase
-        .from('price_offers')
+        .from('ride_offers')
         .select('status')
         .eq('driver_id', uid)
         .gte('created_at', today.toISOString())
@@ -205,7 +205,7 @@ export default function DriverPage() {
         // Marcar offline
         if (userId) {
           await supabase.from('driver_locations').update({ is_available: false }).eq('driver_id', userId)
-          await supabase.from('driver_profiles').update({ is_available: false }).eq('id', userId)
+          await supabase.from('driver_profiles').update({ is_online: false, is_available: false }).eq('id', userId)
         }
       }
       setIsOnline(newOnline)
