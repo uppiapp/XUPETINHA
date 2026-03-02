@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
+import { logError } from '@/lib/logger'
 
 export default function Error({
   error,
@@ -12,7 +13,10 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('[v0] Global error:', error)
+    logError(error, {
+      context: typeof window !== 'undefined' ? window.location.pathname : undefined,
+      metadata: { digest: error.digest },
+    })
   }, [error])
 
   return (
