@@ -26,6 +26,9 @@ import {
   HeadphonesIcon,
   Tag,
   Users2,
+  Rss,
+  Trophy,
+  TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -44,11 +47,15 @@ const navGroups = [
     items: [
       { href: '/admin/users', icon: Users, label: 'Usuarios' },
       { href: '/admin/drivers', icon: UserCog, label: 'Motoristas' },
+      { href: '/admin/drivers/earnings', icon: TrendingUp, label: 'Ganhos Motoristas' },
       { href: '/admin/rides', icon: Car, label: 'Corridas' },
+      { href: '/admin/group-rides', icon: Users2, label: 'Corridas em Grupo' },
       { href: '/admin/price-offers', icon: Tag, label: 'Ofertas de Preco' },
       { href: '/admin/reviews', icon: Star, label: 'Avaliacoes' },
       { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
       { href: '/admin/referrals', icon: Users2, label: 'Indicacoes' },
+      { href: '/admin/social', icon: Rss, label: 'Feed Social' },
+      { href: '/admin/leaderboard', icon: Trophy, label: 'Leaderboard' },
     ],
   },
   {
