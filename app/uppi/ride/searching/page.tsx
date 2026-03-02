@@ -159,13 +159,22 @@ export default function SearchingDriverPage() {
   }
 
   const accept = async (offer: OfferWithDriver) => {
-    if (!rideId) return; setAcceptingId(offer.id)
+    if (!rideId) return
+    setAcceptingId(offer.id)
     try {
-      await supabase.from('price_offers').update({ status: 'accepted' }).eq('id', offer.id)
-      await supabase.from('rides').update({ driver_id: offer.driver_id, final_price: offer.offered_price, status: 'accepted' }).eq('id', rideId)
-      await supabase.from('price_offers').update({ status: 'rejected' }).eq('ride_id', rideId).neq('id', offer.id)
+      // Aceita via API route para garantir notificações, rejeição das outras ofertas e email
+      const res = await fetch(`/api/v1/offers/${offer.id}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Erro ao aceitar oferta')
+        return
+      }
       router.push(`/uppi/ride/${rideId}/tracking`)
-    } catch (e) { console.error(e) } finally { setAcceptingId(null) }
+    } catch { alert('Erro ao aceitar oferta. Tente novamente.') }
+    finally { setAcceptingId(null) }
   }
 
   const reject = async (offer: OfferWithDriver) => {

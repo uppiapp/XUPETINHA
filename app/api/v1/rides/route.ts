@@ -26,11 +26,11 @@ export async function POST(request: Request) {
         dropoff_address: data.dropoff_address,
         dropoff_lat: data.dropoff_lat,
         dropoff_lng: data.dropoff_lng,
-        status: 'searching',
+        status: 'pending',
         payment_method: data.payment_method || 'pix',
         passenger_price_offer: data.passenger_price_offer,
         notes: data.notes || null,
-        vehicle_type: data.vehicle_type || 'standard',
+        vehicle_type: data.vehicle_type || 'economy',
       })
       .select(`
         *,

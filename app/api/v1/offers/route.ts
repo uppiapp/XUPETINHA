@@ -17,6 +17,10 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { ride_id, offered_price, estimated_arrival_minutes, message } = body
 
+    if (!ride_id || !offered_price) {
+      return NextResponse.json({ error: 'ride_id e offered_price são obrigatórios' }, { status: 400 })
+    }
+
     // Verificar se o usuário é motorista ativo
     const { data: driver } = await supabase
       .from('driver_profiles')
@@ -32,19 +36,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Apenas motoristas verificados podem fazer ofertas' }, { status: 403 })
     }
 
-    // Expiração em 5 minutos
-    const expiresAt = new Date()
-    expiresAt.setMinutes(expiresAt.getMinutes() + 5)
+    // Verificar se a corrida está em estado de negociação
+    const { data: ride } = await supabase
+      .from('rides')
+      .select('id, status, passenger_id')
+      .eq('id', ride_id)
+      .single()
 
-    // Criar oferta em ride_offers
+    if (!ride) {
+      return NextResponse.json({ error: 'Corrida não encontrada' }, { status: 404 })
+    }
+
+    if (!['pending', 'negotiating'].includes(ride.status)) {
+      return NextResponse.json({ error: 'Corrida não está disponível para ofertas' }, { status: 409 })
+    }
+
+    // Verificar se motorista já fez oferta para essa corrida
+    const { data: existingOffer } = await supabase
+      .from('price_offers')
+      .select('id')
+      .eq('ride_id', ride_id)
+      .eq('driver_id', user.id)
+      .eq('status', 'pending')
+      .single()
+
+    if (existingOffer) {
+      return NextResponse.json({ error: 'Você já fez uma oferta para esta corrida' }, { status: 409 })
+    }
+
+    // Criar oferta em price_offers (tabela unificada)
     const { data: offer, error } = await supabase
-      .from('ride_offers')
+      .from('price_offers')
       .insert({
         ride_id,
         driver_id: user.id,
-        offered_price: offered_price || 0,
+        offered_price: Number(offered_price),
         eta_minutes: estimated_arrival_minutes || 5,
-        message,
+        message: message || null,
         status: 'pending',
       })
       .select(`
@@ -55,36 +83,31 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('[v0] Error creating offer:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Atualizar status da corrida para negociando
+    await supabase
+      .from('rides')
+      .update({ status: 'negotiating' })
+      .eq('id', ride_id)
+      .eq('status', 'pending')
+
     // Notificar passageiro
     try {
-      const { data: ride } = await supabase
-        .from('rides')
-        .select('passenger_id')
-        .eq('id', ride_id)
-        .single()
-
-      if (ride) {
-        await supabase.from('notifications').insert({
-          user_id: ride.passenger_id,
-          type: 'offer',
-          title: 'Nova oferta recebida',
-          body: `Oferta de R$ ${Number(offered_price).toFixed(2)} de ${driver.vehicle_brand} ${driver.vehicle_model}`,
-          data: { ride_id, offer_id: offer.id },
-          is_read: false,
-        })
-      }
-    } catch (notifError) {
-      console.error('[v0] Error sending notification:', notifError)
-    }
+      await supabase.from('notifications').insert({
+        user_id: ride.passenger_id,
+        type: 'offer',
+        title: 'Nova oferta recebida',
+        message: `Oferta de R$ ${Number(offered_price).toFixed(2)} de ${driver.vehicle_brand} ${driver.vehicle_model}`,
+        data: { ride_id, offer_id: offer.id },
+        read: false,
+      })
+    } catch (_) {}
 
     return NextResponse.json({ success: true, offer })
-  } catch (error) {
-    console.error('[v0] API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -108,7 +131,7 @@ export async function GET(request: Request) {
     }
 
     const { data: offers, error } = await supabase
-      .from('ride_offers')
+      .from('price_offers')
       .select(`
         *,
         driver:profiles!driver_id(id, full_name, avatar_url, phone),
@@ -119,7 +142,6 @@ export async function GET(request: Request) {
       .order('offered_price', { ascending: true })
 
     if (error) {
-      console.error('[v0] Error fetching offers:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -128,8 +150,7 @@ export async function GET(request: Request) {
       offers: offers || [],
       count: offers?.length || 0,
     })
-  } catch (error) {
-    console.error('[v0] API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }

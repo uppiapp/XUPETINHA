@@ -26,9 +26,10 @@ interface DriverProfile {
   total_earnings: number
   rating: number
   total_rides: number
-  cnh_number: string | null
+  acceptance_rate: number
+  completion_rate: number
   cnh_expiry: string | null
-  document_url: string | null
+  cnh_number: string | null
   created_at: string
   profile?: {
     full_name: string
@@ -291,11 +292,13 @@ export default function DriversPage() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 {[
                   { label: 'Corridas', value: selected.total_rides || 0 },
-                  { label: 'Avaliação', value: (selected.rating || 5).toFixed(1) },
+                  { label: 'Avaliacao', value: (selected.rating || 5).toFixed(1) },
                   { label: 'Ganhos', value: `R$${(selected.total_earnings || 0).toFixed(0)}` },
+                  { label: 'Aceitacao', value: `${(selected.acceptance_rate || 0).toFixed(0)}%` },
+                  { label: 'Conclusao', value: `${(selected.completion_rate || 0).toFixed(0)}%` },
                 ].map(s => (
                   <div key={s.label} className="bg-[hsl(var(--admin-surface))] rounded-xl p-3 text-center border border-[hsl(var(--admin-border))]">
                     <p className="text-[18px] font-bold text-slate-100 tabular-nums">{s.value}</p>

@@ -1,25 +1,24 @@
 'use client'
 
-import React from "react"
-
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { BottomNavigation } from '@/components/bottom-navigation'
 import { iosToast } from '@/lib/utils/ios-toast'
 import { triggerHaptic } from '@/hooks/use-haptic'
 import { driverRegisterSchema, validateForm } from '@/lib/validations/schemas'
 
+const VEHICLE_TYPES = [
+  { value: 'economy', label: 'Economico' },
+  { value: 'electric', label: 'Eletrico' },
+  { value: 'premium', label: 'Premium' },
+  { value: 'suv', label: 'SUV' },
+  { value: 'moto', label: 'Moto' },
+]
+
 export default function DriverDocumentsPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [documents, setDocuments] = useState<any>(null)
+  const [isVerified, setIsVerified] = useState<boolean | null>(null)
   const [formData, setFormData] = useState({
     vehicle_type: 'economy',
     vehicle_brand: '',
@@ -30,207 +29,245 @@ export default function DriverDocumentsPage() {
     license_number: '',
   })
 
-  useEffect(() => {
-    loadDocuments()
-  }, [])
+  useEffect(() => { loadDocuments() }, [])
 
   const loadDocuments = async () => {
     try {
-      const response = await fetch('/api/v1/driver/documents')
-      const data = await response.json()
-      setDocuments(data)
-      
-      if (data) {
-        setFormData({
-          vehicle_type: data.vehicle_type || 'economy',
-          vehicle_brand: data.vehicle_brand || '',
-          vehicle_model: data.vehicle_model || '',
-          vehicle_year: data.vehicle_year || '',
-          vehicle_plate: data.vehicle_plate || '',
-          vehicle_color: data.vehicle_color || '',
-          license_number: data.license_number || '',
-        })
+      const res = await fetch('/api/v1/driver/documents')
+      if (res.ok) {
+        const data = await res.json()
+        if (data) {
+          setIsVerified(data.is_verified ?? null)
+          setFormData({
+            vehicle_type: data.vehicle_type || 'economy',
+            vehicle_brand: data.vehicle_brand || '',
+            vehicle_model: data.vehicle_model || '',
+            vehicle_year: String(data.vehicle_year || ''),
+            vehicle_plate: data.vehicle_plate || '',
+            vehicle_color: data.vehicle_color || '',
+            license_number: data.cnh_number || '',
+          })
+        }
       }
-    } catch (error) {
-      console.error('[v0] Error loading documents:', error)
-      iosToast.error('Erro ao carregar documentos')
-    } finally {
-      setLoading(false)
-    }
+    } catch { /* silent */ }
+    finally { setLoading(false) }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     const validation = validateForm(driverRegisterSchema, formData)
     if (!validation.success) {
       const firstError = Object.values(validation.errors || {})[0]
       iosToast.error(firstError || 'Preencha os campos corretamente')
       return
     }
-
     setSaving(true)
     triggerHaptic('impact')
-
     try {
-      const response = await fetch('/api/v1/driver/documents', {
+      const res = await fetch('/api/v1/driver/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-
-      if (!response.ok) throw new Error('Erro ao salvar')
-
+      if (!res.ok) throw new Error()
       triggerHaptic('success')
       iosToast.success('Documentos enviados para analise')
-      loadDocuments()
-    } catch (error) {
-      console.error('[v0] Error saving documents:', error)
+      setIsVerified(false)
+    } catch {
       triggerHaptic('error')
       iosToast.error('Erro ao salvar documentos')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
+
+  const set = (key: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setFormData(prev => ({ ...prev, [key]: e.target.value }))
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="h-dvh bg-[color:var(--background)] flex items-center justify-center">
+        <div className="w-8 h-8 border-[2.5px] border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 pb-20">
-      <header className="bg-white border-b border-blue-100 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Button
+    <div className="h-dvh overflow-y-auto ios-scroll bg-[color:var(--background)]">
+      {/* Header iOS */}
+      <header className="sticky top-0 z-30 bg-[color:var(--card)]/90 ios-blur border-b border-[color:var(--border)]/40">
+        <div className="flex items-center gap-3 px-5 pt-safe-offset-4 pb-3">
+          <button
+            type="button"
             onClick={() => router.back()}
-            variant="ghost"
-            size="icon"
-            className="hover:bg-blue-50"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-[color:var(--secondary)] ios-press"
+            aria-label="Voltar"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg className="w-5 h-5 text-[color:var(--foreground)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-          </Button>
-          <h1 className="text-xl font-bold text-blue-900">Documentos</h1>
+          </button>
+          <h1 className="text-[20px] font-bold text-[color:var(--foreground)] tracking-tight">Meus Documentos</h1>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-4">
-        {documents?.is_verified !== undefined && (
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                documents.is_verified ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'
-              }`}>
-                {documents.is_verified ? 'Verificado' : 'Aguardando verificação'}
-              </div>
+      <main className="px-5 py-5 max-w-lg mx-auto space-y-4 pb-10">
+
+        {/* Status badge */}
+        {isVerified !== null && (
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-[18px] animate-ios-fade-up ${
+            isVerified
+              ? 'bg-emerald-500/10'
+              : 'bg-amber-500/10'
+          }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+              isVerified ? 'bg-emerald-500/20' : 'bg-amber-500/20'
+            }`}>
+              {isVerified ? (
+                <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
             </div>
-          </Card>
+            <div>
+              <p className={`text-[14px] font-bold ${isVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                {isVerified ? 'Conta Verificada' : 'Aguardando Verificacao'}
+              </p>
+              <p className="text-[12px] text-[color:var(--muted-foreground)]">
+                {isVerified ? 'Seus documentos foram aprovados' : 'Analise em ate 24h uteis'}
+              </p>
+            </div>
+          </div>
         )}
 
-        <Card className="p-6">
-          <h2 className="text-lg font-bold text-blue-900 mb-4">Informações do Veículo</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="vehicle_type">Tipo de Veículo</Label>
-              <select
-                id="vehicle_type"
-                value={formData.vehicle_type}
-                onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                required
-              >
-                <option value="economy">Econômico</option>
-                <option value="electric">Eletrico</option>
-                <option value="premium">Premium</option>
-                <option value="suv">SUV</option>
-                <option value="moto">Moto</option>
-              </select>
-            </div>
+        {/* Form Card */}
+        <form onSubmit={handleSubmit} className="bg-[color:var(--card)] rounded-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] overflow-hidden animate-ios-fade-up" style={{ animationDelay: '80ms' }}>
+          {/* Veiculo section */}
+          <div className="px-5 pt-5 pb-1">
+            <p className="text-[11px] font-bold text-[color:var(--muted-foreground)] uppercase tracking-widest mb-4">Informacoes do Veiculo</p>
+          </div>
 
-            <div>
-              <Label htmlFor="vehicle_brand">Marca</Label>
-              <Input
-                id="vehicle_brand"
+          {/* Tipo */}
+          <div className="px-5 py-3 border-b border-[color:var(--border)]/50">
+            <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Tipo de Veiculo</label>
+            <select
+              value={formData.vehicle_type}
+              onChange={set('vehicle_type')}
+              required
+              className="w-full bg-transparent text-[16px] font-medium text-[color:var(--foreground)] outline-none appearance-none"
+            >
+              {VEHICLE_TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Marca / Modelo */}
+          <div className="grid grid-cols-2 border-b border-[color:var(--border)]/50">
+            <div className="px-5 py-3 border-r border-[color:var(--border)]/50">
+              <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Marca</label>
+              <input
+                type="text"
                 value={formData.vehicle_brand}
-                onChange={(e) => setFormData({ ...formData, vehicle_brand: e.target.value })}
-                placeholder="Ex: Fiat, Volkswagen"
+                onChange={set('vehicle_brand')}
+                placeholder="Ex: Fiat"
                 required
+                className="w-full bg-transparent text-[16px] font-medium text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none"
               />
             </div>
-
-            <div>
-              <Label htmlFor="vehicle_model">Modelo</Label>
-              <Input
-                id="vehicle_model"
+            <div className="px-5 py-3">
+              <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Modelo</label>
+              <input
+                type="text"
                 value={formData.vehicle_model}
-                onChange={(e) => setFormData({ ...formData, vehicle_model: e.target.value })}
-                placeholder="Ex: Uno, Gol"
+                onChange={set('vehicle_model')}
+                placeholder="Ex: Uno"
                 required
+                className="w-full bg-transparent text-[16px] font-medium text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none"
               />
             </div>
+          </div>
 
-            <div>
-              <Label htmlFor="vehicle_year">Ano</Label>
-              <Input
-                id="vehicle_year"
+          {/* Ano / Cor */}
+          <div className="grid grid-cols-2 border-b border-[color:var(--border)]/50">
+            <div className="px-5 py-3 border-r border-[color:var(--border)]/50">
+              <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Ano</label>
+              <input
+                type="number"
                 value={formData.vehicle_year}
-                onChange={(e) => setFormData({ ...formData, vehicle_year: e.target.value })}
-                placeholder="Ex: 2020"
+                onChange={set('vehicle_year')}
+                placeholder="2020"
+                min={2000}
+                max={new Date().getFullYear() + 1}
                 required
+                className="w-full bg-transparent text-[16px] font-medium text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none"
               />
             </div>
-
-            <div>
-              <Label htmlFor="vehicle_plate">Placa</Label>
-              <Input
-                id="vehicle_plate"
-                value={formData.vehicle_plate}
-                onChange={(e) => setFormData({ ...formData, vehicle_plate: e.target.value })}
-                placeholder="Ex: ABC1234"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="vehicle_color">Cor</Label>
-              <Input
-                id="vehicle_color"
+            <div className="px-5 py-3">
+              <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Cor</label>
+              <input
+                type="text"
                 value={formData.vehicle_color}
-                onChange={(e) => setFormData({ ...formData, vehicle_color: e.target.value })}
-                placeholder="Ex: Branco, Preto, Prata"
+                onChange={set('vehicle_color')}
+                placeholder="Ex: Branco"
                 required
+                className="w-full bg-transparent text-[16px] font-medium text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none"
               />
             </div>
+          </div>
 
-            <div>
-              <Label htmlFor="license_number">CNH</Label>
-              <Input
-                id="license_number"
-                value={formData.license_number}
-                onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-                placeholder="Número da CNH"
-                required
-              />
-            </div>
+          {/* Placa */}
+          <div className="px-5 py-3 border-b border-[color:var(--border)]/50">
+            <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Placa</label>
+            <input
+              type="text"
+              value={formData.vehicle_plate}
+              onChange={(e) => setFormData(prev => ({ ...prev, vehicle_plate: e.target.value.toUpperCase() }))}
+              placeholder="ABC1234"
+              maxLength={8}
+              required
+              className="w-full bg-transparent text-[16px] font-medium font-mono uppercase text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none tracking-widest"
+            />
+          </div>
 
-            <Button
+          {/* CNH section */}
+          <div className="px-5 pt-5 pb-1">
+            <p className="text-[11px] font-bold text-[color:var(--muted-foreground)] uppercase tracking-widest mb-4">Habilitacao (CNH)</p>
+          </div>
+          <div className="px-5 py-3">
+            <label className="block text-[12px] font-semibold text-[color:var(--muted-foreground)] mb-1.5">Numero da CNH</label>
+            <input
+              type="text"
+              value={formData.license_number}
+              onChange={set('license_number')}
+              placeholder="00000000000"
+              required
+              className="w-full bg-transparent text-[16px] font-medium font-mono text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]/40 outline-none"
+            />
+          </div>
+
+          {/* Botao */}
+          <div className="px-5 pb-5 pt-4">
+            <button
               type="submit"
               disabled={saving}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="w-full h-[52px] bg-emerald-500 text-white text-[17px] font-bold rounded-[18px] ios-press shadow-md shadow-emerald-500/20 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {saving ? 'Salvando...' : 'Enviar Documentos'}
-            </Button>
-          </form>
-        </Card>
-      </main>
+              {saving
+                ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : 'Enviar Documentos'
+              }
+            </button>
+          </div>
+        </form>
 
-      <BottomNavigation />
+        {/* Info legalista */}
+        <p className="text-[12px] text-[color:var(--muted-foreground)] text-center px-4 animate-ios-fade-up" style={{ animationDelay: '160ms' }}>
+          Seus documentos sao usados exclusivamente para verificacao de identidade e conformidade legal.
+        </p>
+      </main>
     </div>
   )
 }

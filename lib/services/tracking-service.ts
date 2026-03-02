@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/client'
 
 export interface DriverLocation {
   driver_id: string
-  lat: number
-  lng: number
+  latitude: number
+  longitude: number
   heading: number
   speed: number
   accuracy: number
@@ -12,7 +12,7 @@ export interface DriverLocation {
 
 export interface TrackingUpdate {
   ride_id: string
-  status: 'pending' | 'accepted' | 'driver_arriving' | 'arrived' | 'in_progress' | 'completed' | 'cancelled'
+  status: 'pending' | 'negotiating' | 'accepted' | 'driver_arrived' | 'in_progress' | 'completed' | 'cancelled' | 'failed'
   driver_location?: DriverLocation
   eta_minutes?: number
   distance_to_pickup?: number
@@ -23,50 +23,34 @@ class TrackingService {
   private watchId: number | null = null
   private updateInterval: NodeJS.Timeout | null = null
 
-  // Start tracking driver location (for driver app)
+  // Inicia rastreamento GPS do motorista para uma corrida
   startDriverTracking(rideId: string, driverId: string) {
-    console.log('[v0] Starting driver GPS tracking for ride:', rideId)
+    if (!navigator.geolocation) return
 
-    if (!navigator.geolocation) {
-      console.error('[v0] Geolocation not supported')
-      return
-    }
-
-    // Watch position with high accuracy
     this.watchId = navigator.geolocation.watchPosition(
       async (position) => {
         const location: DriverLocation = {
           driver_id: driverId,
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
           heading: position.coords.heading || 0,
           speed: position.coords.speed || 0,
           accuracy: position.coords.accuracy,
           timestamp: new Date().toISOString(),
         }
-
-        console.log('[v0] Driver location update:', location)
-
-        // Update location in database
         await this.updateDriverLocation(rideId, location)
       },
-      (error) => {
-        console.error('[v0] Geolocation error:', error)
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 5000,
-        timeout: 10000,
-      }
+      (_err) => {},
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
     )
 
-    // Also update every 5 seconds even if position hasn't changed
+    // Fallback a cada 5 segundos
     this.updateInterval = setInterval(() => {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const location: DriverLocation = {
           driver_id: driverId,
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
           heading: position.coords.heading || 0,
           speed: position.coords.speed || 0,
           accuracy: position.coords.accuracy,
@@ -77,7 +61,6 @@ class TrackingService {
     }, 5000)
   }
 
-  // Stop tracking
   stopTracking() {
     if (this.watchId !== null) {
       navigator.geolocation.clearWatch(this.watchId)
@@ -87,87 +70,81 @@ class TrackingService {
       clearInterval(this.updateInterval)
       this.updateInterval = null
     }
-    console.log('[v0] Tracking stopped')
   }
 
-  // Update driver location in database
+  // Grava localização via API (evita problema de RLS no client-side)
   private async updateDriverLocation(rideId: string, location: DriverLocation) {
     try {
-      const { error } = await this.supabase
+      // 1. Upsert em driver_locations com colunas corretas (latitude, longitude)
+      await this.supabase
         .from('driver_locations')
-        .upsert({
-          driver_id: location.driver_id,
+        .upsert(
+          {
+            driver_id: location.driver_id,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            heading: location.heading,
+            speed: location.speed,
+            accuracy: location.accuracy,
+            last_updated: location.timestamp,
+            updated_at: location.timestamp,
+            is_available: true,
+          },
+          { onConflict: 'driver_id' }
+        )
+
+      // 2. Inserir ponto no histórico de ride_tracking
+      if (rideId) {
+        await this.supabase.from('ride_tracking').insert({
           ride_id: rideId,
-          lat: location.lat,
-          lng: location.lng,
+          driver_id: location.driver_id,
+          latitude: location.latitude,
+          longitude: location.longitude,
           heading: location.heading,
           speed: location.speed,
           accuracy: location.accuracy,
-          updated_at: location.timestamp,
+          timestamp: location.timestamp,
         })
-
-      if (error) {
-        console.error('[v0] Error updating driver location:', error)
       }
-    } catch (error) {
-      console.error('[v0] Exception updating location:', error)
-    }
+    } catch (_) {}
   }
 
-  // Subscribe to ride updates (for passenger app)
+  // Assina atualizações de corrida para o passageiro
   subscribeToRideUpdates(
     rideId: string,
     onUpdate: (update: TrackingUpdate) => void
   ) {
-    console.log('[v0] Subscribing to ride updates:', rideId)
-
-    // Subscribe to ride status changes
+    // Assina mudanças de status da corrida
     const rideChannel = this.supabase
-      .channel(`ride:${rideId}`)
+      .channel(`ride-status:${rideId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'rides',
-          filter: `id=eq.${rideId}`,
-        },
+        { event: 'UPDATE', schema: 'public', table: 'rides', filter: `id=eq.${rideId}` },
         (payload) => {
-          console.log('[v0] Ride status update:', payload.new)
-          onUpdate({
-            ride_id: rideId,
-            status: payload.new.status,
-            eta_minutes: payload.new.eta_minutes,
-          })
+          onUpdate({ ride_id: rideId, status: payload.new.status })
         }
       )
       .subscribe()
 
-    // Subscribe to driver location updates
+    // Assina atualizações de localização do motorista via driver_id
     const locationChannel = this.supabase
-      .channel(`driver_location:${rideId}`)
+      .channel(`driver-loc:${rideId}`)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'driver_locations',
-          filter: `ride_id=eq.${rideId}`,
-        },
+        { event: '*', schema: 'public', table: 'driver_locations' },
         (payload) => {
-          console.log('[v0] Driver location update:', payload.new)
           if (payload.new) {
             onUpdate({
               ride_id: rideId,
               status: 'in_progress',
               driver_location: {
                 driver_id: payload.new.driver_id,
-                lat: payload.new.lat,
-                lng: payload.new.lng,
-                heading: payload.new.heading,
-                speed: payload.new.speed,
-                accuracy: payload.new.accuracy,
-                timestamp: payload.new.updated_at,
+                latitude: payload.new.latitude,
+                longitude: payload.new.longitude,
+                heading: payload.new.heading ?? 0,
+                speed: payload.new.speed ?? 0,
+                accuracy: payload.new.accuracy ?? 0,
+                timestamp: payload.new.last_updated,
               },
             })
           }
@@ -175,36 +152,54 @@ class TrackingService {
       )
       .subscribe()
 
-    // Return cleanup function
     return () => {
-      console.log('[v0] Unsubscribing from ride updates')
       this.supabase.removeChannel(rideChannel)
       this.supabase.removeChannel(locationChannel)
     }
   }
 
-  // Calculate ETA based on current location and destination
+  // Assina atualizações de ofertas de preço (para o passageiro ver negociação)
+  subscribeToPriceOffers(
+    rideId: string,
+    onOffer: (offer: any) => void
+  ) {
+    const channel = this.supabase
+      .channel(`price-offers:${rideId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'price_offers', filter: `ride_id=eq.${rideId}` },
+        (payload) => onOffer(payload.new)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'price_offers', filter: `ride_id=eq.${rideId}` },
+        (payload) => onOffer(payload.new)
+      )
+      .subscribe()
+
+    return () => this.supabase.removeChannel(channel)
+  }
+
+  // Calcula ETA via Google Maps Directions API
   async calculateETA(
     currentLat: number,
     currentLng: number,
     destLat: number,
     destLng: number
   ): Promise<number> {
-    if (!window.google) return 0
+    if (typeof window === 'undefined' || !window.google) return 0
 
     return new Promise((resolve) => {
       const directionsService = new window.google.maps.DirectionsService()
-      
       directionsService.route(
         {
           origin: { lat: currentLat, lng: currentLng },
           destination: { lat: destLat, lng: destLng },
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
-        (response, status) => {
+        (response: any, status: any) => {
           if (status === 'OK' && response) {
-            const durationMinutes = Math.ceil(response.routes[0].legs[0].duration.value / 60)
-            resolve(durationMinutes)
+            resolve(Math.ceil(response.routes[0].legs[0].duration.value / 60))
           } else {
             resolve(0)
           }
@@ -213,27 +208,23 @@ class TrackingService {
     })
   }
 
-  // Update ride status — chama a API route para garantir disparo de email ao completar
+  // Atualiza status da corrida via API route
   async updateRideStatus(
     rideId: string,
     status: TrackingUpdate['status'],
-    etaMinutes?: number
+    cancellation_reason?: string
   ) {
     try {
-      const body: any = { status }
-      if (etaMinutes) body.eta_minutes = etaMinutes
-
       const res = await fetch(`/api/v1/rides/${rideId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ status, cancellation_reason }),
       })
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         return { success: false, error: err?.error || 'Erro ao atualizar status' }
       }
-
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error?.message || 'Erro de rede' }

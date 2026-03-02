@@ -4,57 +4,96 @@ import { sendRideReportEmail } from '@/lib/email'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = await createClient()
-    const { status } = await request.json()
+    const { status, cancellation_reason } = await request.json()
 
-    // Get current user
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
     }
 
-    // Validate status
-    const validStatuses = ['pending', 'accepted', 'started', 'completed', 'cancelled']
+    // Status válidos alinhados com o ENUM do banco
+    const validStatuses = ['pending', 'negotiating', 'accepted', 'driver_arrived', 'in_progress', 'completed', 'cancelled', 'failed']
     if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Status invalido' }, { status: 400 })
+      return NextResponse.json({ error: `Status inválido: ${status}` }, { status: 400 })
     }
 
     // Timestamps adicionais por status
     const extra: Record<string, string | null> = {}
-    if (status === 'started')   extra.started_at   = new Date().toISOString()
-    if (status === 'completed') extra.completed_at  = new Date().toISOString()
-    if (status === 'cancelled') extra.cancelled_at  = new Date().toISOString()
+    if (status === 'in_progress') extra.started_at = new Date().toISOString()
+    if (status === 'completed')   extra.completed_at = new Date().toISOString()
+    if (status === 'cancelled')   extra.cancelled_at = new Date().toISOString()
+    if (cancellation_reason)      extra.cancellation_reason = cancellation_reason
 
-    // Update ride status
     const { data: ride, error } = await supabase
       .from('rides')
       .update({ status, updated_at: new Date().toISOString(), ...extra })
-      .eq('id', params.id)
-      .select()
+      .eq('id', id)
+      .select('*, passenger:profiles!passenger_id(full_name, email), driver:profiles!driver_id(full_name)')
       .single()
 
     if (error) throw error
 
-    // Notificar o outro usuario
-    const notifyUserId = ['started', 'completed'].includes(status)
-      ? ride.passenger_id
-      : ride.driver_id
+    // Notificar ambas as partes conforme o status
+    const notifications: { user_id: string; title: string; message: string }[] = []
 
-    if (notifyUserId) {
+    if (status === 'driver_arrived' && ride.passenger_id) {
+      notifications.push({
+        user_id: ride.passenger_id,
+        title: 'Motorista chegou',
+        message: 'Seu motorista chegou ao ponto de embarque.',
+      })
+    }
+    if (status === 'in_progress' && ride.passenger_id) {
+      notifications.push({
+        user_id: ride.passenger_id,
+        title: 'Corrida iniciada',
+        message: 'Sua corrida foi iniciada. Boa viagem!',
+      })
+    }
+    if (status === 'completed') {
+      if (ride.passenger_id) {
+        notifications.push({
+          user_id: ride.passenger_id,
+          title: 'Corrida finalizada',
+          message: 'Chegamos! Avalie sua experiência.',
+        })
+      }
+      if (ride.driver_id) {
+        notifications.push({
+          user_id: ride.driver_id,
+          title: 'Corrida concluída',
+          message: `Corrida para ${ride.dropoff_address} finalizada. Ganho registrado!`,
+        })
+      }
+    }
+    if (status === 'cancelled') {
+      const other = user.id === ride.passenger_id ? ride.driver_id : ride.passenger_id
+      if (other) {
+        notifications.push({
+          user_id: other,
+          title: 'Corrida cancelada',
+          message: cancellation_reason || 'A corrida foi cancelada.',
+        })
+      }
+    }
+
+    for (const notif of notifications) {
       await supabase.from('notifications').insert({
-        user_id: notifyUserId,
+        user_id: notif.user_id,
         type: 'ride',
-        title: getStatusTitle(status),
-        message: getStatusMessage(status),
-        ride_id: params.id,
-        read: false
+        title: notif.title,
+        message: notif.message,
+        data: { ride_id: id, status },
+        read: false,
       })
     }
 
-    // Ao concluir a corrida: enviar relatorio completo por email ao passageiro
+    // Email de relatório ao finalizar
     if (status === 'completed') {
       try {
         const { data: fullRide } = await supabase
@@ -69,7 +108,7 @@ export async function PATCH(
               driver_profile:driver_profiles!id(vehicle_brand, vehicle_model, vehicle_plate, vehicle_color)
             )
           `)
-          .eq('id', params.id)
+          .eq('id', id)
           .single()
 
         if (fullRide) {
@@ -87,7 +126,7 @@ export async function PATCH(
               passengerName: passenger.full_name || 'Passageiro',
               passengerEmail: passenger.email,
               driverName: driver?.full_name || 'Motorista',
-              vehicleBrand: dp?.vehicle_brand || 'Veiculo',
+              vehicleBrand: dp?.vehicle_brand || 'Veículo',
               vehicleModel: dp?.vehicle_model || '',
               vehiclePlate: dp?.vehicle_plate || '—',
               vehicleColor: dp?.vehicle_color || '',
@@ -102,40 +141,15 @@ export async function PATCH(
             })
           }
         }
-      } catch (emailErr) {
-        // Email nao bloqueia a atualizacao de status
-        console.error('[v0] Erro ao enviar relatorio de corrida:', emailErr)
-      }
+      } catch (_) {}
     }
 
-    return NextResponse.json(ride)
-
-  } catch (error) {
-    console.error('[v0] Error updating ride status:', error)
+    return NextResponse.json({ success: true, ride })
+  } catch (error: any) {
+    console.error('[rides/status] Error:', error)
     return NextResponse.json(
-      { error: 'Erro ao atualizar status da corrida' },
+      { error: error.message || 'Erro ao atualizar status' },
       { status: 500 }
     )
   }
 }
-
-function getStatusTitle(status: string): string {
-  const titles: Record<string, string> = {
-    accepted: 'Corrida aceita',
-    started: 'Corrida iniciada',
-    completed: 'Corrida finalizada',
-    cancelled: 'Corrida cancelada'
-  }
-  return titles[status] || 'Atualizacao de corrida'
-}
-
-function getStatusMessage(status: string): string {
-  const messages: Record<string, string> = {
-    accepted: 'Sua corrida foi aceita! O motorista esta a caminho.',
-    started: 'O motorista iniciou a corrida.',
-    completed: 'Sua corrida foi finalizada. Avalie sua experiencia!',
-    cancelled: 'A corrida foi cancelada.'
-  }
-  return messages[status] || 'O status da sua corrida foi atualizado'
-}
-
