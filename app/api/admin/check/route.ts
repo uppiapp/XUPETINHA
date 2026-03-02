@@ -1,25 +1,24 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET() {
+// POST /api/admin/check
+// Recebe { user_id } e verifica is_admin usando service_role (ignora RLS)
+export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { user_id } = await req.json()
 
-    if (authError || !user) {
-      return NextResponse.json({ is_admin: false }, { status: 401 })
+    if (!user_id) {
+      return NextResponse.json({ is_admin: false }, { status: 400 })
     }
 
-    // Usar admin client (service_role) para ignorar RLS
     const adminClient = createAdminClient()
-    const { data: profile, error: profileError } = await adminClient
+    const { data: profile, error } = await adminClient
       .from('profiles')
       .select('is_admin, full_name')
-      .eq('id', user.id)
+      .eq('id', user_id)
       .single()
 
-    if (profileError || !profile) {
+    if (error || !profile) {
       return NextResponse.json({ is_admin: false }, { status: 403 })
     }
 
