@@ -1,7 +1,7 @@
 import { createClient } from './server'
-import type { Driver, Ride, RideOffer, User, Vehicle } from './types'
 
-// Helper functions for database operations
+// Helper functions para operações no banco de dados
+// Usa as tabelas corretas: profiles, driver_profiles, driver_locations, rides, ride_offers
 
 export async function findNearbyDrivers(
   pickupLat: number,
@@ -10,12 +10,12 @@ export async function findNearbyDrivers(
   vehicleType?: string
 ) {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase.rpc('find_nearby_drivers', {
     pickup_lat: pickupLat,
     pickup_lng: pickupLng,
     radius_km: radiusKm,
-    vehicle_type_filter: vehicleType || null
+    vehicle_type_filter: vehicleType || null,
   })
 
   if (error) {
@@ -29,14 +29,14 @@ export async function findNearbyDrivers(
 export async function calculateRidePrice(
   distanceKm: number,
   durationMinutes: number,
-  vehicleType: string = 'economy'
+  vehicleType: string = 'standard'
 ) {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase.rpc('calculate_ride_price', {
     distance_km: distanceKm,
     duration_minutes: durationMinutes,
-    vehicle_type_param: vehicleType
+    vehicle_type_param: vehicleType,
   })
 
   if (error) {
@@ -49,43 +49,33 @@ export async function calculateRidePrice(
 
 export async function getUserProfile(userId: string) {
   const supabase = await createClient()
-  
-  const { data: user, error: userError } = await supabase
-    .from('users')
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
     .select('*')
     .eq('id', userId)
     .single()
 
-  if (userError) {
-    console.error('[v0] Error fetching user:', userError)
-    throw userError
+  if (error) {
+    console.error('[v0] Error fetching profile:', error)
+    throw error
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-
-  if (profileError && profileError.code !== 'PGRST116') {
-    console.error('[v0] Error fetching profile:', profileError)
-  }
-
-  return { user, profile }
+  return { profile }
 }
 
 export async function getDriverProfile(userId: string) {
   const supabase = await createClient()
-  
-  const { data: driver, error: driverError } = await supabase
-    .from('drivers')
-    .select('*, vehicles(*)')
-    .eq('user_id', userId)
+
+  const { data: driver, error } = await supabase
+    .from('driver_profiles')
+    .select('*')
+    .eq('id', userId)
     .single()
 
-  if (driverError) {
-    console.error('[v0] Error fetching driver:', driverError)
-    throw driverError
+  if (error) {
+    console.error('[v0] Error fetching driver_profile:', error)
+    throw error
   }
 
   return driver
@@ -93,14 +83,14 @@ export async function getDriverProfile(userId: string) {
 
 export async function getRideWithDetails(rideId: string) {
   const supabase = await createClient()
-  
+
   const { data: ride, error } = await supabase
     .from('rides')
     .select(`
       *,
-      passenger:users!rides_passenger_id_fkey(*),
-      driver:drivers!rides_driver_id_fkey(*, user:users(*)),
-      vehicle:vehicles(*)
+      passenger:profiles!passenger_id(id, full_name, avatar_url, phone),
+      driver:profiles!driver_id(id, full_name, avatar_url, phone),
+      driver_profile:driver_profiles!driver_id(rating, total_rides, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type)
     `)
     .eq('id', rideId)
     .single()
@@ -115,13 +105,13 @@ export async function getRideWithDetails(rideId: string) {
 
 export async function getUserRides(userId: string, limit: number = 10) {
   const supabase = await createClient()
-  
+
   const { data: rides, error } = await supabase
     .from('rides')
     .select(`
       *,
-      driver:drivers!rides_driver_id_fkey(*, user:users(*)),
-      vehicle:vehicles(*)
+      driver:profiles!driver_id(id, full_name, avatar_url, phone),
+      driver_profile:driver_profiles!driver_id(rating, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type)
     `)
     .eq('passenger_id', userId)
     .order('created_at', { ascending: false })
@@ -137,13 +127,12 @@ export async function getUserRides(userId: string, limit: number = 10) {
 
 export async function getDriverRides(driverId: string, limit: number = 10) {
   const supabase = await createClient()
-  
+
   const { data: rides, error } = await supabase
     .from('rides')
     .select(`
       *,
-      passenger:users!rides_passenger_id_fkey(*),
-      vehicle:vehicles(*)
+      passenger:profiles!passenger_id(id, full_name, avatar_url, phone)
     `)
     .eq('driver_id', driverId)
     .order('created_at', { ascending: false })
@@ -159,13 +148,13 @@ export async function getDriverRides(driverId: string, limit: number = 10) {
 
 export async function getRideOffers(rideId: string) {
   const supabase = await createClient()
-  
+
   const { data: offers, error } = await supabase
     .from('ride_offers')
     .select(`
       *,
-      driver:drivers(*, user:users(*)),
-      vehicle:vehicles(*)
+      driver:profiles!driver_id(id, full_name, avatar_url, phone),
+      driver_profile:driver_profiles!driver_id(rating, total_rides, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type)
     `)
     .eq('ride_id', rideId)
     .order('offered_price', { ascending: true })
@@ -178,28 +167,23 @@ export async function getRideOffers(rideId: string) {
   return offers
 }
 
-export async function getUserWalletBalance(userId: string) {
+export async function getUserWalletBalance(userId: string): Promise<number> {
   const supabase = await createClient()
-  
-  const { data: transactions, error } = await supabase
-    .from('wallet_transactions')
-    .select('balance_after')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
 
-  if (error && error.code !== 'PGRST116') {
+  const { data, error } = await supabase
+    .rpc('calculate_wallet_balance', { p_user_id: userId })
+
+  if (error) {
     console.error('[v0] Error fetching wallet balance:', error)
     return 0
   }
 
-  return transactions?.balance_after || 0
+  return data ?? 0
 }
 
 export async function getUserNotifications(userId: string, limit: number = 20) {
   const supabase = await createClient()
-  
+
   const { data: notifications, error } = await supabase
     .from('notifications')
     .select('*')
@@ -217,10 +201,10 @@ export async function getUserNotifications(userId: string, limit: number = 20) {
 
 export async function markNotificationAsRead(notificationId: string) {
   const supabase = await createClient()
-  
+
   const { error } = await supabase
     .from('notifications')
-    .update({ is_read: true, read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq('id', notificationId)
 
   if (error) {
@@ -231,7 +215,7 @@ export async function markNotificationAsRead(notificationId: string) {
 
 export async function getUserFavorites(userId: string) {
   const supabase = await createClient()
-  
+
   const { data: favorites, error } = await supabase
     .from('favorites')
     .select('*')
@@ -248,7 +232,7 @@ export async function getUserFavorites(userId: string) {
 
 export async function getActiveCoupons() {
   const supabase = await createClient()
-  
+
   const { data: coupons, error } = await supabase
     .from('coupons')
     .select('*')
@@ -266,8 +250,7 @@ export async function getActiveCoupons() {
 
 export async function validateCoupon(code: string, userId: string) {
   const supabase = await createClient()
-  
-  // Check if coupon exists and is active
+
   const { data: coupon, error: couponError } = await supabase
     .from('coupons')
     .select('*')
@@ -276,32 +259,24 @@ export async function validateCoupon(code: string, userId: string) {
     .single()
 
   if (couponError) {
-    console.error('[v0] Coupon not found:', couponError)
     return { valid: false, message: 'Cupom inválido' }
   }
 
-  // Check expiry
   if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
     return { valid: false, message: 'Cupom expirado' }
   }
 
-  // Check usage limit
   if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
     return { valid: false, message: 'Cupom esgotado' }
   }
 
-  // Check user usage
-  const { data: userUsage, error: usageError } = await supabase
-    .from('coupon_usage')
-    .select('*')
+  const { data: userUsage } = await supabase
+    .from('coupon_uses')
+    .select('id')
     .eq('coupon_id', coupon.id)
     .eq('user_id', userId)
 
-  if (usageError) {
-    console.error('[v0] Error checking coupon usage:', usageError)
-  }
-
-  if (userUsage && userUsage.length >= coupon.user_usage_limit) {
+  if (userUsage && coupon.user_usage_limit && userUsage.length >= coupon.user_usage_limit) {
     return { valid: false, message: 'Você já usou este cupom' }
   }
 
@@ -310,10 +285,10 @@ export async function validateCoupon(code: string, userId: string) {
 
 export async function getUserAchievements(userId: string) {
   const supabase = await createClient()
-  
+
   const { data: achievements, error } = await supabase
     .from('user_achievements')
-    .select('*, achievement:achievements(*)')
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -325,12 +300,18 @@ export async function getUserAchievements(userId: string) {
   return achievements
 }
 
-export async function getLeaderboard(period: 'weekly' | 'monthly' | 'all_time' = 'weekly', limit: number = 10) {
+export async function getLeaderboard(
+  period: 'weekly' | 'monthly' | 'all_time' = 'weekly',
+  limit: number = 10
+) {
   const supabase = await createClient()
-  
+
   const { data: leaderboard, error } = await supabase
     .from('leaderboard')
-    .select('*, user:users(*)')
+    .select(`
+      *,
+      user:profiles!user_id(id, full_name, avatar_url)
+    `)
     .eq('period', period)
     .order('rank', { ascending: true })
     .limit(limit)
@@ -345,10 +326,13 @@ export async function getLeaderboard(period: 'weekly' | 'monthly' | 'all_time' =
 
 export async function getSocialPosts(limit: number = 20) {
   const supabase = await createClient()
-  
+
   const { data: posts, error } = await supabase
     .from('social_posts')
-    .select('*, user:users(*)')
+    .select(`
+      *,
+      author:profiles!user_id(id, full_name, avatar_url)
+    `)
     .order('created_at', { ascending: false })
     .limit(limit)
 

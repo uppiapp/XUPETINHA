@@ -51,53 +51,53 @@ export async function requireAuth() {
 
 export async function getCurrentUserWithProfile() {
   const user = await requireAuth()
-  
+
   const supabase = await createClient()
-  
-  const { data: dbUser, error } = await supabase
-    .from('users')
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-  
+
   if (error) {
-    console.error('[v0] Error fetching user from database:', error)
+    console.error('[v0] Error fetching profile from database:', error)
     throw new Error('Erro ao buscar perfil do usuário')
   }
-  
-  return { authUser: user, dbUser }
+
+  return { authUser: user, dbUser: profile }
 }
 
 export async function requireRole(allowedRoles: string[]) {
   const { dbUser } = await getCurrentUserWithProfile()
-  
-  if (!allowedRoles.includes(dbUser.role)) {
+
+  if (!allowedRoles.includes(dbUser.user_type)) {
     throw new Error('Acesso negado')
   }
-  
+
   return dbUser
 }
 
 export async function requireDriver() {
   const user = await requireAuth()
-  
+
   const supabase = await createClient()
-  
+
   const { data: driver, error } = await supabase
-    .from('drivers')
+    .from('driver_profiles')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
-  
+
   if (error || !driver) {
-    console.error('[v0] Error fetching driver:', error)
+    console.error('[v0] Error fetching driver_profile:', error)
     throw new Error('Motorista não encontrado')
   }
-  
-  if (driver.status !== 'approved') {
-    throw new Error('Motorista não aprovado')
+
+  if (!driver.is_verified) {
+    throw new Error('Motorista não verificado')
   }
-  
+
   return driver
 }
 
