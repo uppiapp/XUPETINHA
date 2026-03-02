@@ -3,11 +3,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Search, Send, Users, Car, Bell, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Search, Send, Users, Car, Bell, CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Profile {
@@ -110,16 +109,16 @@ export default function AdminNotificationsPage() {
 
   return (
     <>
-      <AdminHeader title="Notificações Push" subtitle="Envie mensagens para usuários da plataforma" />
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <AdminHeader title="Notificacoes Push" subtitle="Envie mensagens para usuarios da plataforma" />
+      <div className="flex-1 overflow-y-auto bg-[hsl(var(--admin-bg))] p-5">
+        <div className="max-w-4xl mx-auto space-y-4">
 
           {/* Destino */}
-          <Card className="border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[15px] font-bold">1. Quem vai receber?</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[hsl(var(--admin-surface))] rounded-xl border border-[hsl(var(--admin-border))] overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[hsl(var(--admin-border))]">
+              <h3 className="text-[13px] font-bold text-slate-200">1. Quem vai receber?</h3>
+            </div>
+            <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
               {TARGETS.map((t) => (
                 <button
                   key={t.key}
@@ -128,49 +127,48 @@ export default function AdminNotificationsPage() {
                   className={cn(
                     'flex flex-col items-start gap-2 p-3 rounded-xl border text-left transition-all',
                     target === t.key
-                      ? 'border-blue-500 bg-blue-500/10 text-blue-500'
-                      : 'border-border/50 bg-card hover:border-border text-muted-foreground hover:text-foreground'
+                      ? 'border-[hsl(var(--admin-green))]/40 bg-[hsl(var(--admin-green))]/10 text-[hsl(var(--admin-green))]'
+                      : 'border-[hsl(var(--admin-border))] bg-[hsl(var(--admin-bg))] hover:border-[hsl(var(--admin-border))]/80 text-slate-400 hover:text-slate-200'
                   )}
                 >
                   <t.icon className="w-5 h-5" />
                   <div>
-                    <p className="text-[13px] font-semibold leading-tight">{t.label}</p>
-                    <p className="text-[11px] opacity-70 mt-0.5">{t.desc}</p>
+                    <p className="text-[12px] font-semibold leading-tight">{t.label}</p>
+                    <p className="text-[10px] opacity-70 mt-0.5">{t.desc}</p>
                   </div>
                 </button>
               ))}
-            </CardContent>
+            </div>
 
-            {/* Busca de usuario especifico */}
             {target === 'user' && (
-              <CardContent className="pt-0 space-y-3">
+              <div className="px-4 pb-4 space-y-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <Input
                     placeholder="Buscar por nome ou telefone..."
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setSelectedUser(null) }}
-                    className="pl-9 h-10 bg-secondary border-0 rounded-xl text-[14px]"
+                    className="pl-9 h-10 bg-[hsl(var(--admin-bg))] border-[hsl(var(--admin-border))] text-slate-200 rounded-xl placeholder:text-slate-600 text-[13px]"
                   />
                 </div>
                 {users.length > 0 && !selectedUser && (
-                  <div className="border border-border/50 rounded-xl overflow-hidden divide-y divide-border/50">
+                  <div className="border border-[hsl(var(--admin-border))] rounded-xl overflow-hidden divide-y divide-[hsl(var(--admin-border))]">
                     {users.map((u) => (
                       <button
                         key={u.id}
                         type="button"
                         onClick={() => { setSelectedUser(u); setUsers([]); setSearch(u.full_name) }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/70 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[hsl(var(--admin-surface))] transition-colors text-left"
                       >
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={u.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs bg-blue-500/15 text-blue-500 font-bold">
+                          <AvatarFallback className="text-xs bg-blue-500/15 text-blue-400 font-bold">
                             {u.full_name?.charAt(0) || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-[13px] font-semibold text-foreground">{u.full_name}</p>
-                          <p className="text-[11px] text-muted-foreground">{u.user_type === 'driver' ? 'Motorista' : 'Passageiro'} · {u.phone}</p>
+                          <p className="text-[13px] font-semibold text-slate-200">{u.full_name}</p>
+                          <p className="text-[11px] text-slate-500">{u.user_type === 'driver' ? 'Motorista' : 'Passageiro'} · {u.phone}</p>
                         </div>
                       </button>
                     ))}
@@ -185,38 +183,33 @@ export default function AdminNotificationsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="text-[13px] font-semibold text-foreground">{selectedUser.full_name}</p>
-                      <p className="text-[11px] text-muted-foreground">{selectedUser.user_type === 'driver' ? 'Motorista' : 'Passageiro'}</p>
+                      <p className="text-[13px] font-semibold text-slate-200">{selectedUser.full_name}</p>
+                      <p className="text-[11px] text-slate-500">{selectedUser.user_type === 'driver' ? 'Motorista' : 'Passageiro'}</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedUser(null); setSearch('') }}
-                      className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <button type="button" onClick={() => { setSelectedUser(null); setSearch('') }} className="text-[11px] text-slate-400 hover:text-slate-200 transition-colors">
                       Trocar
                     </button>
                   </div>
                 )}
-              </CardContent>
+              </div>
             )}
-          </Card>
+          </div>
 
           {/* Mensagem */}
-          <Card className="border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[15px] font-bold">2. Mensagem</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Templates rapidos */}
+          <div className="bg-[hsl(var(--admin-surface))] rounded-xl border border-[hsl(var(--admin-border))] overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[hsl(var(--admin-border))]">
+              <h3 className="text-[13px] font-bold text-slate-200">2. Mensagem</h3>
+            </div>
+            <div className="p-4 space-y-4">
               <div>
-                <p className="text-[12px] text-muted-foreground font-medium mb-2">Templates rápidos</p>
+                <p className="text-[11px] text-slate-500 font-medium mb-2 uppercase tracking-wide">Templates rapidos</p>
                 <div className="flex flex-wrap gap-2">
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.label}
                       type="button"
                       onClick={() => applyTemplate(t)}
-                      className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-border text-[12px] font-medium text-foreground transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-[hsl(var(--admin-bg))] border border-[hsl(var(--admin-border))] hover:border-[hsl(var(--admin-green))]/40 text-[12px] font-medium text-slate-300 hover:text-slate-100 transition-colors"
                     >
                       {t.label}
                     </button>
@@ -226,99 +219,93 @@ export default function AdminNotificationsPage() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-[12px] text-muted-foreground font-medium mb-1.5 block">Título</label>
+                  <label className="text-[11px] text-slate-500 font-medium mb-1.5 block uppercase tracking-wide">Titulo</label>
                   <Input
                     placeholder="Ex: Motorista chegou!"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={80}
-                    className="h-10 bg-secondary border-0 rounded-xl text-[14px]"
+                    className="h-10 bg-[hsl(var(--admin-bg))] border-[hsl(var(--admin-border))] text-slate-200 rounded-xl placeholder:text-slate-600 text-[13px]"
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1 text-right">{title.length}/80</p>
+                  <p className="text-[10px] text-slate-600 mt-1 text-right">{title.length}/80</p>
                 </div>
                 <div>
-                  <label className="text-[12px] text-muted-foreground font-medium mb-1.5 block">Corpo da mensagem</label>
+                  <label className="text-[11px] text-slate-500 font-medium mb-1.5 block uppercase tracking-wide">Corpo da mensagem</label>
                   <Textarea
-                    placeholder="Ex: Seu motorista está esperando no local."
+                    placeholder="Ex: Seu motorista esta esperando no local."
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     maxLength={200}
                     rows={3}
-                    className="bg-secondary border-0 rounded-xl text-[14px] resize-none"
+                    className="bg-[hsl(var(--admin-bg))] border-[hsl(var(--admin-border))] text-slate-200 rounded-xl placeholder:text-slate-600 text-[13px] resize-none"
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1 text-right">{body.length}/200</p>
+                  <p className="text-[10px] text-slate-600 mt-1 text-right">{body.length}/200</p>
                 </div>
               </div>
 
-              {/* Preview */}
               {(title || body) && (
-                <div className="bg-secondary/60 rounded-xl p-4 border border-border/50">
-                  <p className="text-[11px] text-muted-foreground font-medium mb-2">Preview da notificação</p>
+                <div className="bg-[hsl(var(--admin-bg))] rounded-xl p-4 border border-[hsl(var(--admin-border))]">
+                  <p className="text-[10px] text-slate-500 font-medium mb-2 uppercase tracking-wide">Preview</p>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
                       <Bell className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-bold text-foreground leading-tight">{title || 'Título...'}</p>
-                      <p className="text-[13px] text-muted-foreground mt-0.5 leading-relaxed">{body || 'Mensagem...'}</p>
-                      <p className="text-[11px] text-muted-foreground/50 mt-1">Uppi · agora</p>
+                      <p className="text-[14px] font-bold text-slate-100 leading-tight">{title || 'Titulo...'}</p>
+                      <p className="text-[12px] text-slate-400 mt-0.5 leading-relaxed">{body || 'Mensagem...'}</p>
+                      <p className="text-[10px] text-slate-600 mt-1">Xupetinha · agora</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Resultado */}
               {result && (
                 <div className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium',
-                  result.ok ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                  result.ok ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
                 )}>
-                  {result.ok
-                    ? <CheckCircle className="w-4 h-4 shrink-0" />
-                    : <AlertCircle className="w-4 h-4 shrink-0" />}
+                  {result.ok ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                   {result.msg}
                 </div>
               )}
 
-              {/* Botao enviar */}
               <button
                 type="button"
                 onClick={handleSend}
                 disabled={!canSend}
                 className={cn(
-                  'w-full h-12 rounded-xl text-[15px] font-bold flex items-center justify-center gap-2 transition-all',
+                  'w-full h-11 rounded-xl text-[14px] font-bold flex items-center justify-center gap-2 transition-all',
                   canSend
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20'
-                    : 'bg-secondary text-muted-foreground cursor-not-allowed'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-[hsl(var(--admin-bg))] border border-[hsl(var(--admin-border))] text-slate-600 cursor-not-allowed'
                 )}
               >
                 {sending ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</>
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Enviando...</>
                 ) : (
-                  <><Send className="w-5 h-5" /> Enviar Notificação</>
+                  <><Send className="w-4 h-4" /> Enviar Notificacao</>
                 )}
               </button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Historico */}
           {history.length > 0 && (
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-[15px] font-bold">Enviados nesta sessão</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+            <div className="bg-[hsl(var(--admin-surface))] rounded-xl border border-[hsl(var(--admin-border))] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[hsl(var(--admin-border))]">
+                <h3 className="text-[13px] font-bold text-slate-200">Enviados nesta sessao</h3>
+              </div>
+              <div className="p-4 space-y-2">
                 {history.map((h, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-secondary/50">
-                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[hsl(var(--admin-bg))] border border-[hsl(var(--admin-border))]">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-foreground truncate">{h.title}</p>
-                      <p className="text-[11px] text-muted-foreground">{h.target} · {h.at}</p>
+                      <p className="text-[12px] font-semibold text-slate-200 truncate">{h.title}</p>
+                      <p className="text-[10px] text-slate-500">{h.target} · {h.at}</p>
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       </div>

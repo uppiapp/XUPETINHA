@@ -144,14 +144,16 @@ export default function UsersPage() {
                   onClick={() => setTab(t.key)}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors',
-                    tab === t.key ? 'bg-blue-600 text-white' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    tab === t.key
+                      ? 'bg-[hsl(var(--admin-green))]/20 text-[hsl(var(--admin-green))]'
+                      : 'bg-[hsl(var(--admin-surface))] text-slate-400 hover:text-slate-200 border border-[hsl(var(--admin-border))]'
                   )}
                 >
                   <t.icon className="w-3.5 h-3.5" />
                   {t.label}
                   <span className={cn(
-                    'ml-1 text-[10px] px-1.5 py-0.5 rounded-md font-bold',
-                    tab === t.key ? 'bg-white/20' : 'bg-border'
+                    'ml-1 text-[10px] px-1.5 py-0.5 rounded font-bold',
+                    tab === t.key ? 'bg-[hsl(var(--admin-green))]/20' : 'bg-[hsl(var(--admin-border))]'
                   )}>{counts[t.key]}</span>
                 </button>
               ))}

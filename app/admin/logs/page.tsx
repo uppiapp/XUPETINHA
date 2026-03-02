@@ -3,9 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { AlertTriangle, Info, XCircle, Search, RefreshCw, Loader2, ServerCrash } from 'lucide-react'
+import { AlertTriangle, Info, XCircle, Search, RefreshCw, ServerCrash } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ErrorLog {
@@ -93,8 +92,8 @@ export default function AdminLogsPage() {
     return (
       <>
         <AdminHeader title="Logs de Erro" subtitle="Carregando..." />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <div className="flex-1 flex items-center justify-center bg-[hsl(var(--admin-bg))]">
+          <div className="w-6 h-6 border-2 border-[hsl(var(--admin-green))] border-t-transparent rounded-full animate-spin" />
         </div>
       </>
     )
@@ -102,11 +101,10 @@ export default function AdminLogsPage() {
 
   return (
     <>
-      <AdminHeader title="Logs de Erro" subtitle="Monitoramento proprio de erros do sistema" />
-
-      <div className="flex-1 overflow-auto p-6">
+      <AdminHeader title="Logs de Erro" subtitle="Monitoramento de erros do sistema em tempo real" />
+      <div className="flex-1 overflow-auto bg-[hsl(var(--admin-bg))] p-5">
         {/* Resumo */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-5">
           {(['error', 'warning', 'info'] as const).map((lvl) => {
             const cfg = levelConfig[lvl]
             const Icon = cfg.icon
@@ -116,19 +114,18 @@ export default function AdminLogsPage() {
                 type="button"
                 onClick={() => setFilterLevel(filterLevel === lvl ? 'all' : lvl)}
                 className={cn(
-                  'flex items-center gap-3 p-4 rounded-xl border bg-card text-left transition-all hover:ring-1',
-                  filterLevel === lvl ? 'ring-2 ring-offset-1' : 'ring-0',
-                  lvl === 'error' && 'hover:ring-red-500/40 ring-red-500/60',
-                  lvl === 'warning' && 'hover:ring-amber-500/40 ring-amber-500/60',
-                  lvl === 'info' && 'hover:ring-blue-500/40 ring-blue-500/60',
+                  'flex items-center gap-3 p-4 rounded-xl border bg-[hsl(var(--admin-surface))] text-left transition-all',
+                  filterLevel === lvl
+                    ? 'ring-1 ring-[hsl(var(--admin-green))]/50 border-[hsl(var(--admin-green))]/30'
+                    : 'border-[hsl(var(--admin-border))] hover:border-[hsl(var(--admin-border))]/80'
                 )}
               >
                 <div className={cn('p-2 rounded-lg', cfg.badge)}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{counts[lvl]}</p>
-                  <p className="text-xs text-muted-foreground">{cfg.label}s</p>
+                  <p className="text-[22px] font-bold text-slate-100 tabular-nums">{counts[lvl]}</p>
+                  <p className="text-[11px] text-slate-500">{cfg.label}s</p>
                 </div>
               </button>
             )
@@ -138,33 +135,31 @@ export default function AdminLogsPage() {
         {/* Filtros */}
         <div className="flex items-center gap-3 mb-4">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
-              placeholder="Buscar por mensagem ou tela..."
+              placeholder="Buscar por mensagem ou contexto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 h-10 bg-[hsl(var(--admin-surface))] border-[hsl(var(--admin-border))] text-slate-200 rounded-xl placeholder:text-slate-600"
             />
           </div>
           <button
             type="button"
             onClick={fetchLogs}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[hsl(var(--admin-border))] bg-[hsl(var(--admin-surface))] text-[12px] text-slate-400 hover:text-slate-200 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             Atualizar
           </button>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {filtered.length} de {logs.length} registros
-          </span>
+          <span className="text-[11px] text-slate-600 ml-auto">{filtered.length} de {logs.length}</span>
         </div>
 
-        {/* Tabela */}
+        {/* Lista */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-24 text-slate-600">
             <ServerCrash className="w-12 h-12 mb-3 opacity-20" />
-            <p className="text-sm font-medium">Nenhum log encontrado</p>
-            <p className="text-xs mt-1">Os erros do sistema aparecerão aqui em tempo real</p>
+            <p className="text-[13px] font-medium text-slate-500">Nenhum log encontrado</p>
+            <p className="text-[11px] mt-1">Os erros do sistema aparecerao aqui em tempo real</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -179,47 +174,48 @@ export default function AdminLogsPage() {
                   key={log.id}
                   onClick={() => setExpanded(isExpanded ? null : log.id)}
                   className={cn(
-                    'w-full text-left p-4 rounded-xl border bg-card border-l-4 transition-all hover:bg-secondary/50',
+                    'w-full text-left p-4 rounded-xl border border-l-4 transition-all',
+                    'bg-[hsl(var(--admin-surface))] hover:bg-[hsl(var(--admin-surface))]/80',
                     cfg.row
                   )}
                 >
                   <div className="flex items-start gap-3">
                     <Icon className={cn('w-4 h-4 mt-0.5 shrink-0',
-                      log.level === 'error' && 'text-red-500',
-                      log.level === 'warning' && 'text-amber-500',
-                      log.level === 'info' && 'text-blue-500',
+                      log.level === 'error' && 'text-red-400',
+                      log.level === 'warning' && 'text-amber-400',
+                      log.level === 'info' && 'text-blue-400',
                     )} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <Badge className={cn('text-[10px] font-bold border', cfg.badge)}>
+                        <span className={cn('inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border', cfg.badge)}>
                           {cfg.label}
-                        </Badge>
+                        </span>
                         {log.context && (
-                          <span className="text-[11px] text-muted-foreground font-mono bg-secondary px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] text-slate-500 font-mono bg-[hsl(var(--admin-bg))] px-1.5 py-0.5 rounded border border-[hsl(var(--admin-border))]">
                             {log.context}
                           </span>
                         )}
-                        <span className="text-[11px] text-muted-foreground ml-auto">
+                        <span className="text-[10px] text-slate-600 ml-auto tabular-nums">
                           {new Date(log.created_at).toLocaleString('pt-BR')}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground font-medium truncate">{log.message}</p>
+                      <p className="text-[12px] text-slate-200 font-medium truncate">{log.message}</p>
 
                       {isExpanded && (
                         <div className="mt-3 space-y-2">
                           {log.stack && (
-                            <pre className="text-[11px] text-muted-foreground bg-secondary/70 rounded-lg p-3 overflow-auto max-h-40 whitespace-pre-wrap font-mono leading-relaxed">
+                            <pre className="text-[11px] text-slate-400 bg-[hsl(var(--admin-bg))] rounded-lg p-3 overflow-auto max-h-40 whitespace-pre-wrap font-mono leading-relaxed border border-[hsl(var(--admin-border))]">
                               {log.stack}
                             </pre>
                           )}
                           {log.metadata && Object.keys(log.metadata).length > 0 && (
-                            <pre className="text-[11px] text-muted-foreground bg-secondary/70 rounded-lg p-3 overflow-auto font-mono">
+                            <pre className="text-[11px] text-slate-400 bg-[hsl(var(--admin-bg))] rounded-lg p-3 overflow-auto font-mono border border-[hsl(var(--admin-border))]">
                               {JSON.stringify(log.metadata, null, 2)}
                             </pre>
                           )}
                           {log.user_id && (
-                            <p className="text-[11px] text-muted-foreground">
-                              <span className="font-semibold">User ID:</span> {log.user_id}
+                            <p className="text-[11px] text-slate-500 font-mono">
+                              User ID: {log.user_id}
                             </p>
                           )}
                         </div>
