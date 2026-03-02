@@ -1,9 +1,11 @@
 # UPPI - Conexao Supabase
 
 **Data da Conexao:** 02/03/2026
-**Projeto Supabase:** pjlbixnzjndezoscbhej
-**Integration Instance:** supabase-amber-door
-**Status:** ATIVO - schema completamente aplicado
+**Projeto Supabase (anterior):** pjlbixnzjndezoscbhej (supabase-amber-door)
+**Projeto Supabase (atual):** nhdupekrvafpqlsbpznq
+**Integration Instance:** supabase-gray-book
+**URL:** https://nhdupekrvafpqlsbpznq.supabase.co
+**Status:** ATIVO - schema completamente aplicado (4 migrations — 02/03/2026)
 
 ---
 
@@ -93,4 +95,13 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.ride_offers;
 
 ---
 
-**Ultima atualizacao:** 02/03/2026 — Schema verificado e operacional
+## Historico de Projetos Supabase
+
+| Data | Projeto | Instance | Status |
+|------|---------|----------|--------|
+| 02/03/2026 | pjlbixnzjndezoscbhej | supabase-amber-door | Encerrado / Migrado |
+| 02/03/2026 | nhdupekrvafpqlsbpznq | supabase-gray-book  | **ATUAL — Ativo** |
+
+---
+
+**Ultima atualizacao:** 02/03/2026 — Migrado para supabase-gray-book (nhdupekrvafpqlsbpznq), 4 migrations aplicadas, schema operacional

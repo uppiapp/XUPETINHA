@@ -1,9 +1,10 @@
 # UPPI - Indice Completo do Projeto
 
 **Ultima atualizacao:** 02/03/2026
-**Versao:** 14.3
+**Versao:** 14.4
 **Arquitetura:** Frontend + Backend + Banco (74 tabelas public / 176 total / 145 RLS policies / 20 triggers / 15 RPCs) + API (57 routes) + Auth + Realtime (8 tabelas) + Admin
-**Supabase:** pjlbixnzjndezoscbhej (supabase-amber-door) — 4 migrations — 7 extensoes — analise completa: docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
+**Supabase:** nhdupekrvafpqlsbpznq (supabase-gray-book) — 4 migrations — analise completa: docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
+**URL Supabase:** https://nhdupekrvafpqlsbpznq.supabase.co
 
 ---
 
@@ -414,14 +415,14 @@ package.json                                 Dependencias completas
 | pricing_rules          | 6 registros | 6 tipos de veiculo                                  |
 | rating_categories      | 4 registros | Direcao, Trajeto, Respeito, Comportamento           |
 
-### Migrations aplicadas no Supabase (pjlbixnzjndezoscbhej)
+### Migrations aplicadas no Supabase (nhdupekrvafpqlsbpznq / supabase-gray-book)
 
 | Migration | Conteudo | Status |
 |-----------|---------|--------|
 | 001_core_tables | profiles, driver_profiles, rides, price_offers, messages, ratings, favorites, notifications + trigger on_auth_user_created | Aplicada |
 | 002_location_wallet_social | driver_locations, ride_tracking, ride_stops, location_history, hot_zones, user_wallets, wallet_transactions, payments, coupons, coupon_uses, user_coupons, social_posts, social_post_likes, post_comments, social_follows, user_social_stats, user_achievements, referral_achievements, leaderboard, rating_categories (seed) | Aplicada |
 | 003_driver_security_support | driver_verifications, vehicles, drivers, driver_route_segments, emergency_contacts, emergency_alerts, ride_recordings, recording_consents, user_recording_preferences, group_rides, group_ride_participants, scheduled_rides, ride_offers, support_tickets, support_messages, referrals, subscriptions, promotions, sms_templates, sms_deliveries, sms_logs, webhook_endpoints, webhook_deliveries, admin_logs, error_logs, system_settings (seed), push_subscriptions, notification_preferences, user_sms_preferences, user_onboarding | Aplicada |
-| 004_routes_reviews_misc | popular_routes, driver_popular_routes, route_history, address_search_history, reviews, driver_reviews, rating_helpful_votes, rating_reports, reports, pricing_rules (seed), avatars, users, campaigns, faqs, legal_documents + 15 RPCs | Aplicada |
+| 004_routes_reviews_misc_rpcs | popular_routes, driver_popular_routes, route_history, address_search_history, reviews, driver_reviews, rating_helpful_votes, rating_reports, reports, pricing_rules (seed), avatars, users, campaigns, faqs, legal_documents + 15 RPCs | Aplicada |
 
 ---
 

@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 19.1
-**Status Geral:** 100% Operacional — Supabase conectado e schema aplicado (74 tabelas public / 176 total todos schemas)
+**Versao:** 19.2
+**Status Geral:** 100% Operacional — Supabase migrado e schema aplicado (74 tabelas public / 176 total todos schemas)
 
 ---
 
@@ -243,17 +243,19 @@
 
 | Item | Status |
 |------|--------|
-| Projeto | pjlbixnzjndezoscbhej (supabase-amber-door) |
+| Projeto | nhdupekrvafpqlsbpznq (supabase-gray-book) — ATUAL |
+| Projeto anterior | pjlbixnzjndezoscbhej (supabase-amber-door) — Migrado |
 | Schema aplicado | 4 migrations executadas com sucesso |
 | Tabelas public | 74 criadas e verificadas |
 | RLS | Habilitado em todas as 74 tabelas |
 | Triggers updated_at | Ativos em todas as tabelas com updated_at |
 | Trigger on_auth_user_created | Ativo — cria profile automatico no signup |
-| Realtime | 6 tabelas publicadas (rides, messages, notifications, price_offers, driver_locations, ride_tracking, support_messages, ride_offers) |
+| Realtime | 8 tabelas publicadas (rides, messages, notifications, price_offers, driver_locations, ride_tracking, support_messages, ride_offers) |
 | Funcoes RPC | 15 criadas e ativas |
 | Seed system_settings | 6 registros inseridos |
 | Seed pricing_rules | 6 tipos de veiculo configurados |
 | Seed rating_categories | 4 categorias inseridas |
+| Variaveis de ambiente | NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY configuradas |
 
 ### Schema public — 74 tabelas
 - [x] profiles — +rating, +total_rides, +preferences
