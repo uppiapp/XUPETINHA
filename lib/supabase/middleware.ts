@@ -38,20 +38,24 @@ export async function updateSession(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Protected routes - require authentication
+    // Protected routes - require authentication OR onboarding completion
     const protectedPaths = ['/uppi']
     const isProtectedRoute = protectedPaths.some((path) =>
       request.nextUrl.pathname.startsWith(path)
     )
 
     if (isProtectedRoute && !user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/onboarding/splash'
-      return NextResponse.redirect(url)
+      // Permitir acesso se completou o onboarding
+      const onboardingDone = request.cookies.get('onboarding_done')
+      if (!onboardingDone) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/onboarding/splash'
+        return NextResponse.redirect(url)
+      }
     }
 
     // Auth routes - redirect to home if already logged in
-    const authPaths = ['/login', '/signup', '/forgot-password']
+    const authPaths = ['/auth/login', '/auth/signup']
     const isAuthRoute = authPaths.some((path) =>
       request.nextUrl.pathname.startsWith(path)
     )
@@ -63,7 +67,8 @@ export async function updateSession(request: NextRequest) {
     }
 
     return defaultResponse
-  } catch {
+  } catch (error) {
+    console.error('[v0] Middleware error:', error)
     return defaultResponse
   }
 }
