@@ -213,30 +213,31 @@ class TrackingService {
     })
   }
 
-  // Update ride status
+  // Update ride status — chama a API route para garantir disparo de email ao completar
   async updateRideStatus(
     rideId: string,
     status: TrackingUpdate['status'],
     etaMinutes?: number
   ) {
-    console.log('[v0] Updating ride status:', status)
+    try {
+      const body: any = { status }
+      if (etaMinutes) body.eta_minutes = etaMinutes
 
-    const updates: any = { status }
-    if (etaMinutes) {
-      updates.eta_minutes = etaMinutes
+      const res = await fetch(`/api/v1/rides/${rideId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        return { success: false, error: err?.error || 'Erro ao atualizar status' }
+      }
+
+      return { success: true }
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Erro de rede' }
     }
-
-    const { error } = await this.supabase
-      .from('rides')
-      .update(updates)
-      .eq('id', rideId)
-
-    if (error) {
-      console.error('[v0] Error updating ride status:', error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true }
   }
 }
 
