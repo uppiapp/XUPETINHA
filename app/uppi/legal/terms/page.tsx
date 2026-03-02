@@ -1,11 +1,40 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
 export default function TermsPage() {
+  const [content, setContent] = useState<string | null>(null)
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+
+  useEffect(() => {
+    createClient()
+      .from('legal_documents')
+      .select('content, updated_at')
+      .eq('type', 'terms')
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setContent(data.content)
+          setUpdatedAt(data.updated_at)
+        }
+      })
+  }, [])
+
+  const renderContent = (text: string) =>
+    text.split('\n').map((line, i) => {
+      if (line.startsWith('# '))  return <h1 key={i} className="text-2xl font-bold text-blue-900 mb-4">{line.slice(2)}</h1>
+      if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold text-blue-900 mt-6 mb-3">{line.slice(3)}</h2>
+      if (line.startsWith('- '))  return <li key={i} className="ml-6 list-disc">{line.slice(2)}</li>
+      if (line.trim() === '')     return <div key={i} className="h-2" />
+      return <p key={i} className="leading-relaxed">{line}</p>
+    })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Link href="/uppi/settings">
             <Button variant="ghost" size="icon" className="bg-transparent">
@@ -17,90 +46,19 @@ export default function TermsPage() {
           <h1 className="text-2xl font-bold text-blue-900">Termos de Uso</h1>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg space-y-6 text-gray-700 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">1. Aceitação dos Termos</h2>
-            <p>
-              Ao acessar e usar o aplicativo Uppi, você concorda em cumprir e estar vinculado aos
-              seguintes termos e condições de uso. Se você não concordar com qualquer parte destes
-              termos, não use nosso aplicativo.
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-gray-700">
+          {content === null ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-1">{renderContent(content)}</div>
+          )}
+          {updatedAt && (
+            <p className="pt-6 mt-6 border-t text-sm text-gray-400">
+              Ultima atualizacao: {new Date(updatedAt).toLocaleDateString('pt-BR')}
             </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">2. Descrição do Serviço</h2>
-            <p>
-              O Uppi é uma plataforma que conecta passageiros e motoristas para serviços de
-              transporte. Permitimos que passageiros proponham preços e motoristas façam ofertas,
-              promovendo transparência e negociação justa.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">3. Cadastro e Conta</h2>
-            <p>
-              Para usar o Uppi, você deve criar uma conta fornecendo informações precisas e
-              atualizadas. Você é responsável por manter a confidencialidade de sua conta e senha.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">4. Uso do Serviço</h2>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>Você deve ter pelo menos 18 anos para usar o serviço</li>
-              <li>Motoristas devem possuir CNH válida e documentação do veículo em dia</li>
-              <li>É proibido usar o serviço para atividades ilegais ou fraudulentas</li>
-              <li>Você deve tratar todos os usuários com respeito e cortesia</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">5. Pagamentos e Tarifas</h2>
-            <p>
-              Os preços são negociados entre passageiros e motoristas. O Uppi cobra uma taxa de
-              serviço sobre cada corrida concluída. Cancelamentos após aceitação podem incorrer em
-              taxa de 10% do valor da corrida.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">6. Segurança</h2>
-            <p>
-              Implementamos medidas de segurança, incluindo verificação de motoristas, sistema de
-              avaliações e botão de emergência. Em caso de emergência, entre em contato
-              imediatamente com as autoridades locais.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">7. Limitação de Responsabilidade</h2>
-            <p>
-              O Uppi atua como intermediário entre passageiros e motoristas. Não somos responsáveis
-              por danos, perdas ou lesões que possam ocorrer durante o uso do serviço. O transporte
-              é fornecido por motoristas independentes.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">8. Modificações</h2>
-            <p>
-              Reservamos o direito de modificar estes termos a qualquer momento. Notificaremos você
-              sobre mudanças significativas através do aplicativo ou por e-mail.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-blue-900 mb-3">9. Contato</h2>
-            <p>
-              Para dúvidas sobre estes termos, entre em contato através do suporte no aplicativo ou
-              pelo e-mail: suporte@uppi.app
-            </p>
-          </section>
-
-          <div className="pt-4 text-sm text-gray-500">
-            Última atualização: {new Date().toLocaleDateString('pt-BR')}
-          </div>
+          )}
         </div>
       </div>
     </div>

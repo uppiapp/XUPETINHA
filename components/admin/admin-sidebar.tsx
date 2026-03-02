@@ -40,6 +40,9 @@ import {
   Mic,
   MessageCircle,
   HelpCircle,
+  PhoneCall,
+  Megaphone,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -66,6 +69,7 @@ const navGroups = [
       { href: '/admin/referrals', icon: UserCheck, label: 'Indicacoes' },
       { href: '/admin/subscriptions', icon: Crown, label: 'Assinaturas Club' },
       { href: '/admin/favoritos', icon: Heart, label: 'Locais Favoritos' },
+      { href: '/admin/emergency-contacts', icon: PhoneCall, label: 'Contatos SOS' },
     ],
   },
   {
@@ -85,6 +89,7 @@ const navGroups = [
       { href: '/admin/financeiro', icon: DollarSign, label: 'Financeiro' },
       { href: '/admin/payments', icon: CreditCard, label: 'Pagamentos' },
       { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
+      { href: '/admin/promotions', icon: Megaphone, label: 'Campanhas' },
       { href: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
       { href: '/admin/notifications', icon: Bell, label: 'Notificacoes' },
       { href: '/admin/sms', icon: MessageCircle, label: 'SMS' },
@@ -99,6 +104,7 @@ const navGroups = [
       { href: '/admin/webhooks', icon: Webhook, label: 'Webhooks' },
       { href: '/admin/recordings', icon: Mic, label: 'Gravacoes' },
       { href: '/admin/logs', icon: AlertTriangle, label: 'Logs de Erro' },
+      { href: '/admin/legal', icon: FileText, label: 'Termos / Privacidade' },
       { href: '/admin/settings', icon: Settings, label: 'Configuracoes' },
     ],
   },

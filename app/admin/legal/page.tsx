@@ -75,16 +75,15 @@ export default function AdminLegalPage() {
     setLoading(true)
     const supabase = createClient()
     const { data } = await supabase
-      .from('system_settings')
-      .select('key, value, updated_at')
-      .in('key', ['legal_terms', 'legal_privacy'])
+      .from('legal_documents')
+      .select('type, content, version, updated_at')
 
-    if (data) {
+    if (data && data.length > 0) {
       const map: Record<string, string> = {}
       const dates: Record<string, string> = {}
       data.forEach(row => {
-        if (row.key === 'legal_terms') { map.terms = row.value; dates.terms = row.updated_at }
-        if (row.key === 'legal_privacy') { map.privacy = row.value; dates.privacy = row.updated_at }
+        map[row.type] = row.content
+        dates[row.type] = row.updated_at
       })
       setContent(prev => ({
         terms: map.terms || prev.terms,
@@ -98,10 +97,13 @@ export default function AdminLegalPage() {
   const handleSave = async () => {
     setSaving(true)
     const supabase = createClient()
-    const key = activeTab === 'terms' ? 'legal_terms' : 'legal_privacy'
+    const { data: { user } } = await supabase.auth.getUser()
     await supabase
-      .from('system_settings')
-      .upsert({ key, value: content[activeTab], updated_at: new Date().toISOString() }, { onConflict: 'key' })
+      .from('legal_documents')
+      .upsert(
+        { type: activeTab, content: content[activeTab], updated_by: user?.id, updated_at: new Date().toISOString() },
+        { onConflict: 'type' }
+      )
 
     setLastUpdated(prev => ({ ...prev, [activeTab]: new Date().toISOString() }))
     setSaving(false)
