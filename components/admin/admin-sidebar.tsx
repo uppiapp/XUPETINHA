@@ -20,6 +20,12 @@ import {
   UserCog,
   AlertTriangle,
   Settings,
+  MessageSquare,
+  CreditCard,
+  Star,
+  HeadphonesIcon,
+  Tag,
+  Users2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -39,14 +45,20 @@ const navGroups = [
       { href: '/admin/users', icon: Users, label: 'Usuarios' },
       { href: '/admin/drivers', icon: UserCog, label: 'Motoristas' },
       { href: '/admin/rides', icon: Car, label: 'Corridas' },
+      { href: '/admin/price-offers', icon: Tag, label: 'Ofertas de Preco' },
+      { href: '/admin/reviews', icon: Star, label: 'Avaliacoes' },
       { href: '/admin/cupons', icon: Ticket, label: 'Cupons' },
+      { href: '/admin/referrals', icon: Users2, label: 'Indicacoes' },
     ],
   },
   {
     label: 'Operacoes',
     items: [
       { href: '/admin/financeiro', icon: DollarSign, label: 'Financeiro' },
+      { href: '/admin/payments', icon: CreditCard, label: 'Pagamentos' },
+      { href: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
       { href: '/admin/notifications', icon: Bell, label: 'Notificacoes' },
+      { href: '/admin/suporte', icon: HeadphonesIcon, label: 'Suporte' },
     ],
   },
   {
