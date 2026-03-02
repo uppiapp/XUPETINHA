@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { realtimeService } from '@/lib/services/realtime-service'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -22,7 +21,7 @@ interface Stats {
   onlineDrivers: number
 }
 
-interface RealtimeRide {
+interface RecentRide {
   id: string
   status: string
   pickup_address: string
@@ -31,45 +30,78 @@ interface RealtimeRide {
   created_at: string
 }
 
+const statusColor: Record<string, string> = {
+  completed: 'bg-emerald-500/15 text-emerald-500',
+  in_progress: 'bg-blue-500/15 text-blue-500',
+  accepted: 'bg-cyan-500/15 text-cyan-500',
+  searching: 'bg-amber-500/15 text-amber-500',
+  cancelled: 'bg-red-500/15 text-red-500',
+  pending: 'bg-neutral-500/15 text-neutral-400',
+}
+const statusLabel: Record<string, string> = {
+  completed: 'Finalizada', in_progress: 'Em Andamento', accepted: 'Aceita',
+  searching: 'Buscando', cancelled: 'Cancelada', pending: 'Pendente',
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0, totalDrivers: 0, totalRides: 0, activeRides: 0,
     totalRevenue: 0, todayRides: 0, todayRevenue: 0, onlineDrivers: 0,
   })
-  const [recentRides, setRecentRides] = useState<RealtimeRide[]>([])
+  const [recentRides, setRecentRides] = useState<RecentRide[]>([])
   const [weeklyData, setWeeklyData] = useState<{ day: string; rides: number; revenue: number }[]>([])
   const [hourlyData, setHourlyData] = useState<{ hour: string; rides: number }[]>([])
   const [loading, setLoading] = useState(true)
+  const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
 
   const fetchStats = useCallback(async () => {
     const supabase = createClient()
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayISO = todayStart.toISOString()
 
+    // Batch 1: contagens e listas paralelas
     const [
       { count: totalUsers },
       { count: totalDrivers },
       { count: totalRides },
       { count: activeRides },
-      { data: payments },
-      { count: todayRides },
-      { data: todayPayments },
       { count: onlineDrivers },
+      { count: todayRides },
       { data: recent },
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('user_type', 'passenger'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('user_type', 'driver'),
       supabase.from('rides').select('*', { count: 'exact', head: true }),
       supabase.from('rides').select('*', { count: 'exact', head: true }).in('status', ['accepted', 'in_progress', 'searching']),
-      supabase.from('payments').select('amount').eq('status', 'completed'),
-      supabase.from('rides').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
-      supabase.from('payments').select('amount').eq('status', 'completed').gte('created_at', today.toISOString()),
       supabase.from('driver_profiles').select('*', { count: 'exact', head: true }).eq('is_available', true),
+      supabase.from('rides').select('*', { count: 'exact', head: true }).gte('created_at', todayISO),
       supabase.from('rides').select('id, status, pickup_address, dropoff_address, final_price, created_at').order('created_at', { ascending: false }).limit(8),
     ])
 
-    const totalRevenue = payments?.reduce((s, p) => s + Number(p.amount || 0), 0) || 0
-    const todayRevenue = todayPayments?.reduce((s, p) => s + Number(p.amount || 0), 0) || 0
+    // Batch 2: receitas — uma unica query com todos os pagamentos completados
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    const { data: allPayments } = await supabase
+      .from('payments')
+      .select('amount, created_at, status')
+      .eq('status', 'completed')
+      .gte('created_at', sevenDaysAgo.toISOString())
+
+    const payments = allPayments || []
+
+    // Calcula receita total e hoje a partir dos dados ja carregados
+    const { data: totalPaymentsData } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('status', 'completed')
+
+    const totalRevenue = (totalPaymentsData || []).reduce((s, p) => s + Number(p.amount || 0), 0)
+    const todayRevenue = payments
+      .filter(p => new Date(p.created_at) >= todayStart)
+      .reduce((s, p) => s + Number(p.amount || 0), 0)
 
     setStats({
       totalUsers: totalUsers || 0,
@@ -83,37 +115,52 @@ export default function AdminDashboard() {
     })
     setRecentRides(recent || [])
 
-    // Generate weekly data from last 7 days
+    // Monta grafico semanal agrupando em memória (sem queries por dia)
     const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
-    const weekData: { day: string; rides: number; revenue: number }[] = []
+    const weekMap: Record<string, { rides: number; revenue: number }> = {}
     for (let i = 6; i >= 0; i--) {
       const d = new Date()
       d.setDate(d.getDate() - i)
-      const start = new Date(d); start.setHours(0, 0, 0, 0)
-      const end = new Date(d); end.setHours(23, 59, 59, 999)
-      const { count } = await supabase.from('rides').select('*', { count: 'exact', head: true })
-        .gte('created_at', start.toISOString()).lte('created_at', end.toISOString())
-      const { data: dayPay } = await supabase.from('payments').select('amount')
-        .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).eq('status', 'completed')
-      weekData.push({
-        day: days[d.getDay()],
-        rides: count || 0,
-        revenue: dayPay?.reduce((s, p) => s + Number(p.amount || 0), 0) || 0,
-      })
+      const key = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      weekMap[key] = { rides: 0, revenue: 0 }
     }
-    setWeeklyData(weekData)
 
-    // Generate hourly data for today
-    const hours: { hour: string; rides: number }[] = []
-    const currentHour = new Date().getHours()
-    for (let h = 0; h <= currentHour; h++) {
-      const start = new Date(today); start.setHours(h, 0, 0, 0)
-      const end = new Date(today); end.setHours(h, 59, 59, 999)
-      const { count: hc } = await supabase.from('rides').select('*', { count: 'exact', head: true })
-        .gte('created_at', start.toISOString()).lte('created_at', end.toISOString())
-      hours.push({ hour: `${String(h).padStart(2, '0')}h`, rides: hc || 0 })
+    // Conta corridas por dia com uma unica query
+    const { data: weekRides } = await supabase
+      .from('rides')
+      .select('created_at')
+      .gte('created_at', sevenDaysAgo.toISOString())
+
+    for (const r of weekRides || []) {
+      const key = new Date(r.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      if (weekMap[key]) weekMap[key].rides++
     }
-    setHourlyData(hours)
+
+    for (const p of payments) {
+      const key = new Date(p.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      if (weekMap[key]) weekMap[key].revenue += Number(p.amount || 0)
+    }
+
+    const weeklyArr = Object.entries(weekMap).map(([day, vals]) => ({ day, ...vals }))
+    setWeeklyData(weeklyArr)
+
+    // Monta grafico horario com uma unica query
+    const { data: todayRidesData } = await supabase
+      .from('rides')
+      .select('created_at')
+      .gte('created_at', todayISO)
+
+    const hourMap: Record<number, number> = {}
+    for (const r of todayRidesData || []) {
+      const h = new Date(r.created_at).getHours()
+      hourMap[h] = (hourMap[h] || 0) + 1
+    }
+    const currentHour = new Date().getHours()
+    const hourlyArr = Array.from({ length: currentHour + 1 }, (_, h) => ({
+      hour: `${String(h).padStart(2, '0')}h`,
+      rides: hourMap[h] || 0,
+    }))
+    setHourlyData(hourlyArr)
 
     setLoading(false)
   }, [])
@@ -121,30 +168,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchStats()
 
-    console.log('[v0] Setting up admin dashboard realtime subscriptions')
-
-    // Subscribe to rides changes
-    const ridesChannel = realtimeService.subscribeToTable(
-      'rides',
-      (payload) => {
-        console.log('[v0] Ride changed in admin:', payload.eventType)
-        fetchStats()
-      }
-    )
-
-    // Subscribe to payments changes
-    const paymentsChannel = realtimeService.subscribeToTable(
-      'payments',
-      (payload) => {
-        console.log('[v0] Payment changed in admin:', payload.eventType)
-        fetchStats()
-      }
-    )
+    const supabase = createClient()
+    channelRef.current = supabase
+      .channel('admin-dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, fetchStats)
+      .subscribe()
 
     return () => {
-      console.log('[v0] Cleaning up admin subscriptions')
-      realtimeService.unsubscribe(ridesChannel)
-      realtimeService.unsubscribe(paymentsChannel)
+      if (channelRef.current) supabase.removeChannel(channelRef.current)
     }
   }, [fetchStats])
 
@@ -153,24 +185,11 @@ export default function AdminDashboard() {
     { label: 'Motoristas', value: stats.totalDrivers, icon: Car, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
     { label: 'Total Corridas', value: stats.totalRides, icon: Activity, color: 'text-violet-500', bg: 'bg-violet-500/10' },
     { label: 'Corridas Ativas', value: stats.activeRides, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', pulse: true },
-    { label: 'Hoje - Corridas', value: stats.todayRides, icon: TrendingUp, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+    { label: 'Corridas Hoje', value: stats.todayRides, icon: TrendingUp, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
     { label: 'Motoristas Online', value: stats.onlineDrivers, icon: UserCheck, color: 'text-green-500', bg: 'bg-green-500/10', pulse: true },
     { label: 'Receita Total', value: `R$ ${stats.totalRevenue.toFixed(2)}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-500/10', isMoney: true },
     { label: 'Receita Hoje', value: `R$ ${stats.todayRevenue.toFixed(2)}`, icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10', isMoney: true },
   ]
-
-  const statusColor: Record<string, string> = {
-    completed: 'bg-emerald-500/15 text-emerald-500',
-    in_progress: 'bg-blue-500/15 text-blue-500',
-    accepted: 'bg-cyan-500/15 text-cyan-500',
-    searching: 'bg-amber-500/15 text-amber-500',
-    cancelled: 'bg-red-500/15 text-red-500',
-    pending: 'bg-neutral-500/15 text-neutral-400',
-  }
-  const statusLabel: Record<string, string> = {
-    completed: 'Finalizada', in_progress: 'Em Andamento', accepted: 'Aceita',
-    searching: 'Buscando', cancelled: 'Cancelada', pending: 'Pendente',
-  }
 
   if (loading) {
     return (
@@ -187,6 +206,7 @@ export default function AdminDashboard() {
     <>
       <AdminHeader title="Dashboard" subtitle="Visao geral em tempo real" />
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
         {/* KPIs Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {kpis.map((k) => (
@@ -203,7 +223,7 @@ export default function AdminDashboard() {
                     </span>
                   )}
                 </div>
-                <p className={`text-[22px] font-bold text-foreground tracking-tight tabular-nums ${k.isMoney ? 'text-[18px]' : ''}`}>
+                <p className={`font-bold text-foreground tracking-tight tabular-nums ${k.isMoney ? 'text-[16px]' : 'text-[22px]'}`}>
                   {typeof k.value === 'number' ? k.value.toLocaleString('pt-BR') : k.value}
                 </p>
                 <p className="text-[12px] text-muted-foreground font-medium mt-0.5">{k.label}</p>
@@ -214,14 +234,13 @@ export default function AdminDashboard() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Weekly Chart */}
           <Card className="border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[15px] font-bold">Corridas - Ultimos 7 dias</CardTitle>
+              <CardTitle className="text-[15px] font-bold">Corridas — Ultimos 7 dias</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer
-                config={{ rides: { label: 'Corridas', color: '#3b82f6' }, revenue: { label: 'Receita', color: '#10b981' } }}
+                config={{ rides: { label: 'Corridas', color: '#3b82f6' } }}
                 className="h-[220px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
@@ -234,7 +253,7 @@ export default function AdminDashboard() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Area type="monotone" dataKey="rides" stroke="#3b82f6" fill="url(#ridesFill)" strokeWidth={2} />
                   </AreaChart>
@@ -243,10 +262,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Hourly Chart */}
           <Card className="border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[15px] font-bold">Corridas - Hoje por hora</CardTitle>
+              <CardTitle className="text-[15px] font-bold">Corridas — Hoje por hora</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer
@@ -267,7 +285,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Recent Rides Table */}
+        {/* Recent Rides */}
         <Card className="border-border/50">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -293,8 +311,8 @@ export default function AdminDashboard() {
                 <tbody>
                   {recentRides.map((r) => (
                     <tr key={r.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
-                      <td className="px-4 py-3 text-foreground max-w-[200px] truncate">{r.pickup_address || '---'}</td>
-                      <td className="px-4 py-3 text-foreground max-w-[200px] truncate">{r.dropoff_address || '---'}</td>
+                      <td className="px-4 py-3 text-foreground max-w-[180px] truncate">{r.pickup_address || '---'}</td>
+                      <td className="px-4 py-3 text-foreground max-w-[180px] truncate">{r.dropoff_address || '---'}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold ${statusColor[r.status] || statusColor.pending}`}>
                           {statusLabel[r.status] || r.status}
@@ -320,6 +338,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+
       </div>
     </>
   )
