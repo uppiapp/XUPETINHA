@@ -175,12 +175,14 @@ export default function AdminMonitorPage() {
     setOnlineDrivers(drivers)
 
     const todayRevenue = (revenueData || []).reduce((s: number, r: any) => s + Number(r.final_price || 0), 0)
+    const todayCompletedCount = todayCompletedData?.length ?? 0
+
     setStats({
       active: rides.length,
       searching: rides.filter(r => r.status === 'searching').length,
       inProgress: rides.filter(r => r.status === 'in_progress').length,
       onlineDrivers: drivers.length,
-      todayCompleted: 0,
+      todayCompleted: todayCompletedCount,
       todayRevenue,
     })
 
@@ -240,21 +242,23 @@ export default function AdminMonitorPage() {
       <div className="flex-1 overflow-hidden flex flex-col bg-[hsl(var(--admin-bg))]">
 
         {/* KPI Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 pb-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-4 pb-0">
           {[
             { label: 'Corridas Ativas', value: stats.active, icon: Activity, color: 'text-blue-400', bg: 'bg-blue-500/10', pulse: stats.active > 0 },
             { label: 'Buscando', value: stats.searching, icon: Radio, color: 'text-amber-400', bg: 'bg-amber-500/10', pulse: stats.searching > 0 },
             { label: 'Em Andamento', value: stats.inProgress, icon: Navigation, color: 'text-cyan-400', bg: 'bg-cyan-500/10', pulse: stats.inProgress > 0 },
             { label: 'Motoristas Online', value: stats.onlineDrivers, icon: Car, color: 'text-emerald-400', bg: 'bg-emerald-500/10', pulse: true },
+            { label: 'Concluídas Hoje', value: stats.todayCompleted, icon: CheckCircle, color: 'text-teal-400', bg: 'bg-teal-500/10', pulse: false },
+            { label: 'Receita Hoje', value: `R$\u00a0${stats.todayRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`, icon: TrendingUp, color: 'text-violet-400', bg: 'bg-violet-500/10', pulse: false },
           ].map((kpi) => (
             <div key={kpi.label} className="bg-[hsl(var(--admin-surface))] rounded-xl p-3 border border-[hsl(var(--admin-border))] flex items-center gap-3">
               <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center shrink-0', kpi.bg)}>
-                <kpi.icon className={cn('w-4.5 h-4.5', kpi.color)} />
+                <kpi.icon className={cn('w-[18px] h-[18px]', kpi.color)} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-[20px] font-bold text-slate-100 tabular-nums leading-none">{kpi.value}</p>
-                  {kpi.pulse && kpi.value > 0 && <PulsingDot active />}
+                  <p className="text-[18px] font-bold text-slate-100 tabular-nums leading-none">{kpi.value}</p>
+                  {kpi.pulse && (typeof kpi.value === 'number' ? kpi.value > 0 : true) && <PulsingDot active />}
                 </div>
                 <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">{kpi.label}</p>
               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -18,20 +18,19 @@ export default function DriverHistoryPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'completed' | 'cancelled'>('all')
   const [totalEarnings, setTotalEarnings] = useState(0)
+  const [userId, setUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadHistory()
-  }, [])
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async (uid?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/onboarding/splash'); return }
+      const id = uid || user?.id
+      if (!id) { router.push('/onboarding/splash'); return }
+      if (!userId) setUserId(id)
 
       const { data } = await supabase
         .from('rides')
         .select('*, passenger:profiles!passenger_id(full_name, avatar_url)')
-        .eq('driver_id', user.id)
+        .eq('driver_id', id)
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -43,7 +42,34 @@ export default function DriverHistoryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase, router, userId])
+
+  useEffect(() => {
+    let uid: string | null = null
+
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/onboarding/splash'); return }
+      uid = user.id
+      setUserId(user.id)
+      await loadHistory(user.id)
+
+      // Real-time subscription — listen for any ride updates for this driver
+      const channel = supabase
+        .channel(`driver-history-${user.id}`)
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'rides',
+          filter: `driver_id=eq.${user.id}`,
+        }, () => loadHistory(user.id))
+        .subscribe()
+
+      return () => { supabase.removeChannel(channel) }
+    }
+
+    init()
+  }, [])
+
+
 
   const filtered = filter === 'all' ? rides
     : rides.filter(r => r.status === filter)
