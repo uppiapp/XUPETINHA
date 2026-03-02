@@ -11,9 +11,10 @@ interface PixModalProps {
   qrCodeText: string
   amountLabel: string
   onClose: () => void
+  onPaid?: () => void
 }
 
-export function PixModal({ externalId, qrCodeImage, qrCodeText, amountLabel, onClose }: PixModalProps) {
+export function PixModal({ externalId, qrCodeImage, qrCodeText, amountLabel, onClose, onPaid }: PixModalProps) {
   const [copied, setCopied] = useState(false)
   const [pollingStatus, setPollingStatus] = useState<'pending' | 'paid' | 'error'>('pending')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -38,11 +39,15 @@ export function PixModal({ externalId, qrCodeImage, qrCodeText, amountLabel, onC
       if (data.status === 'paid') {
         stopPolling()
         setPollingStatus('paid')
-        const currentParams = new URLSearchParams(window.location.search)
-        const redirectBase = data.redirect_url ?? '/obrigado'
-        const redirectUrl = new URL(redirectBase, window.location.origin)
-        currentParams.forEach((value, key) => { redirectUrl.searchParams.set(key, value) })
-        setTimeout(() => { window.location.href = redirectUrl.toString() }, 1500)
+        if (onPaid) {
+          setTimeout(() => onPaid(), 1500)
+        } else {
+          const currentParams = new URLSearchParams(window.location.search)
+          const redirectBase = data.redirect_url ?? '/obrigado'
+          const redirectUrl = new URL(redirectBase, window.location.origin)
+          currentParams.forEach((value, key) => { redirectUrl.searchParams.set(key, value) })
+          setTimeout(() => { window.location.href = redirectUrl.toString() }, 1500)
+        }
       }
     } catch { }
   }, [externalId, stopPolling])

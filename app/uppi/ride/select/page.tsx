@@ -21,6 +21,7 @@ import {
   Car,
 } from 'lucide-react'
 import { RouteMap } from '@/components/route-map'
+import { PixModal } from '@/components/pix-modal'
 
 // Price per km for each vehicle type (R$)
 const PRICE_PER_KM: Record<VehicleType, number> = {
@@ -77,6 +78,17 @@ export default function RideSelectPage() {
   const [distanceKm, setDistanceKm] = useState<number | null>(null)
   const [durationText, setDurationText] = useState<string | null>(null)
   const [loadingDistance, setLoadingDistance] = useState(true)
+
+  // PIX state
+  const [showPixModal, setShowPixModal] = useState(false)
+  const [pixLoading, setPixLoading] = useState(false)
+  const [pixData, setPixData] = useState<{
+    externalId: string
+    qrCodeImage: string | null
+    qrCodeText: string
+    amountLabel: string
+  } | null>(null)
+  const [pixError, setPixError] = useState<string | null>(null)
   
   // Drag state
   const [sheetHeight, setSheetHeight] = useState(62) // percentage - mostra tudo
@@ -260,6 +272,61 @@ export default function RideSelectPage() {
 
   const selectedRide = rideOptions.find((r) => r.id === selected)
   const selectedPrice = getPrice(selected)
+
+  const buildRideData = () => ({
+    ...selectedRide,
+    price: selectedPrice,
+    distanceKm,
+    durationText,
+    vehicleType: selected,
+    paymentMethod: paymentMethod || 'cash',
+    stops: route.stops || [],
+  })
+
+  const handleConfirmRide = async () => {
+    const rideData = buildRideData()
+    sessionStorage.setItem('selectedRide', JSON.stringify(rideData))
+
+    if (paymentMethod === 'Pix') {
+      setPixLoading(true)
+      setPixError(null)
+      try {
+        const amountCents = Math.round(selectedPrice * 100)
+        const res = await fetch('/api/pix/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: amountCents,
+            description: `Corrida Xupetinha - ${route.pickup} → ${route.destination}`,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) throw new Error(data.error || 'Erro ao gerar PIX')
+
+        setPixData({
+          externalId: data.external_id || data.transaction_id || String(amountCents),
+          qrCodeImage: data.qr_code_base64 || null,
+          qrCodeText: data.qr_code || data.qr_code_text || '',
+          amountLabel: `R$ ${selectedPrice.toFixed(2)}`,
+        })
+        setShowPixModal(true)
+      } catch (err) {
+        setPixError(err instanceof Error ? err.message : 'Erro ao gerar PIX. Tente novamente.')
+      } finally {
+        setPixLoading(false)
+      }
+    } else {
+      router.push('/uppi/ride/searching')
+    }
+  }
+
+  const handlePixPaid = () => {
+    setShowPixModal(false)
+    // Mark payment as done in sessionStorage so searching page knows
+    const rideData = buildRideData()
+    sessionStorage.setItem('selectedRide', JSON.stringify({ ...rideData, pixPaid: true }))
+    router.push('/uppi/ride/searching')
+  }
 
   return (
     <div className="h-dvh bg-background flex flex-col overflow-hidden relative">
@@ -493,18 +560,9 @@ export default function RideSelectPage() {
             <button
               type="button"
               onClick={() => {
-                // Store current selection for schedule page
                 sessionStorage.setItem(
                   'selectedRide',
-                  JSON.stringify({
-                    ...selectedRide,
-                    price: selectedPrice,
-                    distanceKm,
-                    durationText,
-                    vehicleType: selected,
-                    paymentMethod: paymentMethod || 'cash',
-                    stops: route.stops || [],
-                  })
+                  JSON.stringify(buildRideData())
                 )
                 router.push('/uppi/ride/schedule')
               }}
@@ -514,29 +572,37 @@ export default function RideSelectPage() {
             </button>
             <button
               type="button"
-              disabled={loadingDistance}
-              onClick={() => {
-                sessionStorage.setItem(
-                  'selectedRide',
-                  JSON.stringify({
-                    ...selectedRide,
-                    price: selectedPrice,
-                    distanceKm,
-                    durationText,
-                    vehicleType: selected,
-                    paymentMethod: paymentMethod || 'cash',
-                    stops: route.stops || [],
-                  })
-                )
-                router.push('/uppi/ride/searching')
-              }}
-              className="flex-1 h-[52px] rounded-[18px] bg-blue-600 text-white font-semibold text-[17px] tracking-tight transition-all disabled:opacity-50 active:scale-[0.98]"
+              disabled={loadingDistance || pixLoading}
+              onClick={handleConfirmRide}
+              className="flex-1 h-[52px] rounded-[18px] bg-blue-600 text-white font-semibold text-[17px] tracking-tight transition-all disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              Confirmar viagem - R$ {selectedPrice.toFixed(2)}
+              {pixLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Gerando PIX...
+                </>
+              ) : (
+                `Confirmar viagem - R$ ${selectedPrice.toFixed(2)}`
+              )}
             </button>
           </div>
+          {pixError && (
+            <p className="mt-2 text-center text-[13px] text-red-500 font-medium">{pixError}</p>
+          )}
         </div>
       </div>
+
+      {/* PIX MODAL - abre antes de buscar motorista */}
+      {showPixModal && pixData && (
+        <PixModal
+          externalId={pixData.externalId}
+          qrCodeImage={pixData.qrCodeImage}
+          qrCodeText={pixData.qrCodeText}
+          amountLabel={pixData.amountLabel}
+          onClose={() => setShowPixModal(false)}
+          onPaid={handlePixPaid}
+        />
+      )}
 
       {/* PAYMENT MODAL */}
       {showPayment && (

@@ -118,6 +118,7 @@ export default function SearchingDriverPage() {
         passenger_price_offer: selectedRide.price, distance_km: selectedRide.distanceKm,
         estimated_duration_minutes: parseInt(selectedRide.durationText) || 15,
         payment_method: pm[selectedRide.paymentMethod] || 'cash', vehicle_type: vt, status: 'pending',
+        ...(selectedRide.paymentMethod === 'Pix' ? { payment_status: 'paid' } : {}),
       }).select().single()
       if (error) throw error
       setRideId(data.id); setStatus('searching'); sub(data.id)
