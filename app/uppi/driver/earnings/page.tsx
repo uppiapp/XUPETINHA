@@ -90,12 +90,49 @@ export default function DriverEarningsPage() {
       }
       setHourlyDemand(slots)
 
-      setHotZones([
-        { name: 'Centro / Av. Paulista', demand: 'peak', distance: '2.3 km' },
-        { name: 'Aeroporto Congonhas', demand: 'high', distance: '8.1 km' },
-        { name: 'Shopping Ibirapuera', demand: 'high', distance: '4.5 km' },
-        { name: 'Terminal Barra Funda', demand: 'peak', distance: '6.2 km' },
-      ])
+      // Hot zones reais do banco
+      const { data: zones } = await supabase
+        .from('hot_zones')
+        .select('name, danger_level, latitude, longitude')
+        .eq('is_active', true)
+        .order('danger_level', { ascending: false })
+        .limit(6)
+
+      if (zones && zones.length > 0) {
+        // Calcular distância aproximada caso tenha geolocalização
+        let userLat: number | null = null
+        let userLng: number | null = null
+        try {
+          const pos = await new Promise<GeolocationPosition>((res, rej) =>
+            navigator.geolocation.getCurrentPosition(res, rej, { timeout: 3000 })
+          )
+          userLat = pos.coords.latitude
+          userLng = pos.coords.longitude
+        } catch { /* sem GPS, ok */ }
+
+        setHotZones(zones.map(z => {
+          let distance = '—'
+          if (userLat !== null && userLng !== null) {
+            const R = 6371
+            const dLat = (z.latitude - userLat) * Math.PI / 180
+            const dLng = (z.longitude - userLng) * Math.PI / 180
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(z.latitude * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+            const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            distance = `${km.toFixed(1)} km`
+          }
+          return {
+            name: z.name,
+            demand: (z.danger_level === 'high' ? 'peak' : z.danger_level === 'medium' ? 'high' : 'high') as 'high' | 'peak',
+            distance,
+          }
+        }))
+      } else {
+        // fallback
+        setHotZones([
+          { name: 'Centro / Av. Paulista', demand: 'peak', distance: '—' },
+          { name: 'Aeroporto Congonhas', demand: 'high', distance: '—' },
+        ])
+      }
     } catch (error) {
       console.error('Error loading earnings:', error)
     } finally {
