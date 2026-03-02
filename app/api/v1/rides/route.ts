@@ -7,8 +7,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireAuth()
     const body = await request.json()
-    
-    // Validate request body
+
     const validation = rideRequestSchema.safeParse(body)
     if (!validation.success) {
       return errorResponse('Dados inválidos: ' + validation.error.errors[0].message)
@@ -17,14 +16,6 @@ export async function POST(request: Request) {
     const data = validation.data
     const supabase = await createClient()
 
-    // Map vehicle type from request to DB enum (economy, comfort, premium, suv, van, moto)
-    const vehicleTypeMap: Record<string, string> = {
-      'car': 'economy',
-      'moto': 'moto',
-      'van': 'van',
-    }
-
-    // Create ride with correct schema
     const { data: ride, error } = await supabase
       .from('rides')
       .insert({
@@ -36,18 +27,14 @@ export async function POST(request: Request) {
         dropoff_lat: data.dropoff_lat,
         dropoff_lng: data.dropoff_lng,
         status: 'searching',
-        type: 'individual',
         payment_method: data.payment_method || 'pix',
-        estimated_price: data.passenger_price_offer,
-        notes: data.notes,
-        is_shared: false,
-        max_passengers: 1,
-        current_passengers: 1,
-        discount_amount: 0,
+        passenger_price_offer: data.passenger_price_offer,
+        notes: data.notes || null,
+        vehicle_type: data.vehicle_type || 'standard',
       })
       .select(`
         *,
-        passenger:users!rides_passenger_id_fkey(id, full_name, avatar_url, phone)
+        passenger:profiles!passenger_id(id, full_name, avatar_url, phone)
       `)
       .single()
 
@@ -56,7 +43,7 @@ export async function POST(request: Request) {
       return errorResponse('Erro ao criar corrida: ' + error.message, 500)
     }
 
-    // After creating ride, notify nearby drivers
+    // Notificar motoristas próximos
     try {
       await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/v1/notifications/send`, {
         method: 'POST',
@@ -91,13 +78,9 @@ export async function GET(request: Request) {
       .from('rides')
       .select(`
         *,
-        driver:drivers!rides_driver_id_fkey(
-          id,
-          rating,
-          total_rides,
-          user:users(id, full_name, avatar_url, phone)
-        ),
-        vehicle:vehicles(id, make, model, color, license_plate, type)
+        passenger:profiles!passenger_id(id, full_name, avatar_url, phone),
+        driver:profiles!driver_id(id, full_name, avatar_url, phone),
+        driver_profile:driver_profiles!driver_id(rating, total_rides, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type)
       `)
       .eq('passenger_id', user.id)
       .order('created_at', { ascending: false })

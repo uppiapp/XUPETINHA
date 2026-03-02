@@ -1,98 +1,82 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// GET - Get user profile
+// GET - Retorna perfil do usuário autenticado
 export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Get user from users table
-    const { data: userData, error: userError } = await supabase
-      .from('users')
+    // Buscar perfil na tabela profiles (id = auth.uid())
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
 
-    if (userError) throw userError
+    if (profileError) throw profileError
 
-    // Get profile data
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
+    // Buscar perfil de motorista se existir
+    const { data: driverProfile } = await supabase
+      .from('driver_profiles')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
 
-    // Get driver data if exists
-    const { data: driverData } = await supabase
-      .from('drivers')
-      .select('*, vehicles(*)')
-      .eq('user_id', user.id)
-      .single()
+    // Buscar saldo da carteira
+    const { data: walletBalance } = await supabase
+      .rpc('calculate_wallet_balance', { p_user_id: user.id })
 
     return NextResponse.json({
-      ...userData,
-      profile: profileData,
-      driver: driverData,
+      success: true,
+      ...profile,
+      driver_profile: driverProfile || null,
+      wallet_balance: walletBalance ?? 0,
     })
   } catch (error) {
     console.error('[v0] Error fetching profile:', error)
-    return NextResponse.json(
-      { error: 'Erro ao buscar perfil' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Erro ao buscar perfil' }, { status: 500 })
   }
 }
 
-// PATCH - Update profile
+// PATCH - Atualiza perfil do usuário
 export async function PATCH(request: Request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { full_name, phone, avatar_url, ...profileData } = body
+    const { full_name, phone, avatar_url, preferences, ...rest } = body
 
-    // Update users table
-    const { error: userError } = await supabase
-      .from('users')
-      .update({
-        full_name,
-        phone,
-        avatar_url,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id)
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    }
 
-    if (userError) throw userError
+    if (full_name !== undefined) updateData.full_name = full_name
+    if (phone !== undefined)     updateData.phone = phone
+    if (avatar_url !== undefined) updateData.avatar_url = avatar_url
+    if (preferences !== undefined) updateData.preferences = preferences
 
-    // Update or insert profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
-      .upsert({
-        user_id: user.id,
-        ...profileData,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
+      .eq('id', user.id)
       .select()
       .single()
 
-    if (profileError) throw profileError
+    if (error) throw error
 
     return NextResponse.json({ success: true, profile })
   } catch (error) {
     console.error('[v0] Error updating profile:', error)
-    return NextResponse.json(
-      { error: 'Erro ao atualizar perfil' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Erro ao atualizar perfil' }, { status: 500 })
   }
 }

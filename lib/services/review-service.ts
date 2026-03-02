@@ -2,12 +2,13 @@ import { createClient } from '@/lib/supabase/client'
 
 export interface ReviewData {
   ride_id: string
-  reviewer_id: string
-  reviewee_id: string
-  rating: number
+  rater_id: string
+  rated_id: string
+  score: number
   comment?: string
   tags?: string[]
   is_anonymous?: boolean
+  category_ratings?: Record<string, number>
 }
 
 export interface ReviewStats {
@@ -34,10 +35,12 @@ class ReviewService {
         .from('ratings')
         .insert({
           ride_id: data.ride_id,
-          reviewer_id: data.reviewer_id,
-          reviewee_id: data.reviewee_id,
-          rating: data.rating,
+          rater_id: data.rater_id,
+          rated_id: data.rated_id,
+          score: data.score,
           comment: data.comment || null,
+          is_anonymous: data.is_anonymous ?? false,
+          category_ratings: data.category_ratings ?? null,
         })
         .select()
         .single()
@@ -47,29 +50,8 @@ class ReviewService {
         return { success: false, error: error.message }
       }
 
-      // Insert tags if provided
-      if (data.tags && data.tags.length > 0) {
-        const tagInserts = data.tags.map(tag => ({
-          review_id: review.id,
-          tag_name: tag,
-        }))
-
-        await this.supabase
-          .from('review_tags')
-          .insert(tagInserts)
-      }
-
-      // Update reviewee's rating
-      await this.updateUserRating(data.reviewee_id)
-
-      // Mark ride as reviewed
-      await this.supabase
-        .from('rides')
-        .update({ 
-          passenger_reviewed: data.reviewer_id !== data.reviewee_id,
-          driver_reviewed: data.reviewer_id === data.reviewee_id 
-        })
-        .eq('id', data.ride_id)
+      // Update rated user's rating
+      await this.updateUserRating(data.rated_id)
 
       return { success: true, review }
     } catch (error) {
@@ -84,10 +66,10 @@ class ReviewService {
         .from('ratings')
         .select(`
           *,
-          reviewer:profiles!ratings_reviewer_id_fkey(id, full_name, avatar_url),
+          reviewer:profiles!ratings_rater_id_fkey(id, full_name, avatar_url),
           ride:rides(pickup_address, dropoff_address, created_at)
         `)
-        .eq('reviewee_id', userId)
+        .eq('rated_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit)
 

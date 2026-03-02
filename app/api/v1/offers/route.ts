@@ -4,14 +4,11 @@ import { offerLimiter, apiLimiter, rateLimitResponse } from '@/lib/utils/rate-li
 
 export async function POST(request: Request) {
   try {
-    // Rate limit: 5 offer creations per 30 seconds
     const rlResult = offerLimiter.check(request, 5)
     if (!rlResult.success) return rateLimitResponse(rlResult)
 
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -20,47 +17,40 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { ride_id, offered_price, estimated_arrival_minutes, message } = body
 
-    // Check if user is a driver
+    // Verificar se o usuário é motorista ativo
     const { data: driver } = await supabase
-      .from('drivers')
-      .select('id, user_id, status, vehicles(id, type)')
-      .eq('user_id', user.id)
+      .from('driver_profiles')
+      .select('id, is_verified, is_available, vehicle_type, vehicle_brand, vehicle_model, vehicle_plate')
+      .eq('id', user.id)
       .single()
 
-    if (!driver || driver.status !== 'approved') {
-      return NextResponse.json({ error: 'Only approved drivers can make offers' }, { status: 403 })
+    if (!driver) {
+      return NextResponse.json({ error: 'Motorista não encontrado' }, { status: 403 })
     }
 
-    if (!driver.vehicles || driver.vehicles.length === 0) {
-      return NextResponse.json({ error: 'Driver must have a registered vehicle' }, { status: 400 })
+    if (!driver.is_verified) {
+      return NextResponse.json({ error: 'Apenas motoristas verificados podem fazer ofertas' }, { status: 403 })
     }
 
-    // Set expiration time (5 minutes from now)
+    // Expiração em 5 minutos
     const expiresAt = new Date()
     expiresAt.setMinutes(expiresAt.getMinutes() + 5)
 
-    // Create offer
+    // Criar oferta em ride_offers
     const { data: offer, error } = await supabase
       .from('ride_offers')
       .insert({
         ride_id,
-        driver_id: driver.id,
-        vehicle_id: driver.vehicles[0].id,
+        driver_id: user.id,
         offered_price: offered_price || 0,
-        estimated_arrival_minutes: estimated_arrival_minutes || 5,
+        eta_minutes: estimated_arrival_minutes || 5,
         message,
         status: 'pending',
-        expires_at: expiresAt.toISOString(),
       })
       .select(`
         *,
-        driver:drivers(
-          id,
-          rating,
-          total_rides,
-          user:users(id, full_name, avatar_url, phone)
-        ),
-        vehicle:vehicles(id, make, model, color, license_plate, type)
+        driver:profiles!driver_id(id, full_name, avatar_url, phone),
+        driver_profile:driver_profiles!driver_id(rating, total_rides, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type)
       `)
       .single()
 
@@ -69,7 +59,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Notify passenger about new offer
+    // Notificar passageiro
     try {
       const { data: ride } = await supabase
         .from('rides')
@@ -82,8 +72,9 @@ export async function POST(request: Request) {
           user_id: ride.passenger_id,
           type: 'offer',
           title: 'Nova oferta recebida',
-          body: `Oferta de R$ ${offered_price.toFixed(2)}`,
+          body: `Oferta de R$ ${Number(offered_price).toFixed(2)} de ${driver.vehicle_brand} ${driver.vehicle_model}`,
           data: { ride_id, offer_id: offer.id },
+          is_read: false,
         })
       }
     } catch (notifError) {
@@ -99,14 +90,11 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // Rate limit: 30 reads per minute
     const rlResult = apiLimiter.check(request, 30)
     if (!rlResult.success) return rateLimitResponse(rlResult)
 
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -116,21 +104,15 @@ export async function GET(request: Request) {
     const ride_id = searchParams.get('ride_id')
 
     if (!ride_id) {
-      return NextResponse.json({ error: 'ride_id is required' }, { status: 400 })
+      return NextResponse.json({ error: 'ride_id é obrigatório' }, { status: 400 })
     }
 
-    // Get offers with driver and vehicle details
     const { data: offers, error } = await supabase
       .from('ride_offers')
       .select(`
         *,
-        driver:drivers(
-          id,
-          rating,
-          total_rides,
-          user:users(id, full_name, avatar_url, phone)
-        ),
-        vehicle:vehicles(id, make, model, color, license_plate, type, photo_url)
+        driver:profiles!driver_id(id, full_name, avatar_url, phone),
+        driver_profile:driver_profiles!driver_id(rating, total_rides, vehicle_brand, vehicle_model, vehicle_color, vehicle_plate, vehicle_type, vehicle_year)
       `)
       .eq('ride_id', ride_id)
       .in('status', ['pending', 'accepted'])
@@ -141,10 +123,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       offers: offers || [],
-      count: offers?.length || 0
+      count: offers?.length || 0,
     })
   } catch (error) {
     console.error('[v0] API error:', error)

@@ -4,14 +4,14 @@ import { apiLimiter } from '@/lib/utils/rate-limit'
 
 /**
  * PATCH /api/v1/driver/location
- * Atualiza a localizacao GPS do motorista em tempo real durante uma corrida.
+ * Atualiza a localização GPS do motorista em tempo real.
  * Grava na tabela driver_locations — Supabase Realtime propaga ao passageiro.
  */
 export async function PATCH(request: Request) {
   try {
     const identifier = request.headers.get('x-forwarded-for') || 'anonymous'
-    const { success } = await apiLimiter.check(identifier)
-    if (!success) {
+    const rlResult = apiLimiter.check(request, 60)
+    if (!rlResult.success) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
@@ -22,33 +22,32 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
-    const { latitude, longitude, heading, speed, accuracy, ride_id } = body
+    const { latitude, longitude, heading, speed, accuracy, is_available } = body
 
     if (latitude === undefined || longitude === undefined) {
-      return NextResponse.json(
-        { error: 'latitude e longitude sao obrigatorios' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'latitude e longitude são obrigatórios' }, { status: 400 })
     }
 
     if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      return NextResponse.json({ error: 'Coordenadas invalidas' }, { status: 400 })
+      return NextResponse.json({ error: 'Coordenadas inválidas' }, { status: 400 })
     }
 
-    // Upsert na tabela driver_locations (UNIQUE driver_id)
-    // O Supabase Realtime propaga o UPDATE ao passageiro automaticamente
+    const now = new Date().toISOString()
+
+    // Upsert na tabela driver_locations (usando colunas corretas: latitude, longitude)
     const { error } = await supabase
       .from('driver_locations')
       .upsert(
         {
           driver_id: user.id,
-          ride_id: ride_id || null,
-          lat: latitude,
-          lng: longitude,
+          latitude,
+          longitude,
           heading: heading ?? 0,
           speed: speed ?? 0,
           accuracy: accuracy ?? 0,
-          updated_at: new Date().toISOString(),
+          is_available: is_available !== undefined ? is_available : true,
+          last_updated: now,
+          updated_at: now,
         },
         { onConflict: 'driver_id' }
       )
@@ -57,19 +56,13 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    // Atualizar also driver_profiles para manter compatibilidade
+    // Manter driver_profiles sincronizado
     await supabase
       .from('driver_profiles')
-      .update({
-        current_lat: latitude,
-        current_lng: longitude,
-      })
+      .update({ current_lat: latitude, current_lng: longitude, updated_at: now })
       .eq('id', user.id)
 
-    return NextResponse.json({
-      success: true,
-      updated_at: new Date().toISOString(),
-    })
+    return NextResponse.json({ success: true, updated_at: now })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -77,13 +70,12 @@ export async function PATCH(request: Request) {
 
 /**
  * GET /api/v1/driver/location
- * Retorna a localizacao atual do motorista.
+ * Retorna a localização atual do motorista.
  */
 export async function GET(request: Request) {
   try {
-    const identifier = request.headers.get('x-forwarded-for') || 'anonymous'
-    const { success } = await apiLimiter.check(identifier)
-    if (!success) {
+    const rlResult = apiLimiter.check(request, 60)
+    if (!rlResult.success) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
@@ -103,16 +95,17 @@ export async function GET(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 404 })
+      return NextResponse.json({ error: 'Localização não encontrada' }, { status: 404 })
     }
 
     return NextResponse.json({
+      success: true,
       driver_id: data.driver_id,
-      location: { latitude: data.lat, longitude: data.lng },
+      location: { latitude: data.latitude, longitude: data.longitude },
       heading: data.heading,
       speed: data.speed,
-      ride_id: data.ride_id,
-      updated_at: data.updated_at,
+      is_available: data.is_available,
+      last_updated: data.last_updated,
     })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
