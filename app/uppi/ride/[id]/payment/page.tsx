@@ -27,6 +27,25 @@ export default function PaymentPage() {
 
   useEffect(() => {
     loadData()
+
+    // Real-time: listen for ride payment status updates
+    const channel = supabase
+      .channel(`ride-payment-${params.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'rides',
+        filter: `id=eq.${params.id}`,
+      }, (payload) => {
+        const updated = payload.new as Ride
+        setRide(updated)
+        if (updated.payment_status === 'paid') {
+          iosToast.success('Pagamento confirmado!')
+          triggerHaptic('heavy')
+          setTimeout(() => router.push(`/uppi/ride/${params.id}/review`), 1500)
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   // Verificar pagamento PIX a cada 5 segundos

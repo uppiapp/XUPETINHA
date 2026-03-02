@@ -62,7 +62,23 @@ export default function UsersPage() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchUsers() }, [fetchUsers])
+  useEffect(() => {
+    fetchUsers()
+
+    // Real-time: listen for user profile changes (bans, role changes, new users)
+    const supabase = createClient()
+    const channel = supabase
+      .channel('admin-users-realtime')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'profiles',
+      }, () => fetchUsers())
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'driver_profiles',
+      }, () => fetchUsers())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [fetchUsers])
 
   const filtered = users.filter((u) => {
     if (tab !== 'all' && u.user_type !== tab) return false

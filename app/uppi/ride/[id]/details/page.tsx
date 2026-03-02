@@ -20,6 +20,17 @@ export default function RideDetailsPage() {
 
   useEffect(() => {
     loadRideDetails()
+
+    // Real-time: listen for ride status changes
+    const channel = supabase
+      .channel(`ride-details-${params.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'rides',
+        filter: `id=eq.${params.id}`,
+      }, () => loadRideDetails())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [params.id])
 
   const loadRideDetails = async () => {

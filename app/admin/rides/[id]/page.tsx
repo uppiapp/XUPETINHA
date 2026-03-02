@@ -91,7 +91,26 @@ export default function RideDetailPage({ params }: { params: { id: string } }) {
     setLoading(false)
   }, [params.id])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+
+    // Real-time: auto-refresh ride detail
+    const channel = supabase
+      .channel(`admin-ride-detail-${params.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'rides',
+        filter: `id=eq.${params.id}`,
+      }, () => load())
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'payments',
+        filter: `ride_id=eq.${params.id}`,
+      }, () => load())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [load])
+
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const sendReport = async () => {
     setSendingReport(true)
@@ -100,6 +119,24 @@ export default function RideDetailPage({ params }: { params: { id: string } }) {
       if (res.ok) setReportSent(true)
     } finally {
       setSendingReport(false)
+    }
+  }
+
+  const adminForceStatus = async (status: string) => {
+    if (!confirm(`Tem certeza que deseja forcar status "${status}" nesta corrida?`)) return
+    setActionLoading(status)
+    try {
+      const updates: Record<string, any> = { status }
+      if (status === 'cancelled') {
+        updates.cancelled_at = new Date().toISOString()
+        updates.cancellation_reason = 'Cancelado pelo administrador'
+      }
+      if (status === 'completed') {
+        updates.completed_at = new Date().toISOString()
+      }
+      await supabase.from('rides').update(updates).eq('id', params.id)
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -143,6 +180,22 @@ export default function RideDetailPage({ params }: { params: { id: string } }) {
               <Mail className="w-4 h-4 mr-2" />
               {reportSent ? 'Enviado!' : sendingReport ? 'Enviando...' : 'Enviar Relatorio por Email'}
             </Button>
+          )}
+          {!['completed', 'cancelled'].includes(ride.status) && (
+            <>
+              <Button size="sm" onClick={() => adminForceStatus('completed')}
+                disabled={!!actionLoading}
+                className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {actionLoading === 'completed' ? 'Processando...' : 'Forcar Conclusao'}
+              </Button>
+              <Button size="sm" onClick={() => adminForceStatus('cancelled')}
+                disabled={!!actionLoading}
+                className="bg-red-600 hover:bg-red-700 text-white">
+                <XCircle className="w-4 h-4 mr-2" />
+                {actionLoading === 'cancelled' ? 'Processando...' : 'Forcar Cancelamento'}
+              </Button>
+            </>
           )}
         </div>
       </div>
