@@ -364,7 +364,7 @@ function TrackingContent() {
         {ride.status === 'completed' && (
           <button
             type="button"
-            onClick={() => router.push(`/uppi/rate?rideId=${rideId}`)}
+            onClick={() => router.push(`/uppi/ride/${rideId}/review`)}
             className="w-full h-[50px] rounded-[16px] bg-blue-500 text-white text-[16px] font-bold ios-press"
           >
             Avaliar corrida
