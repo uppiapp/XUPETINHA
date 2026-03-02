@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export interface RideReportData {
   rideId: string
@@ -232,7 +234,7 @@ export async function sendRideReportEmail(data: RideReportData): Promise<boolean
 </html>
 `
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: 'Uppi <noreply@uppi.app>',
       to: data.passengerEmail,
       subject: `Relatorio da sua corrida - ${formatCurrency(data.finalPrice)} | Uppi`,
