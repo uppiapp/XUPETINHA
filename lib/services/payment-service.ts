@@ -27,124 +27,79 @@ export interface PaymentStatus {
 }
 
 class PaymentService {
-  private baseUrl = process.env.NEXT_PUBLIC_GATEWAY_PARADISE_URL || 'https://api.gatewayparadise.com/v1'
-  private apiKey = process.env.NEXT_PUBLIC_GATEWAY_PARADISE_API_KEY || ''
+  private paradiseApiUrl = 'https://multi.paradisepags.com/api/v1/transaction.php'
+  private get apiKey() { return process.env.PARADISE_API_KEY || process.env.NEXT_PUBLIC_GATEWAY_PARADISE_API_KEY || '' }
+  private get productHash() { return process.env.PARADISE_PRODUCT_HASH || '' }
 
   /**
-   * Cria um pagamento PIX e retorna o QR Code
+   * Cria um pagamento PIX via Paradise e retorna o QR Code
    */
   async createPixPayment(request: PixPaymentRequest): Promise<PixPaymentResponse> {
     try {
-      console.log('[v0] Creating PIX payment:', request)
-
-      // Chamar API do Gateway Paradise
-      const response = await fetch(`${this.baseUrl}/pix/charge`, {
+      const response = await fetch(this.paradiseApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
+          'X-API-Key': this.apiKey,
         },
         body: JSON.stringify({
           amount: request.amount,
-          description: request.description,
-          payer: {
+          description: request.description || 'Pagamento PIX',
+          reference: `RIDE-${request.ride_id}-${Date.now()}`,
+          source: 'api_externa',
+          customer: {
             name: request.payer_name,
-            cpf: request.payer_cpf,
-          },
-          metadata: {
-            ride_id: request.ride_id,
+            document: request.payer_cpf,
           },
         }),
       })
 
-      if (!response.ok) {
-        console.error('[v0] Gateway Paradise error:', response.status)
-        return {
-          success: false,
-          error: 'Erro ao gerar PIX. Tente novamente.',
-        }
-      }
-
       const data = await response.json()
 
-      // Salvar no Supabase
-      const supabase = createClient()
-      const { error: dbError } = await supabase.from('payments').insert({
-        id: data.payment_id,
-        ride_id: request.ride_id,
-        amount: request.amount / 100, // Converter para reais
-        payment_method: 'pix',
-        status: 'pending',
-        pix_qr_code: data.qr_code,
-        pix_qr_code_text: data.qr_code_text,
-        expires_at: data.expires_at,
-      })
-
-      if (dbError) {
-        console.error('[v0] Database error:', dbError)
+      if (!response.ok || data.status !== 'success') {
+        return { success: false, error: data.message || 'Erro ao gerar PIX. Tente novamente.' }
       }
 
-      console.log('[v0] PIX payment created:', data.payment_id)
+      const tx = data.data
+      const supabase = createClient()
+      await supabase.from('payments').insert({
+        id: String(tx.transaction_id),
+        ride_id: request.ride_id,
+        amount: request.amount / 100,
+        payment_method: 'pix',
+        status: 'pending',
+        pix_qr_code: tx.qr_code_base64,
+        pix_qr_code_text: tx.qr_code,
+        expires_at: tx.expires_at,
+      }).throwOnError().catch(() => {})
 
       return {
         success: true,
-        payment_id: data.payment_id,
-        qr_code: data.qr_code,
-        qr_code_text: data.qr_code_text,
-        expires_at: data.expires_at,
+        payment_id: String(tx.transaction_id),
+        qr_code: tx.qr_code_base64,
+        qr_code_text: tx.qr_code,
+        expires_at: tx.expires_at,
       }
-    } catch (error) {
-      console.error('[v0] Payment error:', error)
-      return {
-        success: false,
-        error: 'Erro ao processar pagamento',
-      }
+    } catch {
+      return { success: false, error: 'Erro ao processar pagamento' }
     }
   }
 
   /**
-   * Verifica o status de um pagamento PIX
+   * Verifica o status de um pagamento PIX via /api/pix/status (proxy server-side)
    */
   async checkPaymentStatus(paymentId: string): Promise<PaymentStatus | null> {
     try {
-      console.log('[v0] Checking payment status:', paymentId)
+      const res = await fetch(`/api/pix/status?hash=${encodeURIComponent(paymentId)}`, { cache: 'no-store' })
+      const data = await res.json()
 
-      const response = await fetch(`${this.baseUrl}/pix/charge/${paymentId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-      })
-
-      if (!response.ok) {
-        console.error('[v0] Status check error:', response.status)
-        return null
-      }
-
-      const data = await response.json()
-
-      // Atualizar no Supabase
       if (data.status === 'paid') {
         const supabase = createClient()
-        await supabase.from('payments').update({
-          status: 'completed',
-          paid_at: data.paid_at,
-        }).eq('id', paymentId)
-
-        await supabase.from('rides').update({
-          payment_status: 'completed',
-        }).eq('id', data.metadata?.ride_id)
-
-        console.log('[v0] Payment confirmed:', paymentId)
+        await supabase.from('payments').update({ status: 'completed', paid_at: new Date().toISOString() }).eq('id', paymentId)
       }
 
-      return {
-        payment_id: paymentId,
-        status: data.status,
-        paid_at: data.paid_at,
-        amount: data.amount,
-      }
-    } catch (error) {
-      console.error('[v0] Status check error:', error)
+      return { payment_id: paymentId, status: data.status, amount: 0 }
+    } catch {
       return null
     }
   }
@@ -154,29 +109,10 @@ class PaymentService {
    */
   async cancelPayment(paymentId: string): Promise<boolean> {
     try {
-      console.log('[v0] Cancelling payment:', paymentId)
-
-      const response = await fetch(`${this.baseUrl}/pix/charge/${paymentId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-      })
-
-      if (!response.ok) {
-        return false
-      }
-
-      // Atualizar no Supabase
       const supabase = createClient()
-      await supabase.from('payments').update({
-        status: 'cancelled',
-      }).eq('id', paymentId)
-
-      console.log('[v0] Payment cancelled:', paymentId)
+      await supabase.from('payments').update({ status: 'cancelled' }).eq('id', paymentId)
       return true
-    } catch (error) {
-      console.error('[v0] Cancel error:', error)
+    } catch {
       return false
     }
   }
