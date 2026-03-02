@@ -1,8 +1,8 @@
 # UPPI - Painel Administrativo
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 3.0
-**Total de Paginas:** 28
+**Versao:** 4.0
+**Total de Paginas:** 33
 **Rota base:** /admin
 **Autenticacao:** profiles.is_admin = true (verificado em layout.tsx via requireAdmin)
 
@@ -10,7 +10,7 @@
 
 ## 1. Visao Geral
 
-O painel admin e uma aplicacao Next.js completa com **28 paginas**, sidebar com **5 grupos** de navegacao, header com notificacoes em tempo real e tema escuro proprio. Controla 100% do app em tempo real via Supabase Realtime.
+O painel admin e uma aplicacao Next.js completa com **33 paginas**, sidebar com **5 grupos** de navegacao, header com notificacoes em tempo real e tema escuro proprio. Controla 100% do app em tempo real via Supabase Realtime.
 
 ### Componentes base
 | Arquivo | Descricao |
@@ -22,8 +22,8 @@ O painel admin e uma aplicacao Next.js completa com **28 paginas**, sidebar com 
 ### Estrutura da Sidebar (5 grupos)
 ```
 Visao Geral  → Dashboard, Analytics, Monitor ao Vivo, Central de Emergencia
-Usuarios     → Passageiros, Motoristas, Ganhos Motoristas, Avaliacoes, Conquistas, Leaderboard, Indicacoes
-Corridas     → Corridas, Corridas em Grupo, Cidade a Cidade, Entregas, Ofertas de Preco
+Usuarios     → Passageiros, Motoristas, Ganhos Motoristas, Avaliacoes, Conquistas, Leaderboard, Indicacoes, Assinaturas Club, Locais Favoritos
+Corridas     → Corridas, Agendamentos, Corridas em Grupo, Cidade a Cidade, Entregas, Ofertas de Preco
 Operacoes    → Financeiro, Pagamentos, Cupons, Mensagens, Notificacoes, Suporte, Feed Social
 Sistema      → Webhooks, Logs de Erro, Configuracoes
 ```
@@ -40,7 +40,7 @@ Sistema      → Webhooks, Logs de Erro, Configuracoes
 | `/admin/monitor` | `monitor/page.tsx` | Sim | Mapa Google Maps com motoristas online ao vivo |
 | `/admin/emergency` | `emergency/page.tsx` | Sim | Central de alertas SOS: active/acknowledged/resolved, som de alerta, link para Maps |
 
-### GRUPO USUARIOS (7)
+### GRUPO USUARIOS (9)
 | Rota | Arquivo | Realtime | Descricao |
 |------|---------|----------|-----------|
 | `/admin/users` | `users/page.tsx` | Sim | Passageiros: banir, ativar, busca, filtros |
@@ -50,11 +50,15 @@ Sistema      → Webhooks, Logs de Erro, Configuracoes
 | `/admin/achievements` | `achievements/page.tsx` | Nao | Conquistas + Leaderboard combinados: pontos, streak, ranking |
 | `/admin/leaderboard` | `leaderboard/page.tsx` | Nao | Ranking global: 4 categorias, podio visual ouro/prata/bronze |
 | `/admin/referrals` | `referrals/page.tsx` | Nao | Indicacoes: historico, top indicadores, taxa de conversao |
+| `/admin/subscriptions` | `subscriptions/page.tsx` | Sim | Assinaturas Club Uppi: Basic/Premium/VIP, MRR, churn rate |
+| `/admin/favoritos` | `favoritos/page.tsx` | Nao | Locais favoritos: top 5 destinos, analytics de uso por tipo |
 
-### GRUPO CORRIDAS (5)
+### GRUPO CORRIDAS (7)
 | Rota | Arquivo | Realtime | Descricao |
 |------|---------|----------|-----------|
-| `/admin/rides` | `rides/page.tsx` | Sim | Corridas: forcar status, cancelar, filtros |
+| `/admin/rides` | `rides/page.tsx` | Sim | Corridas: forcar status, cancelar, filtros, link para detalhe |
+| `/admin/rides/[id]` | `rides/[id]/page.tsx` | Nao | Detalhe completo: passageiro, motorista, placa, veiculo, percurso, pagamento, avaliacao + botao enviar relatorio |
+| `/admin/agendamentos` | `agendamentos/page.tsx` | Sim | Corridas agendadas: confirmar, cancelar, badge de urgencia |
 | `/admin/group-rides` | `group-rides/page.tsx` | Sim | Corridas em grupo: codigo convite, membros, divisao de custos |
 | `/admin/cidade-a-cidade` | `cidade-a-cidade/page.tsx` | Sim | Viagens intermunicipais: distancia, cidades origem/destino |
 | `/admin/entregas` | `entregas/page.tsx` | Sim | Pedidos de entrega: tipo de pacote, remetente, entregador, rastreio |
@@ -461,4 +465,22 @@ Todas as tabelas acessadas pelo admin possuem RLS com policy `FOR ALL USING (is_
 
 ---
 
-**Atualizado em 01/03/2026**
+## 6. Relatorio de Corrida por Email (Resend)
+
+Ao finalizar uma corrida (status = `completed`), o sistema envia automaticamente um email HTML ao passageiro.
+
+**Conteudo do email:** nome do passageiro, nome completo do motorista, marca/modelo/cor/placa do veiculo, origem, destino, distancia, duracao real, valor pago, metodo de pagamento, horario de inicio e termino.
+
+| Arquivo | Funcao |
+|---------|--------|
+| `lib/email.ts` | Template HTML dark mode + `sendRideReportEmail()` |
+| `app/api/v1/rides/[id]/status/route.ts` | Dispara email automaticamente ao concluir corrida |
+| `app/api/v1/rides/[id]/report/route.ts` | Endpoint POST — admin reenvia o relatorio manualmente |
+| `app/admin/rides/[id]/page.tsx` | Botao "Enviar Relatorio por Email" na tela de detalhe |
+
+**Variavel de ambiente:** `RESEND_API_KEY` (resend.com — 3.000 emails/mes gratis)
+**Remetente:** `noreply@uppi.app` — alterar em `lib/email.ts` conforme dominio verificado.
+
+---
+
+**Atualizado em 02/03/2026**

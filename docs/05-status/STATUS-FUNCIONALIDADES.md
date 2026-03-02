@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
 **Ultima Atualizacao:** 02/03/2026
-**Versao:** 14.0
-**Status Geral:** 100% Operacional — Painel Admin completo (28 paginas, 5 grupos), banco com 11 tabelas ativas, 16 RLS policies, 17 indexes
+**Versao:** 15.0
+**Status Geral:** 100% Operacional — Painel Admin completo (33 paginas, 5 grupos), email de relatorio de corrida via Resend, banco com 11 tabelas ativas
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Categoria | Pronto | Total | % |
 |-----------|--------|-------|---|
-| Paginas (total) | 90 | 90 | 100% |
-| Paginas Admin | 28 | 28 | 100% |
-| API route.ts | 56 | 56 | 100% |
+| Paginas (total) | 95 | 95 | 100% |
+| Paginas Admin | 33 | 33 | 100% |
+| API route.ts | 57 | 57 | 100% |
 | Tabelas ativas no Banco | 11 | 11 | 100% |
 | RLS Policies ativas | 16 | 16 | 100% |
 | Indexes | 17 | 17 | 100% |
@@ -106,7 +106,7 @@
 - [x] /uppi/legal/privacy — politica de privacidade
 - [x] /uppi/legal/terms — termos de uso
 
-### Admin (28 paginas, 5 grupos) — /admin/
+### Admin (33 paginas, 5 grupos) — /admin/
 
 **Visao Geral (4)**
 - [x] /admin — dashboard KPIs realtime + AreaChart + BarChart
@@ -114,7 +114,7 @@
 - [x] /admin/monitor — mapa ao vivo, motoristas online (createMap() corrigido)
 - [x] /admin/emergency — Central SOS: active/acknowledged/resolved, som de alerta, link Maps
 
-**Usuarios (7)**
+**Usuarios (9)**
 - [x] /admin/users — passageiros: banir, ativar, busca, filtros
 - [x] /admin/drivers — motoristas: aprovar/rejeitar documentos
 - [x] /admin/drivers/earnings — ganhos: BarChart semanal, top motorista, tabela ordenavel
@@ -122,9 +122,13 @@
 - [x] /admin/achievements — conquistas + leaderboard: pontos, streak, ranking
 - [x] /admin/leaderboard — ranking global: 4 categorias, podio ouro/prata/bronze
 - [x] /admin/referrals — indicacoes: historico, top indicadores, taxa conversao
+- [x] /admin/subscriptions — assinaturas Club Uppi: Basic/Premium/VIP, MRR, churn (Realtime)
+- [x] /admin/favoritos — locais favoritos: top 5 destinos, analytics de uso por tipo
 
-**Corridas (5)**
-- [x] /admin/rides — corridas: forcar status, cancelar, filtros
+**Corridas (7)**
+- [x] /admin/rides — corridas: forcar status, cancelar, filtros, link para detalhe
+- [x] /admin/rides/[id] — detalhe completo: passageiro, motorista, placa, veiculo, percurso, pagamento, avaliacao
+- [x] /admin/agendamentos — corridas agendadas: confirmar, cancelar, badge de urgencia (Realtime)
 - [x] /admin/group-rides — corridas em grupo: codigo convite, membros, divisao custos
 - [x] /admin/cidade-a-cidade — viagens intermunicipais: distancia, cidades
 - [x] /admin/entregas — pedidos entrega: tipo pacote, remetente, entregador
@@ -143,6 +147,11 @@
 - [x] /admin/webhooks — endpoints de integracao, secret, historico
 - [x] /admin/logs — error_logs: filtro por nivel, stack trace (Realtime)
 - [x] /admin/settings — system_settings: 6 parametros, maintenance_mode
+
+**Email de Relatorio**
+- [x] lib/email.ts — template HTML dark mode + sendRideReportEmail()
+- [x] POST /api/v1/rides/[id]/report — endpoint manual para reenvio
+- [x] PATCH /api/v1/rides/[id]/status — dispara email automatico ao completar corrida
 
 ### Root (2)
 - [x] / — redirect para /auth/welcome

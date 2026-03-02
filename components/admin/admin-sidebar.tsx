@@ -34,6 +34,9 @@ import {
   Award,
   ShieldAlert,
   UserCheck,
+  Calendar,
+  Crown,
+  Heart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -58,12 +61,15 @@ const navGroups = [
       { href: '/admin/achievements', icon: Award, label: 'Conquistas' },
       { href: '/admin/leaderboard', icon: Trophy, label: 'Leaderboard' },
       { href: '/admin/referrals', icon: UserCheck, label: 'Indicacoes' },
+      { href: '/admin/subscriptions', icon: Crown, label: 'Assinaturas Club' },
+      { href: '/admin/favoritos', icon: Heart, label: 'Locais Favoritos' },
     ],
   },
   {
     label: 'Corridas',
     items: [
       { href: '/admin/rides', icon: Car, label: 'Corridas' },
+      { href: '/admin/agendamentos', icon: Calendar, label: 'Agendamentos' },
       { href: '/admin/group-rides', icon: Users2, label: 'Corridas em Grupo' },
       { href: '/admin/cidade-a-cidade', icon: MapPin, label: 'Cidade a Cidade' },
       { href: '/admin/entregas', icon: Truck, label: 'Entregas' },
