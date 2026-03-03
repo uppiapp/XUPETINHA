@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { RouteMap } from '@/components/route-map'
 import { createClient } from '@/lib/supabase/client'
+import { PixModal } from '@/components/pix-modal'
+import { paymentService } from '@/lib/services/payment-service'
 
 interface RouteData {
   pickup: string
@@ -94,6 +96,13 @@ export default function SearchingDriverPage() {
   const [acceptingId, setAcceptingId] = useState<string | null>(null)
   const [sheetUp, setSheetUp] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const [pixModal, setPixModal] = useState<{
+    externalId: string
+    qrCodeText: string
+    qrCodeImage: string | null
+    amountLabel: string
+    rideId: string
+  } | null>(null)
 
   useEffect(() => {
     const s = sessionStorage.getItem('rideRoute')
@@ -172,7 +181,36 @@ export default function SearchingDriverPage() {
         alert(err.error || 'Erro ao aceitar oferta')
         return
       }
-      router.push(`/uppi/ride/${rideId}/tracking`)
+
+      const isPix =
+        selectedRide?.paymentMethod?.toLowerCase() === 'pix' ||
+        selectedRide?.paymentMethod === 'Pix'
+
+      if (isPix) {
+        // Gerar PIX antes de navegar para tracking
+        const result = await paymentService.createPixPayment({
+          amount: Math.round(offer.offered_price * 100),
+          description: `Corrida Uppi - ${route.pickup} ate ${route.destination}`,
+          payer_name: '',
+          payer_cpf: '',
+          ride_id: rideId,
+        })
+
+        if (result.success && result.qr_code_text) {
+          setPixModal({
+            externalId: result.payment_id!,
+            qrCodeText: result.qr_code_text,
+            qrCodeImage: result.qr_code || null,
+            amountLabel: `R$ ${offer.offered_price.toFixed(2)}`,
+            rideId,
+          })
+        } else {
+          // Fallback: ir para tracking mesmo sem PIX gerado
+          router.push(`/uppi/ride/${rideId}/tracking`)
+        }
+      } else {
+        router.push(`/uppi/ride/${rideId}/tracking`)
+      }
     } catch { alert('Erro ao aceitar oferta. Tente novamente.') }
     finally { setAcceptingId(null) }
   }
@@ -311,6 +349,24 @@ export default function SearchingDriverPage() {
           </div>
         )}
       </div>
+
+      {pixModal && (
+        <PixModal
+          externalId={pixModal.externalId}
+          qrCodeText={pixModal.qrCodeText}
+          qrCodeImage={pixModal.qrCodeImage}
+          amountLabel={pixModal.amountLabel}
+          onClose={() => {
+            // Fechar modal sem pagar ainda: ir para tracking de qualquer forma
+            setPixModal(null)
+            router.push(`/uppi/ride/${pixModal.rideId}/tracking`)
+          }}
+          onPaid={() => {
+            setPixModal(null)
+            router.push(`/uppi/ride/${pixModal.rideId}/tracking`)
+          }}
+        />
+      )}
     </div>
   )
 }

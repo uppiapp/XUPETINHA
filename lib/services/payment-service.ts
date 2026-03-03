@@ -124,8 +124,6 @@ class PaymentService {
     const supabase = createClient()
 
     try {
-      console.log('[v0] Processing wallet payment:', { rideId, userId, amount })
-
       // Verificar saldo
       const { data: wallet } = await supabase
         .from('user_wallets')
@@ -134,7 +132,6 @@ class PaymentService {
         .single()
 
       if (!wallet || wallet.balance < amount) {
-        console.error('[v0] Insufficient balance')
         return false
       }
 
@@ -148,7 +145,6 @@ class PaymentService {
       })
 
       if (txError) {
-        console.error('[v0] Transaction error:', txError)
         return false
       }
 
@@ -173,10 +169,8 @@ class PaymentService {
         paid_at: new Date().toISOString(),
       })
 
-      console.log('[v0] Wallet payment completed')
       return true
-    } catch (error) {
-      console.error('[v0] Wallet payment error:', error)
+    } catch {
       return false
     }
   }
