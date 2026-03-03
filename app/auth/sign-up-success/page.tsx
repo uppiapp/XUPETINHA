@@ -1,65 +1,76 @@
-'use client'
+"use client"
 
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useRouter } from "next/navigation"
+import { UppiLogo } from "@/components/revolut-logo"
+import { ArrowLeft, Mail } from "lucide-react"
+import { AppBackground } from "@/components/app-background"
 
 export default function SignUpSuccessPage() {
   const router = useRouter()
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-black px-6">
-      <div className="w-full max-w-md text-center">
-        {/* Success Icon */}
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
-          <svg
-            className="h-8 w-8 text-green-600 dark:text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
+    <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: "#000" }}>
+      <AppBackground />
 
-        {/* Success Message */}
-        <h1 className="mb-3 text-2xl font-bold text-neutral-900 dark:text-white">
+      {/* Back button */}
+      <div className="relative z-10 px-5 pt-12 pb-2">
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="flex items-center justify-center w-9 h-9 rounded-full"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="w-4 h-4 text-white" />
+        </button>
+      </div>
+
+      {/* Logo */}
+      <div className="relative z-10 px-5 pt-6 pb-8">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0">
+            <UppiLogo className="w-4 h-4 text-black" />
+          </div>
+          <span className="text-sm font-medium text-white/80">Uppi</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 text-center">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+        >
+          <Mail className="w-7 h-7 text-white" />
+        </div>
+        <h1 className="text-[2rem] font-bold text-white leading-tight text-balance mb-3">
           Conta Criada com Sucesso!
         </h1>
-        <p className="mb-8 text-neutral-600 dark:text-neutral-400">
-          Verifique seu email para confirmar sua conta e começar a usar o Uppi.
+        <p className="text-[15px] text-white/50 leading-relaxed max-w-xs">
+          Enviamos um e-mail de confirmação para você. Verifique sua caixa de entrada para ativar sua conta e começar a usar o Uppi.
         </p>
+      </div>
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button
-            onClick={() => router.push('/uppi/home')}
-            className="w-full rounded-xl py-6 text-base"
-          >
-            Ir para o App
-          </Button>
-          <Button
-            onClick={() => router.push('/auth/login')}
-            variant="outline"
-            className="w-full rounded-xl py-6 text-base"
-          >
-            Fazer Login
-          </Button>
-        </div>
+      {/* Bottom CTA */}
+      <div className="relative z-10 px-5 pb-10 pt-6 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 shadow-md"
+        >
+          Ir para o Login
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/signup")}
+          className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 text-white"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+        >
+          Reenviar e-mail
+        </button>
 
-        {/* Help Text */}
-        <p className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">
-          Não recebeu o email?{' '}
-          <button
-            onClick={() => router.push('/auth/sign-up')}
-            className="text-blue-600 dark:text-blue-500 underline"
-          >
-            Reenviar
-          </button>
+        <p className="text-center text-[11px] text-white/30 leading-relaxed pt-1">
+          Não recebeu? Verifique sua pasta de spam ou tente reenviar.
         </p>
       </div>
     </div>
