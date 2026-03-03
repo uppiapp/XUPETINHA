@@ -143,22 +143,43 @@ export default function DriverHotZonesPage() {
       // Label marker
       const el = document.createElement('div')
       el.innerHTML = `<div style="background:${color};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.25);">${zone.label}</div>`
-      new window.google.maps.marker?.AdvancedMarkerElement?.({
-        map: mapInstance.current,
-        position: { lat: zone.lat, lng: zone.lng },
-        content: el,
-      })
+      const AdvancedMarkerCls = window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement
+        ? window.google.maps.marker.AdvancedMarkerElement
+        : null
+      if (AdvancedMarkerCls) {
+        new AdvancedMarkerCls({
+          map: mapInstance.current,
+          position: { lat: zone.lat, lng: zone.lng },
+          content: el,
+        })
+      } else {
+        new window.google.maps.Marker({
+          map: mapInstance.current,
+          position: { lat: zone.lat, lng: zone.lng },
+          label: { text: zone.label, color: 'white', fontWeight: '700', fontSize: '12px' },
+        })
+      }
     })
 
     // User marker
     if (userLat && userLng) {
       const el = document.createElement('div')
       el.innerHTML = `<div style="width:16px;height:16px;background:#007AFF;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,122,255,0.5)"></div>`
-      new window.google.maps.marker?.AdvancedMarkerElement?.({
-        map: mapInstance.current,
-        position: { lat: userLat, lng: userLng },
-        content: el,
-      })
+      const AdvancedMarkerCls2 = window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement
+        ? window.google.maps.marker.AdvancedMarkerElement
+        : null
+      if (AdvancedMarkerCls2) {
+        new AdvancedMarkerCls2({
+          map: mapInstance.current,
+          position: { lat: userLat, lng: userLng },
+          content: el,
+        })
+      } else {
+        new window.google.maps.Marker({
+          map: mapInstance.current,
+          position: { lat: userLat, lng: userLng },
+        })
+      }
     }
   }, [zones, userLat, userLng])
 
