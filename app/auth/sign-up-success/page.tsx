@@ -1,66 +1,100 @@
-'use client'
+"use client"
 
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { ArrowLeft, Mail } from "lucide-react"
+import { AppBackground } from "@/components/app-background"
+import { createClient } from "@/lib/supabase/client"
 
 export default function SignUpSuccessPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const email = searchParams.get("email") ?? ""
+  const [loading, setLoading] = useState(false)
+  const [resent, setResent] = useState(false)
+
+  async function handleResend() {
+    if (loading) return
+    setLoading(true)
+
+    const supabase = createClient()
+    await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+          `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    setResent(true)
+    setLoading(false)
+  }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-black px-6">
-      <div className="w-full max-w-md text-center">
-        {/* Success Icon */}
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
-          <svg
-            className="h-8 w-8 text-green-600 dark:text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
+    <div className="relative w-full h-full flex flex-col overflow-hidden" style={{ background: "#000" }}>
+      <AppBackground />
 
-        {/* Success Message */}
-        <h1 className="mb-3 text-2xl font-bold text-neutral-900 dark:text-white">
-          Conta Criada com Sucesso!
+      {/* Back button */}
+      <div className="relative z-10 px-5 pt-12 pb-2">
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="flex items-center justify-center w-9 h-9 rounded-full"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="w-4 h-4 text-white" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 text-center">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+        >
+          <Mail className="w-7 h-7 text-white" />
+        </div>
+        <h1 className="text-[2rem] font-bold text-white leading-tight text-balance mb-3">
+          Verifique seu e-mail
         </h1>
-        <p className="mb-8 text-neutral-600 dark:text-neutral-400">
-          Verifique seu email para confirmar sua conta e começar a usar o Uppi.
+        <p className="text-[15px] text-white/50 leading-relaxed max-w-xs">
+          Enviamos um link de confirmação para{" "}
+          {email ? (
+            <span className="text-white/80 font-medium">{email}</span>
+          ) : (
+            "seu e-mail"
+          )}
+          . Clique no link para ativar sua conta.
         </p>
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button
-            onClick={() => router.push('/uppi/home')}
-            className="w-full rounded-xl py-6 text-base"
-          >
-            Ir para o App
-          </Button>
-          <Button
-            onClick={() => router.push('/auth/login')}
-            variant="outline"
-            className="w-full rounded-xl py-6 text-base"
-          >
-            Fazer Login
-          </Button>
-        </div>
+        {resent && (
+          <p className="mt-4 text-[13px] text-white/40">
+            E-mail reenviado com sucesso.
+          </p>
+        )}
+      </div>
 
-        {/* Help Text */}
-        <p className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">
-          Não recebeu o email?{' '}
-          <button
-            onClick={() => router.push('/auth/sign-up')}
-            className="text-blue-600 dark:text-blue-500 underline"
-          >
-            Reenviar
-          </button>
-        </p>
+      {/* Bottom CTA */}
+      <div className="relative z-10 px-5 pb-10 pt-6 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 shadow-md"
+        >
+          Ir para o Login
+        </button>
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={loading || resent}
+          className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 text-white disabled:opacity-40"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+        >
+          {loading ? "Reenviando..." : resent ? "E-mail reenviado" : "Reenviar e-mail"}
+        </button>
       </div>
     </div>
   )
