@@ -37,10 +37,11 @@ export default function AdminLoginPage() {
       }
 
       // Verificar is_admin via API Route (usa service_role, ignora RLS)
+      // credentials: 'include' garante que o cookie de sessão seja enviado
       const checkRes = await fetch('/api/admin/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: authData.user.id }),
+        credentials: 'include',
       })
       const checkData = await checkRes.json()
 
@@ -51,8 +52,7 @@ export default function AdminLoginPage() {
       }
 
       router.push('/admin')
-    } catch (err) {
-      console.error('[v0] Admin login error:', err)
+    } catch {
       setError('Erro inesperado. Tente novamente.')
     } finally {
       setIsLoading(false)

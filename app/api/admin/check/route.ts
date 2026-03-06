@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ is_admin: false }, { status: 401 })
     }
 
-    // Usar service role para ignorar RLS e verificar flag is_admin
+    // Usar service role para ignorar RLS e verificar user_type
     const adminClient = createAdminClient()
     const { data: profile, error } = await adminClient
       .from('profiles')
-      .select('is_admin, full_name')
+      .select('user_type, full_name')
       .eq('id', user.id)
       .single()
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      is_admin: profile.is_admin ?? false,
+      is_admin: profile.user_type === 'admin',
       full_name: profile.full_name,
     })
   } catch {
