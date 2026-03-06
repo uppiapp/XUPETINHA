@@ -72,12 +72,43 @@ function RequestRideContent() {
         }
       }
       
-      // Geocode dropoff address or use placeholder
-      // TODO: Integrate with Google Maps Geocoding API
-      const dropoffCoords = { lat: -23.5600, lng: -46.6500 }
+      // Geocode dropoff address via Places Details API (place_id vem do searchParams)
+      const placeId = searchParams.get('dropoff_place_id')
+      let dropoffCoords = { lat: -23.5600, lng: -46.6500 } // fallback São Paulo
 
-      // Optimize route before creating ride
-      console.log('[v0] Optimizing route...')
+      if (placeId) {
+        try {
+          const geoRes = await fetch(`/api/v1/places/details?place_id=${encodeURIComponent(placeId)}`)
+          if (geoRes.ok) {
+            const geoData = await geoRes.json()
+            const loc = geoData?.result?.geometry?.location
+            if (loc) dropoffCoords = { lat: loc.lat, lng: loc.lng }
+          }
+        } catch {
+          // mantém fallback — não bloqueia a corrida
+        }
+      } else if (dropoffAddress) {
+        // Fallback: tentar geocoding por texto via API de geocode reversa não é ideal,
+        // mas usa o endereço como referência se não tiver place_id
+        try {
+          const geoRes = await fetch('/api/v1/places/autocomplete?input=' + encodeURIComponent(dropoffAddress))
+          if (geoRes.ok) {
+            const geoData = await geoRes.json()
+            const firstPid = geoData?.predictions?.[0]?.place_id
+            if (firstPid) {
+              const detailRes = await fetch(`/api/v1/places/details?place_id=${encodeURIComponent(firstPid)}`)
+              if (detailRes.ok) {
+                const detail = await detailRes.json()
+                const loc = detail?.result?.geometry?.location
+                if (loc) dropoffCoords = { lat: loc.lat, lng: loc.lng }
+              }
+            }
+          }
+        } catch {
+          // mantém fallback
+        }
+      }
+
       const routeResult = await optimizeRoute(pickupCoords, dropoffCoords)
       const optimizedRoute = routeResult.recommended
 
@@ -103,12 +134,9 @@ function RequestRideContent() {
         return
       }
 
-      console.log('[v0] Ride created, redirecting to offers page...')
-      
       // Redirect to offers page to see driver bids
       router.push(`/uppi/ride/${result.ride.id}/offers`)
-    } catch (error) {
-      console.error('[v0] Error creating ride:', error)
+    } catch {
       iosToast.error('Erro inesperado')
     } finally {
       setLoading(false)

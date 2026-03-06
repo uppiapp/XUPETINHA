@@ -29,7 +29,6 @@ export async function GET(request: Request) {
     })
 
     if (error) {
-      console.error('[v0] Error fetching leaderboard:', error)
       return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 })
     }
 
@@ -41,8 +40,7 @@ export async function GET(request: Request) {
       userRank: userRank || null,
       category,
     })
-  } catch (error) {
-    console.error('[v0] Unexpected error in leaderboard API:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

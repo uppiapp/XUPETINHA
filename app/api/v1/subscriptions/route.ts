@@ -21,8 +21,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ subscription: subscription || null })
-  } catch (error) {
-    console.error('[API] Error fetching subscription:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -66,8 +65,7 @@ export async function POST(request: Request) {
     if (error) throw error
 
     return NextResponse.json({ subscription: data })
-  } catch (error) {
-    console.error('[API] Error creating subscription:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

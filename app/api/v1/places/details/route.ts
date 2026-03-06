@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api/require-auth'
 
 export async function GET(request: Request) {
+  const { user, errorResponse } = await requireAuth()
+  if (errorResponse) return errorResponse
+
   const { searchParams } = new URL(request.url)
   const place_id = searchParams.get('place_id')
 
@@ -22,13 +26,11 @@ export async function GET(request: Request) {
     const data = await response.json()
 
     if (data.status !== 'OK') {
-      console.error('[v0] Place Details error:', data.status, data.error_message)
       return NextResponse.json({ error: 'Place not found' }, { status: 404 })
     }
 
     return NextResponse.json(data)
-  } catch (error) {
-    console.error('[v0] Place details error:', error)
+  } catch {
     return NextResponse.json({ error: 'Failed to get place details' }, { status: 500 })
   }
 }

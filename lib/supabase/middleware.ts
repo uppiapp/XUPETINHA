@@ -34,23 +34,40 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes - require authentication OR onboarding completion
-  const protectedPaths = ['/uppi']
-  const isProtectedRoute = protectedPaths.some((path) =>
+  // Public admin routes — never redirect these (avoid infinite loop)
+  const adminPublicPaths = ['/admin/login', '/admin/forgot-password']
+  const isAdminPublicRoute = adminPublicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   )
 
+  // Protected routes - require real authentication
+  const protectedPaths = ['/uppi', '/admin']
+  const isProtectedRoute =
+    !isAdminPublicRoute &&
+    protectedPaths.some((path) =>
+      request.nextUrl.pathname.startsWith(path)
+    )
+
   if (isProtectedRoute && !user) {
-    const onboardingDone = request.cookies.get('onboarding_done')
-    if (!onboardingDone) {
+    // /admin (exceto /admin/login) redireciona para a tela de login admin
+    if (request.nextUrl.pathname.startsWith('/admin')) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/onboarding/splash'
+      redirectUrl.pathname = '/admin/login'
       const redirectResponse = NextResponse.redirect(redirectUrl)
       supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
         redirectResponse.cookies.set(name, value)
       })
       return redirectResponse
     }
+
+    // /uppi requires a real authenticated session — cookie bypass removed
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/onboarding/splash'
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
+      redirectResponse.cookies.set(name, value)
+    })
+    return redirectResponse
   }
 
   // Auth routes - redirect to home if already logged in

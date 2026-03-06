@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api/require-auth'
 
 export async function GET(request: Request) {
+  const { user, errorResponse } = await requireAuth()
+  if (errorResponse) return errorResponse
+
   const { searchParams } = new URL(request.url)
   const input = searchParams.get('input')
 
@@ -22,13 +26,11 @@ export async function GET(request: Request) {
     const data = await response.json()
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-      console.error('[v0] Places API error:', data.status, data.error_message)
       return NextResponse.json({ predictions: [] })
     }
 
     return NextResponse.json(data)
-  } catch (error) {
-    console.error('[v0] Autocomplete error:', error)
+  } catch {
     return NextResponse.json({ error: 'Failed to get predictions' }, { status: 500 })
   }
 }

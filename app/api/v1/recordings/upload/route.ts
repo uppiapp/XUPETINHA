@@ -98,8 +98,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to save recording metadata' }, { status: 500 })
     }
 
-    console.log('[v0] Recording uploaded and encrypted successfully:', recording.id)
-
     return NextResponse.json({
       success: true,
       id: recording.id,

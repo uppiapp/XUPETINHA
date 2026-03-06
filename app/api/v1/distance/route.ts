@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api/require-auth'
 
 export async function POST(request: Request) {
+  const { user, errorResponse } = await requireAuth()
+  if (errorResponse) return errorResponse
+
   try {
     const body = await request.json()
     const { originLat, originLng, destLat, destLng } = body
@@ -38,15 +42,13 @@ export async function POST(request: Request) {
         Math.sin(dLng / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     const distKm = R * c
-    // Estimate 30km/h average city speed
     const durationMin = Math.round((distKm / 30) * 60)
 
     return NextResponse.json({
       distance: { value: Math.round(distKm * 1000), text: `${distKm.toFixed(1)} km` },
       duration: { value: durationMin * 60, text: `${durationMin} min` },
     })
-  } catch (error) {
-    console.error('Distance API error:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

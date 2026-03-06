@@ -26,7 +26,7 @@ INSERT INTO auth.users (
   'authenticated',
   'authenticated',
   'admin@uppi.com',
-  crypt('Admin123!', gen_salt('bf')), -- senha: Admin123!
+  crypt('Admin123!', gen_salt('bf')), -- ATENÇÃO: altere esta senha antes de executar em produção!
   NOW(),
   NOW(),
   NOW(),

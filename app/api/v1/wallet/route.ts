@@ -32,8 +32,7 @@ export async function GET() {
       transactions: transactions || [],
       balance,
     })
-  } catch (error) {
-    console.error('[v0] Error fetching transactions:', error)
+  } catch {
     return NextResponse.json({ error: 'Erro ao buscar transações' }, { status: 500 })
   }
 }
@@ -115,8 +114,7 @@ export async function POST(request: Request) {
       transaction,
       new_balance: balanceAfter,
     })
-  } catch (error) {
-    console.error('[v0] Error creating transaction:', error)
+  } catch {
     return NextResponse.json({ error: 'Erro ao processar transação' }, { status: 500 })
   }
 }

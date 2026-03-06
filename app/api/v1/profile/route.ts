@@ -37,8 +37,7 @@ export async function GET() {
       driver_profile: driverProfile || null,
       wallet_balance: walletBalance ?? 0,
     })
-  } catch (error) {
-    console.error('[v0] Error fetching profile:', error)
+  } catch {
     return NextResponse.json({ error: 'Erro ao buscar perfil' }, { status: 500 })
   }
 }
@@ -75,8 +74,7 @@ export async function PATCH(request: Request) {
     if (error) throw error
 
     return NextResponse.json({ success: true, profile })
-  } catch (error) {
-    console.error('[v0] Error updating profile:', error)
+  } catch {
     return NextResponse.json({ error: 'Erro ao atualizar perfil' }, { status: 500 })
   }
 }

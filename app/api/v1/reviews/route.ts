@@ -101,8 +101,7 @@ export async function POST(request: Request) {
       if (error) throw error
       return NextResponse.json({ success: true, review: data })
     }
-  } catch (error) {
-    console.error('[v0] Error creating review:', error)
+  } catch {
     return NextResponse.json({ error: 'Failed to create review' }, { status: 500 })
   }
 }
@@ -127,8 +126,7 @@ export async function GET(request: Request) {
     if (error) throw error
 
     return NextResponse.json({ pending_reviews: data || [] })
-  } catch (error) {
-    console.error('[v0] Error fetching pending reviews:', error)
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 })
   }
 }

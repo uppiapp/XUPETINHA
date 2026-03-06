@@ -87,8 +87,7 @@ export async function POST(request: Request) {
       alert,
       contacts_notified: contacts?.length || 0,
     })
-  } catch (error) {
-    console.error('[API] Error creating emergency alert:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

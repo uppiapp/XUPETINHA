@@ -1,25 +1,24 @@
 import { createClient } from './server'
 
 // Helper functions para operações no banco de dados
-// Usa as tabelas corretas: profiles, driver_profiles, driver_locations, rides, ride_offers
+// Usa as tabelas reais: profiles, driver_profiles, driver_locations, rides, ride_offers, ride_tracking
+// RPCs disponíveis: get_nearby_drivers, calculate_ride_price
 
 export async function findNearbyDrivers(
   pickupLat: number,
   pickupLng: number,
-  radiusKm: number = 5,
-  vehicleType?: string
+  radiusKm: number = 5
 ) {
   const supabase = await createClient()
 
-  const { data, error } = await supabase.rpc('find_nearby_drivers', {
-    pickup_lat: pickupLat,
-    pickup_lng: pickupLng,
-    radius_km: radiusKm,
-    vehicle_type_filter: vehicleType || null,
+  const { data, error } = await supabase.rpc('get_nearby_drivers', {
+    p_lat: pickupLat,
+    p_lng: pickupLng,
+    p_radius_km: radiusKm,
   })
 
   if (error) {
-    console.error('[v0] Error finding nearby drivers:', error)
+    console.error('[db] Error finding nearby drivers:', error)
     throw error
   }
 
@@ -28,19 +27,17 @@ export async function findNearbyDrivers(
 
 export async function calculateRidePrice(
   distanceKm: number,
-  durationMinutes: number,
-  vehicleType: string = 'standard'
+  durationMinutes: number = 0
 ) {
   const supabase = await createClient()
 
   const { data, error } = await supabase.rpc('calculate_ride_price', {
-    distance_km: distanceKm,
-    duration_minutes: durationMinutes,
-    vehicle_type_param: vehicleType,
+    p_distance_km: distanceKm,
+    p_duration_minutes: durationMinutes,
   })
 
   if (error) {
-    console.error('[v0] Error calculating ride price:', error)
+    console.error('[db] Error calculating ride price:', error)
     throw error
   }
 
@@ -57,7 +54,7 @@ export async function getUserProfile(userId: string) {
     .single()
 
   if (error) {
-    console.error('[v0] Error fetching profile:', error)
+    console.error('[db] Error fetching profile:', error)
     throw error
   }
 
@@ -74,7 +71,7 @@ export async function getDriverProfile(userId: string) {
     .single()
 
   if (error) {
-    console.error('[v0] Error fetching driver_profile:', error)
+    console.error('[db] Error fetching driver_profile:', error)
     throw error
   }
 
@@ -96,7 +93,7 @@ export async function getRideWithDetails(rideId: string) {
     .single()
 
   if (error) {
-    console.error('[v0] Error fetching ride:', error)
+    console.error('[db] Error fetching ride:', error)
     throw error
   }
 
@@ -118,7 +115,7 @@ export async function getUserRides(userId: string, limit: number = 10) {
     .limit(limit)
 
   if (error) {
-    console.error('[v0] Error fetching user rides:', error)
+    console.error('[db] Error fetching user rides:', error)
     throw error
   }
 
@@ -139,7 +136,7 @@ export async function getDriverRides(driverId: string, limit: number = 10) {
     .limit(limit)
 
   if (error) {
-    console.error('[v0] Error fetching driver rides:', error)
+    console.error('[db] Error fetching driver rides:', error)
     throw error
   }
 
@@ -160,7 +157,7 @@ export async function getRideOffers(rideId: string) {
     .order('offered_price', { ascending: true })
 
   if (error) {
-    console.error('[v0] Error fetching ride offers:', error)
+    console.error('[db] Error fetching ride offers:', error)
     throw error
   }
 
@@ -171,14 +168,17 @@ export async function getUserWalletBalance(userId: string): Promise<number> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .rpc('calculate_wallet_balance', { p_user_id: userId })
+    .from('profiles')
+    .select('wallet_balance')
+    .eq('id', userId)
+    .single()
 
   if (error) {
-    console.error('[v0] Error fetching wallet balance:', error)
+    console.error('[db] Error fetching wallet balance:', error)
     return 0
   }
 
-  return data ?? 0
+  return data?.wallet_balance ?? 0
 }
 
 export async function getUserNotifications(userId: string, limit: number = 20) {
@@ -192,7 +192,7 @@ export async function getUserNotifications(userId: string, limit: number = 20) {
     .limit(limit)
 
   if (error) {
-    console.error('[v0] Error fetching notifications:', error)
+    console.error('[db] Error fetching notifications:', error)
     throw error
   }
 
@@ -204,11 +204,11 @@ export async function markNotificationAsRead(notificationId: string) {
 
   const { error } = await supabase
     .from('notifications')
-    .update({ is_read: true })
+    .update({ is_read: true, read_at: new Date().toISOString() })
     .eq('id', notificationId)
 
   if (error) {
-    console.error('[v0] Error marking notification as read:', error)
+    console.error('[db] Error marking notification as read:', error)
     throw error
   }
 }
@@ -223,64 +223,46 @@ export async function getUserFavorites(userId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[v0] Error fetching favorites:', error)
+    console.error('[db] Error fetching favorites:', error)
     throw error
   }
 
   return favorites
 }
 
-export async function getActiveCoupons() {
+export async function validatePromoCode(code: string, userId: string) {
   const supabase = await createClient()
 
-  const { data: coupons, error } = await supabase
-    .from('coupons')
+  const { data: promo, error: promoError } = await supabase
+    .from('promo_codes')
     .select('*')
-    .eq('is_active', true)
-    .gte('valid_until', new Date().toISOString())
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('[v0] Error fetching coupons:', error)
-    throw error
-  }
-
-  return coupons
-}
-
-export async function validateCoupon(code: string, userId: string) {
-  const supabase = await createClient()
-
-  const { data: coupon, error: couponError } = await supabase
-    .from('coupons')
-    .select('*')
-    .eq('code', code)
+    .eq('code', code.toUpperCase())
     .eq('is_active', true)
     .single()
 
-  if (couponError) {
+  if (promoError) {
     return { valid: false, message: 'Cupom inválido' }
   }
 
-  if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
+  if (promo.valid_until && new Date(promo.valid_until) < new Date()) {
     return { valid: false, message: 'Cupom expirado' }
   }
 
-  if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
+  if (promo.max_uses && (promo.used_count ?? 0) >= promo.max_uses) {
     return { valid: false, message: 'Cupom esgotado' }
   }
 
   const { data: userUsage } = await supabase
-    .from('coupon_uses')
+    .from('promo_code_uses')
     .select('id')
-    .eq('coupon_id', coupon.id)
+    .eq('promo_code_id', promo.id)
     .eq('user_id', userId)
 
-  if (userUsage && coupon.user_usage_limit && userUsage.length >= coupon.user_usage_limit) {
+  if (userUsage && promo.max_uses_per_user && userUsage.length >= promo.max_uses_per_user) {
     return { valid: false, message: 'Você já usou este cupom' }
   }
 
-  return { valid: true, coupon }
+  return { valid: true, promo }
 }
 
 export async function getUserAchievements(userId: string) {
@@ -288,22 +270,22 @@ export async function getUserAchievements(userId: string) {
 
   const { data: achievements, error } = await supabase
     .from('user_achievements')
-    .select('*')
+    .select(`
+      *,
+      achievement:achievements!achievement_id(*)
+    `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[v0] Error fetching achievements:', error)
+    console.error('[db] Error fetching achievements:', error)
     throw error
   }
 
   return achievements
 }
 
-export async function getLeaderboard(
-  period: 'weekly' | 'monthly' | 'all_time' = 'weekly',
-  limit: number = 10
-) {
+export async function getLeaderboard(limit: number = 10) {
   const supabase = await createClient()
 
   const { data: leaderboard, error } = await supabase
@@ -312,34 +294,47 @@ export async function getLeaderboard(
       *,
       user:profiles!user_id(id, full_name, avatar_url)
     `)
-    .eq('period', period)
-    .order('rank', { ascending: true })
+    .order('total_points', { ascending: false })
     .limit(limit)
 
   if (error) {
-    console.error('[v0] Error fetching leaderboard:', error)
+    console.error('[db] Error fetching leaderboard:', error)
     throw error
   }
 
   return leaderboard
 }
 
-export async function getSocialPosts(limit: number = 20) {
+export async function getSystemConfig(key: string) {
   const supabase = await createClient()
 
-  const { data: posts, error } = await supabase
-    .from('social_posts')
-    .select(`
-      *,
-      author:profiles!user_id(id, full_name, avatar_url)
-    `)
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  const { data, error } = await supabase
+    .from('system_config')
+    .select('value')
+    .eq('key', key)
+    .single()
 
   if (error) {
-    console.error('[v0] Error fetching social posts:', error)
-    throw error
+    console.error('[db] Error fetching system config:', error)
+    return null
   }
 
-  return posts
+  return data?.value
+}
+
+export async function getActiveHotZones() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('hot_zones')
+    .select('*')
+    .eq('is_active', true)
+    .or(`valid_until.is.null,valid_until.gt.${new Date().toISOString()}`)
+
+  if (error) {
+    console.error('[db] Error fetching hot zones:', error)
+    return []
+  }
+
+  return data
 }

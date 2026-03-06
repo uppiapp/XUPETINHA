@@ -26,10 +26,19 @@ async function createAdmin() {
 
   console.log('🔧 Criando usuário admin...')
 
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@uppi.com'
+  const adminPassword = process.env.ADMIN_PASSWORD
+
+  if (!adminPassword) {
+    console.error('Erro: defina ADMIN_PASSWORD como variável de ambiente antes de executar.')
+    console.log('Exemplo: ADMIN_PASSWORD=suaSenhaForte node scripts/create-admin.js')
+    process.exit(1)
+  }
+
   // Criar usuário no Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: 'admin@uppi.com',
-    password: 'Admin123!',
+    email: adminEmail,
+    password: adminPassword,
     email_confirm: true,
     user_metadata: {
       full_name: 'Admin Uppi'
@@ -61,9 +70,8 @@ async function createAdmin() {
   }
 
   console.log('✅ Perfil admin criado com sucesso!')
-  console.log('\n📧 Email: admin@uppi.com')
-  console.log('🔑 Senha: Admin123!')
-  console.log('\n🎉 Acesse /admin/login para entrar no painel')
+  console.log('\nEmail:', adminEmail)
+  console.log('\nAcesse /admin/login para entrar no painel')
 }
 
 createAdmin().catch(console.error)

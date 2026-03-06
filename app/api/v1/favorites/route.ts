@@ -19,8 +19,7 @@ export async function GET() {
     if (error) throw error
 
     return NextResponse.json({ favorites: favorites || [] })
-  } catch (error) {
-    console.error('[v0] Error fetching favorites:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

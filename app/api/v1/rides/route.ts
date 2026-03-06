@@ -39,7 +39,6 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('[v0] Error creating ride:', error)
       return errorResponse('Erro ao criar corrida: ' + error.message, 500)
     }
 
@@ -55,8 +54,8 @@ export async function POST(request: Request) {
           ride_id: ride.id,
         }),
       })
-    } catch (notifError) {
-      console.error('[v0] Error sending notifications:', notifError)
+    } catch {
+      // falha silenciosa — notificação não é crítica
     }
 
     return successResponse(ride, 'Corrida criada com sucesso')
@@ -93,7 +92,6 @@ export async function GET(request: Request) {
     const { data: rides, error } = await query
 
     if (error) {
-      console.error('[v0] Error fetching rides:', error)
       return errorResponse('Erro ao buscar corridas: ' + error.message, 500)
     }
 
