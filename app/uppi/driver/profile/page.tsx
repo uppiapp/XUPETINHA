@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { Profile, DriverProfile } from '@/lib/types/database'
+import { DriverBottomNavigation } from '@/components/driver-bottom-navigation'
 
 const VEHICLE_LABELS: Record<string, string> = {
   economy: 'Carro Econômico', electric: 'Elétrico', premium: 'Premium',
@@ -251,11 +252,11 @@ export default function DriverProfilePage() {
         </div>
 
         {/* Links rápidos */}
-        <div className="bg-[color:var(--card)] rounded-[24px] border border-[color:var(--border)] overflow-hidden animate-ios-fade-up" style={{ animationDelay: '160ms' }}>
+        <div className="bg-[color:var(--card)] rounded-[24px] border border-[color:var(--border)] overflow-hidden animate-ios-fade-up mb-24" style={{ animationDelay: '160ms' }}>
           {[
-            { label: 'Histórico de corridas', icon: '📋', route: '/uppi/driver/history' },
-            { label: 'Minhas avaliações', icon: '⭐', route: '/uppi/driver/ratings' },
-            { label: 'Documentos', icon: '📄', route: '/uppi/driver/documents' },
+            { label: 'Histórico de corridas', route: '/uppi/driver/history' },
+            { label: 'Minhas avaliações', route: '/uppi/driver/ratings' },
+            { label: 'Documentos', route: '/uppi/driver/documents' },
           ].map((item, i) => (
             <button
               key={item.route}
@@ -274,6 +275,7 @@ export default function DriverProfilePage() {
           ))}
         </div>
       </main>
+      <DriverBottomNavigation />
     </div>
   )
 }
