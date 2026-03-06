@@ -97,7 +97,7 @@ export default function SignupPage() {
       {/* Step indicator */}
       <div className="relative z-10 px-5 pt-2">
         <div className="flex gap-[5px]">
-          {[1, 2, 3].map((s) => (
+          {(role === "driver" ? [1] : [1, 2, 3]).map((s) => (
             <div
               key={s}
               className="flex-1 h-[2px] rounded-full overflow-hidden"
@@ -346,7 +346,11 @@ export default function SignupPage() {
           onClick={() => {
             if (step === 1 && step1Ok) {
               setError("")
-              setStep(2)
+              if (role === "driver") {
+                router.push("/auth/driver/welcome")
+              } else {
+                setStep(2)
+              }
             } else if (step === 2 && step2Ok) {
               setError("")
               setStep(3)
