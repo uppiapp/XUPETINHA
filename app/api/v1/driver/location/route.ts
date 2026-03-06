@@ -56,10 +56,12 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    // Manter driver_profiles sincronizado
+    // Manter driver_profiles sincronizado (incluindo is_available)
+    const profileUpdate: Record<string, unknown> = { current_lat: latitude, current_lng: longitude, updated_at: now }
+    if (is_available !== undefined) profileUpdate.is_available = is_available
     await supabase
       .from('driver_profiles')
-      .update({ current_lat: latitude, current_lng: longitude, updated_at: now })
+      .update(profileUpdate)
       .eq('id', user.id)
 
     return NextResponse.json({ success: true, updated_at: now })
