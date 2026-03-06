@@ -20,13 +20,15 @@ export default function SignupPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [role, setRole] = useState<"passenger" | "driver" | "">("")
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   const passwordOk = requirements.every((r) => r.test(password))
-  const step1Ok = name.trim().length > 0 && email.includes("@")
-  const step2Ok = passwordOk
+  const step1Ok = role !== ""
+  const step2Ok = name.trim().length > 0 && email.includes("@")
+  const step3Ok = passwordOk
 
   async function handleGoogleSignup() {
     const supabase = createClient()
@@ -39,7 +41,7 @@ export default function SignupPage() {
   }
 
   async function handleCreateAccount() {
-    if (!step2Ok) return
+    if (!step3Ok) return
     setLoading(true)
     setError("")
 
@@ -53,6 +55,7 @@ export default function SignupPage() {
           `${window.location.origin}/auth/callback`,
         data: {
           full_name: name,
+          role,
         },
       },
     })
@@ -67,7 +70,11 @@ export default function SignupPage() {
       return
     }
 
-    router.push(`/auth/sign-up-success?email=${encodeURIComponent(email)}`)
+    if (role === "driver") {
+      router.push(`/auth/sign-up-success?email=${encodeURIComponent(email)}&role=driver`)
+    } else {
+      router.push(`/auth/sign-up-success?email=${encodeURIComponent(email)}`)
+    }
   }
 
   return (
@@ -90,7 +97,7 @@ export default function SignupPage() {
       {/* Step indicator */}
       <div className="relative z-10 px-5 pt-2">
         <div className="flex gap-[5px]">
-          {[1, 2].map((s) => (
+          {[1, 2, 3].map((s) => (
             <div
               key={s}
               className="flex-1 h-[2px] rounded-full overflow-hidden"
@@ -117,17 +124,19 @@ export default function SignupPage() {
           <span className="text-sm font-medium text-white/80">Uppi</span>
         </div>
         <h1 className="text-[2rem] font-bold text-white leading-tight text-balance">
-          {step === 1 ? "Crie sua conta" : "Crie sua senha"}
+          {step === 1 ? "Como você vai usar?" : step === 2 ? "Crie sua conta" : "Crie sua senha"}
         </h1>
         <p className="mt-2 text-[15px] text-white/50 leading-relaxed">
           {step === 1
-            ? "Passo 1 de 2 — Suas informações básicas."
-            : "Passo 2 de 2 — Escolha uma senha segura."}
+            ? "Passo 1 de 3 — Escolha seu perfil."
+            : step === 2
+            ? "Passo 2 de 3 — Suas informações básicas."
+            : "Passo 3 de 3 — Escolha uma senha segura."}
         </p>
       </div>
 
-      {/* Social signup — só no passo 1 */}
-      {step === 1 && (
+      {/* Social signup — só no passo 2 */}
+      {step === 2 && (
         <div className="relative z-10 px-5 flex flex-col gap-3 mb-2">
           <button
             type="button"
@@ -176,6 +185,68 @@ export default function SignupPage() {
         )}
 
         {step === 1 ? (
+          <>
+            {/* Role selection */}
+            <div className="flex flex-col gap-3">
+              {[
+                {
+                  value: "passenger" as const,
+                  label: "Passageiro",
+                  description: "Solicite corridas e viaje com conforto.",
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  ),
+                },
+                {
+                  value: "driver" as const,
+                  label: "Motorista",
+                  description: "Ganhe dinheiro oferecendo corridas.",
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  ),
+                },
+              ].map((option) => {
+                const selected = role === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setRole(option.value)}
+                    className="w-full flex items-center gap-4 px-5 py-5 rounded-2xl text-left active:scale-[0.98] transition-all duration-100"
+                    style={{
+                      backgroundColor: selected ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                      border: selected ? "1.5px solid rgba(255,255,255,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: selected ? "white" : "rgba(255,255,255,0.08)", color: selected ? "black" : "rgba(255,255,255,0.6)" }}
+                    >
+                      {option.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[17px] font-semibold text-white">{option.label}</p>
+                      <p className="text-[13px] text-white/45 mt-0.5">{option.description}</p>
+                    </div>
+                    <div
+                      className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                      style={{
+                        borderColor: selected ? "white" : "rgba(255,255,255,0.25)",
+                        backgroundColor: selected ? "white" : "transparent",
+                      }}
+                    >
+                      {selected && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        ) : step === 2 ? (
           <>
             {/* Name */}
             <div className="flex flex-col gap-1.5">
@@ -267,19 +338,26 @@ export default function SignupPage() {
       <div className="relative z-10 px-5 pb-10 pt-6 flex flex-col gap-3">
         <button
           type="button"
-          disabled={step === 1 ? !step1Ok : (!step2Ok || loading)}
+          disabled={
+            (step === 1 && !step1Ok) ||
+            (step === 2 && !step2Ok) ||
+            (step === 3 && (!step3Ok || loading))
+          }
           onClick={() => {
             if (step === 1 && step1Ok) {
               setError("")
               setStep(2)
-            } else if (step === 2) {
+            } else if (step === 2 && step2Ok) {
+              setError("")
+              setStep(3)
+            } else if (step === 3) {
               handleCreateAccount()
             }
           }}
           className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-md disabled:opacity-30"
           style={{ backgroundColor: "white", color: "black" }}
         >
-          {step === 1 ? "Continuar" : loading ? "Criando conta..." : "Criar conta"}
+          {step < 3 ? "Continuar" : loading ? "Criando conta..." : "Criar conta"}
         </button>
         <button
           type="button"
