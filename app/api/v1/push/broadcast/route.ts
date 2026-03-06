@@ -1,42 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
-import webpush from 'web-push'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 type BroadcastTarget = 'all_passengers' | 'all_drivers' | 'everyone'
 
+const BATCH = 500  // FCM aceita até 500 tokens por request
+
+/**
+ * Envia FCM para um lote de tokens usando a Legacy HTTP API.
+ */
+async function sendFcmBatch(
+  tokens: string[],
+  title: string,
+  body: string,
+  data: Record<string, string>
+): Promise<{ sent: number; failed: number; expiredTokens: string[] }> {
+  const serverKey = process.env.FIREBASE_SERVER_KEY
+  if (!serverKey || tokens.length === 0) return { sent: 0, failed: 0, expiredTokens: [] }
+
+  const res = await fetch('https://fcm.googleapis.com/fcm/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization:  `key=${serverKey}`,
+    },
+    body: JSON.stringify({
+      registration_ids: tokens,
+      notification: { title, body, sound: 'default', click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+      data:         { ...data, title, body },
+      priority:     'high',
+      content_available: true,
+    }),
+  })
+
+  if (!res.ok) return { sent: 0, failed: tokens.length, expiredTokens: [] }
+
+  const json = await res.json()
+
+  const expiredTokens: string[] = (json.results ?? [])
+    .map((r: { error?: string }, i: number) =>
+      r.error === 'NotRegistered' || r.error === 'InvalidRegistration' ? tokens[i] : null
+    )
+    .filter(Boolean) as string[]
+
+  return { sent: json.success ?? 0, failed: json.failure ?? 0, expiredTokens }
+}
+
 /**
  * POST /api/v1/push/broadcast
- * Envia Web Push para um grupo inteiro de usuarios.
- * Apenas admins podem chamar esta rota.
+ * Envia FCM para um grupo inteiro de usuários. Apenas admins.
+ * Body: { target: 'all_passengers' | 'all_drivers' | 'everyone', title, body, data? }
  */
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-      return NextResponse.json({ error: 'VAPID nao configurado' }, { status: 500 })
+    if (!process.env.FIREBASE_SERVER_KEY) {
+      return NextResponse.json({ error: 'FIREBASE_SERVER_KEY nao configurada' }, { status: 500 })
     }
-
-    // Configura o web-push com as chaves VAPID em runtime (nao no nivel do modulo)
-    webpush.setVapidDetails(
-      `mailto:${process.env.VAPID_EMAIL ?? 'noreply@uppi.app'}`,
-      process.env.VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY,
-    )
 
     const supabase = await createClient()
 
-    // Verifica se e admin
+    // Verifica autenticacao e perfil admin
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('user_type')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.is_admin) {
+    if (profile?.user_type !== 'admin') {
       return NextResponse.json({ error: 'Apenas admins podem fazer broadcast' }, { status: 403 })
     }
 
@@ -52,66 +86,68 @@ export async function POST(request: NextRequest) {
     }
 
     // Busca user_ids do grupo alvo
-    let userQuery = supabase.from('profiles').select('id')
+    let userQuery = supabase.from('profiles').select('id').eq('status', 'active')
     if (target === 'all_passengers') userQuery = userQuery.eq('user_type', 'passenger')
     if (target === 'all_drivers')    userQuery = userQuery.eq('user_type', 'driver')
-    // 'everyone' nao filtra
 
     const { data: targetUsers } = await userQuery
     if (!targetUsers || targetUsers.length === 0) {
-      return NextResponse.json({ success: true, sent: 0 })
+      return NextResponse.json({ success: true, sent: 0, total: 0 })
     }
 
     const userIds = targetUsers.map((u) => u.id)
 
-    // Busca todas as subscriptions ativas do grupo
-    const { data: subscriptions } = await supabase
-      .from('push_subscriptions')
-      .select('user_id, endpoint, p256dh, auth')
+    // Busca todos os tokens FCM ativos do grupo
+    const { data: tokenRows } = await supabase
+      .from('fcm_tokens')
+      .select('user_id, token')
       .in('user_id', userIds)
       .eq('is_active', true)
 
-    if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ success: true, sent: 0 })
+    if (!tokenRows || tokenRows.length === 0) {
+      return NextResponse.json({ success: true, sent: 0, total: 0 })
     }
 
-    const payload = JSON.stringify({ title, body, data: data ?? {} })
+    const allTokens  = tokenRows.map((r) => r.token)
+    const dataStr    = Object.fromEntries(
+      Object.entries(data ?? {}).map(([k, v]) => [k, String(v)])
+    ) as Record<string, string>
 
-    // Envia em lotes de 50 para nao sobrecarregar
-    const BATCH = 50
-    let sent = 0
-    const expiredEndpoints: string[] = []
+    let totalSent   = 0
+    let totalFailed = 0
+    const allExpired: string[] = []
 
-    for (let i = 0; i < subscriptions.length; i += BATCH) {
-      const batch = subscriptions.slice(i, i + BATCH)
-      const results = await Promise.allSettled(
-        batch.map((sub) =>
-          webpush.sendNotification(
-            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-            payload,
-            { TTL: 60 * 60 * 24 }
-          )
-        )
-      )
-      results.forEach((result, idx) => {
-        if (result.status === 'fulfilled') {
-          sent++
-        } else {
-          const err = result.reason as { statusCode?: number }
-          if (err?.statusCode === 410) expiredEndpoints.push(batch[idx].endpoint)
-        }
-      })
+    // Envia em lotes de 500 (limite FCM)
+    for (let i = 0; i < allTokens.length; i += BATCH) {
+      const batch  = allTokens.slice(i, i + BATCH)
+      const result = await sendFcmBatch(batch, title, body, dataStr)
+      totalSent   += result.sent
+      totalFailed += result.failed
+      allExpired.push(...result.expiredTokens)
     }
 
-    // Desativa expiradas
-    if (expiredEndpoints.length > 0) {
+    // Desativa tokens expirados
+    if (allExpired.length > 0) {
       await supabase
-        .from('push_subscriptions')
-        .update({ is_active: false })
-        .in('endpoint', expiredEndpoints)
+        .from('fcm_tokens')
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .in('token', allExpired)
     }
 
-    return NextResponse.json({ success: true, sent, total: subscriptions.length })
+    // Registra no log (resumo)
+    await supabase.from('push_log').insert({
+      title,
+      body,
+      channel: 'fcm',
+      status:  totalSent > 0 ? 'sent' : 'failed',
+    })
+
+    return NextResponse.json({
+      success: true,
+      sent:   totalSent,
+      failed: totalFailed,
+      total:  allTokens.length,
+    })
   } catch (error) {
     console.error('[push/broadcast] error:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })

@@ -24,40 +24,38 @@ class NotificationService {
   private supabase = createClient()
 
   /**
-   * Envia notificacao: salva no banco + dispara Web Push (app fechado/tela bloqueada)
+   * Envia notificação: salva na tabela notifications (Realtime) +
+   * dispara FCM via /api/v1/push/send (app fechado / tela bloqueada).
    */
-  async sendNotification(notification: NotificationData): Promise<{ success: boolean; error?: string }> {
+  async sendNotification(
+    notification: NotificationData
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await this.supabase
-        .from('notifications')
-        .insert({
-          user_id:  notification.user_id,
-          title:    notification.title,
-          body:     notification.body,
-          type:     notification.type,
-          data:     notification.data || {},
-          ride_id:  notification.ride_id,
-          read:     false,
-        })
+      const { error } = await this.supabase.from('notifications').insert({
+        user_id:  notification.user_id,
+        title:    notification.title,
+        body:     notification.body,
+        type:     notification.type,
+        data:     notification.data ?? {},
+        is_read:  false,
+      })
 
       if (error) throw error
 
-      // Dispara Web Push — best effort, nao quebra o fluxo
-      await this.sendWebPush(notification)
+      // Dispara FCM — best effort, não bloqueia o fluxo principal
+      await this.sendFcmPush(notification)
 
       return { success: true }
     } catch (error) {
       console.error('[NotificationService] sendNotification error:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       }
     }
   }
 
-  /**
-   * Busca notificacoes do usuario
-   */
+  /** Busca notificações do usuário */
   async getUserNotifications(userId: string, limit = 20) {
     try {
       const { data, error } = await this.supabase
@@ -71,18 +69,16 @@ class NotificationService {
       return { success: true, notifications: data }
     } catch (error) {
       console.error('[NotificationService] getUserNotifications error:', error)
-      return { success: false, error: 'Failed to load notifications' }
+      return { success: false, error: 'Falha ao carregar notificações' }
     }
   }
 
-  /**
-   * Marca uma notificacao como lida
-   */
+  /** Marca uma notificação como lida */
   async markAsRead(notificationId: string) {
     try {
       const { error } = await this.supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId)
 
       if (error) throw error
@@ -93,16 +89,14 @@ class NotificationService {
     }
   }
 
-  /**
-   * Marca todas as notificacoes do usuario como lidas
-   */
+  /** Marca todas as notificações do usuário como lidas */
   async markAllAsRead(userId: string) {
     try {
       const { error } = await this.supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('user_id', userId)
-        .eq('read', false)
+        .eq('is_read', false)
 
       if (error) throw error
       return { success: true }
@@ -112,18 +106,39 @@ class NotificationService {
     }
   }
 
+  /** Retorna contagem de notificações não lidas */
+  async getUnreadCount(userId: string) {
+    try {
+      const { count, error } = await this.supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_read', false)
+
+      if (error) throw error
+      return { success: true, count: count ?? 0 }
+    } catch (error) {
+      console.error('[NotificationService] getUnreadCount error:', error)
+      return { success: false, count: 0 }
+    }
+  }
+
   /**
-   * Subscribe Supabase Realtime para notificacoes em tempo real (app aberto)
+   * Subscribe Supabase Realtime para notificações em tempo real (app aberto).
+   * Retorna função de cleanup para remover o canal.
    */
-  subscribeToNotifications(userId: string, callback: (notification: unknown) => void): () => void {
+  subscribeToNotifications(
+    userId: string,
+    callback: (notification: unknown) => void
+  ): () => void {
     const channel = this.supabase
       .channel(`notifications:${userId}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event:  'INSERT',
           schema: 'public',
-          table: 'notifications',
+          table:  'notifications',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => callback(payload.new)
@@ -133,48 +148,35 @@ class NotificationService {
     return () => { this.supabase.removeChannel(channel) }
   }
 
-  /**
-   * Retorna contagem de notificacoes nao lidas
-   */
-  async getUnreadCount(userId: string) {
-    try {
-      const { count, error } = await this.supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('read', false)
-
-      if (error) throw error
-      return { success: true, count: count || 0 }
-    } catch (error) {
-      console.error('[NotificationService] getUnreadCount error:', error)
-      return { success: false, count: 0 }
-    }
-  }
-
-  /**
-   * Atalho para notificar mudancas de status da corrida
-   */
-  async notifyRideStatus(userId: string, rideId: string, status: string, driverName?: string) {
-    const map: Record<string, { title: string; body: string; type: NotificationType }> = {
+  /** Atalho para notificar mudanças de status da corrida */
+  async notifyRideStatus(
+    userId: string,
+    rideId: string,
+    status: string,
+    driverName?: string
+  ) {
+    const map: Record<
+      string,
+      { title: string; body: string; type: NotificationType }
+    > = {
       driver_arriving: {
         title: 'Motorista a caminho',
-        body:  `${driverName || 'Seu motorista'} esta indo ate voce`,
+        body:  `${driverName ?? 'Seu motorista'} está indo até você`,
         type:  'driver_arriving',
       },
-      arrived: {
+      driver_arrived: {
         title: 'Motorista chegou!',
-        body:  `${driverName || 'Seu motorista'} esta te esperando`,
+        body:  `${driverName ?? 'Seu motorista'} está te esperando`,
         type:  'driver_arrived',
       },
       in_progress: {
         title: 'Corrida iniciada',
-        body:  'Sua corrida comecou. Boa viagem!',
+        body:  'Sua corrida começou. Boa viagem!',
         type:  'ride_started',
       },
       completed: {
         title: 'Corrida finalizada',
-        body:  'Avalie sua experiencia',
+        body:  'Avalie sua experiência',
         type:  'ride_completed',
       },
     }
@@ -191,10 +193,10 @@ class NotificationService {
   }
 
   /**
-   * Chama a rota server-side /api/v1/push/send para entregar o Web Push
-   * ao(s) dispositivo(s) do usuario — funciona com app fechado / tela bloqueada
+   * Chama /api/v1/push/send para entregar o FCM ao(s) dispositivo(s)
+   * do usuário — funciona com app fechado / tela bloqueada.
    */
-  private async sendWebPush(notification: NotificationData) {
+  private async sendFcmPush(notification: NotificationData) {
     try {
       await fetch('/api/v1/push/send', {
         method:  'POST',
@@ -205,13 +207,13 @@ class NotificationService {
           body:    notification.body,
           data: {
             type:    notification.type,
-            ride_id: notification.ride_id,
+            ride_id: notification.ride_id ?? '',
             ...(notification.data ?? {}),
           },
         }),
       })
     } catch (err) {
-      console.error('[NotificationService] sendWebPush error:', err)
+      console.error('[NotificationService] sendFcmPush error:', err)
     }
   }
 }

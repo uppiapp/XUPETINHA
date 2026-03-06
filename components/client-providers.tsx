@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 import { GoogleMapsProvider } from '@/lib/google-maps/provider'
-import { usePushNotifications } from '@/hooks/use-push-notifications'
+import { useFcmPushNotifications } from '@/hooks/use-fcm-push-notifications'
 
 // Lazy-loaded providers that are not needed during SSR prerendering
 function LazyProviders({ children }: { children: ReactNode }) {
@@ -45,18 +45,18 @@ function LazyProviders({ children }: { children: ReactNode }) {
   )
 }
 
-// Solicita permissao de push assim que o usuario esta autenticado
+// Solicita permissao e registra o token FCM assim que o usuario esta autenticado
 function PushNotificationsBootstrap() {
-  const { permission, isSubscribed, subscribe } = usePushNotifications()
+  const { permission, isRegistered, register } = useFcmPushNotifications()
 
   useEffect(() => {
-    // So pede se ainda nao foi decidido e nao esta subscrito
-    if (permission === 'default' && !isSubscribed) {
+    // So pede se ainda nao foi decidido e nao esta registrado
+    if (permission === 'default' && !isRegistered) {
       // Aguarda 3s para nao bloquear a renderizacao inicial
-      const timer = setTimeout(() => { subscribe() }, 3000)
+      const timer = setTimeout(() => { register() }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [permission, isSubscribed, subscribe])
+  }, [permission, isRegistered, register])
 
   return null
 }

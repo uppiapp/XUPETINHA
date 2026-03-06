@@ -43,6 +43,7 @@ import {
   PhoneCall,
   Megaphone,
   FileText,
+  KeyRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -105,6 +106,7 @@ const navGroups = [
       { href: '/admin/recordings', icon: Mic, label: 'Gravacoes' },
       { href: '/admin/logs', icon: AlertTriangle, label: 'Logs de Erro' },
       { href: '/admin/legal', icon: FileText, label: 'Termos / Privacidade' },
+      { href: '/admin/integrations', icon: KeyRound, label: 'Integracoes & APIs' },
       { href: '/admin/settings', icon: Settings, label: 'Configuracoes' },
     ],
   },

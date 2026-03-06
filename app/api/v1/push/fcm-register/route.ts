@@ -4,9 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 
 /**
- * POST /api/v1/push/subscribe
- * Registra ou atualiza um token FCM para o usuário autenticado.
- * Body: { token, platform?, device_id?, app_version? }
+ * POST /api/v1/push/fcm-register
+ * Registra ou atualiza um FCM token para o usuario autenticado.
+ * Chamado pelo hook useFcmPushNotifications apos obter o token do Capacitor.
+ *
+ * Body: { token: string, platform: 'android' | 'ios' | 'web', device_id?: string, app_version?: string }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,20 +16,17 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
     const { token, platform = 'android', device_id, app_version } = body
 
     if (!token) {
-      return NextResponse.json(
-        { error: 'token FCM é obrigatório' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'token e obrigatorio' }, { status: 400 })
     }
 
-    // Upsert pelo token — se o mesmo dispositivo reenviar, apenas atualiza
+    // Upsert pelo token — se o mesmo token existir (mesmo dispositivo), atualiza
     const { error } = await supabase
       .from('fcm_tokens')
       .upsert(
@@ -45,17 +44,23 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error
 
+    // Atualiza o fcm_token no perfil (campo legado, util para queries simples)
+    await supabase
+      .from('profiles')
+      .update({ fcm_token: token })
+      .eq('id', user.id)
+
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[push/subscribe] error:', error)
+    console.error('[fcm-register] error:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
 
 /**
- * DELETE /api/v1/push/subscribe
- * Desativa um token FCM quando o usuário revoga notificações.
- * Body: { token }
+ * DELETE /api/v1/push/fcm-register
+ * Desativa um FCM token (logout ou revogacao de permissao).
+ * Body: { token: string }
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -63,14 +68,14 @@ export async function DELETE(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
     const { token } = body
 
     if (!token) {
-      return NextResponse.json({ error: 'token é obrigatório' }, { status: 400 })
+      return NextResponse.json({ error: 'token e obrigatorio' }, { status: 400 })
     }
 
     const { error } = await supabase
@@ -83,7 +88,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[push/subscribe] delete error:', error)
+    console.error('[fcm-register] DELETE error:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
