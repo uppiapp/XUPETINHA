@@ -45,6 +45,9 @@ export default function DriverPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [sheetExpanded, setSheetExpanded] = useState(false)
   const [greeting, setGreeting] = useState('')
+  const [trustScore, setTrustScore] = useState<number | null>(null)
+  const [auctionTimers, setAuctionTimers] = useState<{ [key: string]: number }>({})
+  const [favoritePassengers, setFavoritePassengers] = useState<number>(0)
 
   useEffect(() => {
     const hour = new Date().getHours()
@@ -94,10 +97,13 @@ export default function DriverPage() {
       if (!user) { router.push('/onboarding/splash'); return }
       setUserId(user.id)
 
-      const [{ data: driverProfile }, { data: profile }] = await Promise.all([
-        supabase.from('driver_profiles').select('vehicle_type, is_available, acceptance_rate').eq('id', user.id).single(),
+      const [{ data: driverProfile }, { data: profile }, { data: favData }] = await Promise.all([
+        supabase.from('driver_profiles').select('vehicle_type, is_available, acceptance_rate, trust_score').eq('id', user.id).single(),
         supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+        supabase.from('favorite_drivers').select('id', { count: 'exact' }).eq('driver_id', user.id),
       ])
+      if (driverProfile?.trust_score) setTrustScore(driverProfile.trust_score)
+      if (favData) setFavoritePassengers(favData.length)
 
       if (profile) setDriverName(profile.full_name || '')
       const vType = driverProfile?.vehicle_type || null
@@ -248,6 +254,7 @@ export default function DriverPage() {
                 { label: 'Ganhos', value: `R$ ${dailyStats.totalEarnings.toFixed(0)}`, color: 'text-emerald-600' },
                 { label: 'Corridas', value: String(dailyStats.completedRides), color: 'text-[#007AFF]' },
                 { label: 'Taxa', value: `${dailyStats.acceptanceRate}%`, color: 'text-amber-500' },
+                ...(trustScore !== null ? [{ label: 'Score', value: String(trustScore), color: trustScore >= 80 ? 'text-purple-600' : trustScore >= 60 ? 'text-emerald-600' : 'text-amber-500' }] : []),
               ].map((s) => (
                 <div
                   key={s.label}
@@ -371,6 +378,22 @@ export default function DriverPage() {
                       className="bg-white dark:bg-[#1C1C1E] rounded-[20px] p-4 shadow-[0_0_0_0.5px_rgba(0,0,0,0.06),0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.06)] overflow-hidden"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
+                      {/* Badge leilão */}
+                      {(ride as any).is_auction && (
+                        <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1 rounded-full w-fit"
+                          style={{ background: 'linear-gradient(135deg, #f59e0b22, #f9731622)' }}>
+                          <svg className="w-3 h-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                          </svg>
+                          <span className="text-[11px] font-bold text-amber-600">LEILAO</span>
+                          {auctionTimers[ride.id] !== undefined && (
+                            <span className="text-[11px] font-bold text-amber-600 tabular-nums">
+                              {Math.max(0, auctionTimers[ride.id])}s
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {/* Passageiro + preço */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -385,7 +408,7 @@ export default function DriverPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide">Oferta</p>
+                          <p className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide">{(ride as any).is_auction ? 'Lance atual' : 'Oferta'}</p>
                           <p className="text-[20px] font-bold text-emerald-600 leading-none">R$ {ride.passenger_price_offer?.toFixed(2) || '0.00'}</p>
                         </div>
                       </div>
