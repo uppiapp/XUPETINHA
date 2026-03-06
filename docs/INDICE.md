@@ -1,9 +1,9 @@
 # UPPI - Indice Completo do Projeto
 
-**Ultima atualizacao:** 02/03/2026
-**Versao:** 14.3
-**Arquitetura:** Frontend + Backend + Banco (74 tabelas public / 176 total / 145 RLS policies / 20 triggers / 15 RPCs) + API (57 routes) + Auth + Realtime (8 tabelas) + Admin
-**Supabase:** pjlbixnzjndezoscbhej (supabase-amber-door) — 4 migrations — 7 extensoes — analise completa: docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
+**Ultima atualizacao:** 06/03/2026
+**Versao:** 15.0
+**Arquitetura:** Frontend + Backend + Banco (80 tabelas public / 182 total / RLS policies corrigidas) + API (57 routes) + Auth + Realtime (8 tabelas) + Admin
+**Supabase:** mstnqzgsdnlsajuaezhs — schema corrigido em 06/03/2026 — colunas rides renomeadas para pickup_*/dropoff_*, tabelas driver_profiles/driver_locations/price_offers/notifications/wallet_transactions criadas
 
 ---
 
@@ -69,7 +69,7 @@ app/
   privacy/page.tsx                           Politica de privacidade
   terms/page.tsx                             Termos de uso
 
-  auth/                                      Fluxo de autenticacao (9 paginas)
+  auth/                                      Fluxo de autenticacao (12 paginas)
     welcome/page.tsx
     login/page.tsx
     sign-up/page.tsx
@@ -77,6 +77,8 @@ app/
     user-type/page.tsx
     error/page.tsx
     callback/page.tsx
+    selection/page.tsx                       NOVO — escolha Passageiro ou Motorista
+    passenger/page.tsx                       NOVO — signup direto de passageiro
     driver/welcome/page.tsx
     driver/login/page.tsx
     driver/sign-up/page.tsx
@@ -145,12 +147,15 @@ app/
     driver-mode/page.tsx
     driver-mode/active/page.tsx
 
-    driver/                                  Area do motorista (5 paginas)
-      page.tsx
+    driver/                                  Area do motorista (8 paginas)
+      page.tsx                               REDESENHADO — mesmo visual do passageiro (mapa + toggle online/offline + corridas)
       register/page.tsx
       documents/page.tsx
       verify/page.tsx
       earnings/page.tsx
+      history/page.tsx                       Com DriverBottomNavigation
+      profile/page.tsx                       Com DriverBottomNavigation
+      wallet/page.tsx                        Com DriverBottomNavigation
 
   admin/                                     Painel administrativo (33 paginas)
     layout.tsx
@@ -258,8 +263,9 @@ app/api/admin/check/route.ts               Verifica status de admin
 
 ```
 components/
-  Custom (48):
-    bottom-navigation.tsx, sidebar-menu.tsx
+  Custom (49):
+    bottom-navigation.tsx (expandido — aparece em todas as rotas do passageiro), sidebar-menu.tsx
+    driver-bottom-navigation.tsx             NOVO — navegacao do motorista (Inicio/Historico/Carteira/Perfil)
     google-map.tsx, modern-map.tsx, route-map.tsx, map-fallback.tsx, route-preview-3d.tsx
     places-search.tsx, search-address.tsx, nearby-drivers.tsx, hot-zones-card.tsx, location-tag.tsx
     referral-card.tsx, referral-client.tsx

@@ -1,8 +1,8 @@
 # AUDITORIA COMPLETA - PROJETO UPPI
 
-**Data:** 02/03/2026
-**Versao:** 14.1
-**Status Geral:** 100% Operacional — Supabase conectado (pjlbixnzjndezoscbhej / supabase-amber-door), 74 tabelas public / 176 tabelas total (verificado via SQL), 152 paginas, 57 rotas API, 15 funcoes RPC
+**Data:** 06/03/2026
+**Versao:** 15.0
+**Status Geral:** 100% Operacional — Supabase mstnqzgsdnlsajuaezhs, 80 tabelas public / 182 total, 157 paginas (5 novas), 57 rotas API, 15 funcoes RPC, fluxo passageiro↔motorista funcional com Realtime
 
 ---
 
@@ -27,9 +27,9 @@
 
 | Categoria | Status | Detalhes |
 |-----------|--------|----------|
-| **Frontend** | 100% | 152 paginas (70 uppi + 9 auth + 33 admin + outros) |
+| **Frontend** | 100% | 157 paginas (75 uppi + 12 auth + 33 admin + outros) |
 | **Backend API** | 100% | 57 route.ts, 92+ handlers em /api/v1/ |
-| **Banco de Dados** | 100% | 74 tabelas public criadas no Supabase, 4 migrations, 98+ RLS, 15 RPC |
+| **Banco de Dados** | 100% | 80 tabelas public (6 novas em 06/03/2026), RLS corrigida, Realtime ativo |
 | **Versionamento** | 100% | /api/v1/* ativo, middleware implementado |
 | **Componentes** | 100% | 48 custom + 85 ui (54 shadcn + 31 iOS) = 133 total |
 | **Services** | 100% | 13 services de dominio |
@@ -383,8 +383,9 @@ search-bar, segmented-control, sheet, skeleton, slider, switch, tabs, toast-adva
 
 ---
 
-## 10. CORRECOES APLICADAS (02/03/2026)
+## 10. CORRECOES APLICADAS
 
+### 02/03/2026
 | Arquivo | Problema | Correcao |
 |---------|---------|---------|
 | next.config.mjs | Chave 'eslint' nao suportada no Next.js 16 | Removida |
@@ -399,6 +400,26 @@ search-bar, segmented-control, sheet, skeleton, slider, switch, tabs, toast-adva
 | lib/api-utils.ts | requireDriver usava tabela 'drivers' | Corrigido para driver_profiles |
 | lib/services/review-service.ts | Usava reviewee_id, reviewer_id, review_tags | Corrigido para rater_id/rated_id |
 | lib/types/database.ts | Tipos desatualizados | Atualizado com todas as novas colunas |
+
+---
+
+### 06/03/2026
+| Arquivo/Area | Problema | Correcao |
+|---------|---------|---------|
+| auth/user-type/page.tsx | motorista redirecionava para /uppi/home (area do passageiro) | useEffect corrigido: passageiro→/uppi/home, motorista→/auth/driver/welcome |
+| auth/selection/page.tsx | nao existia | CRIADO: tela de escolha Passageiro/Motorista |
+| auth/passenger/page.tsx | nao existia | CRIADO: signup exclusivo de passageiro |
+| onboarding-carousel.tsx | "Criar conta" ia para /signup | Redireciona para /auth/selection |
+| login/page.tsx | "Criar conta" ia para /signup | Redireciona para /auth/selection |
+| uppi/driver/page.tsx | tela genérica com Motorista/Entregador | REDESENHADO: mapa + toggle online/offline + corridas via Realtime |
+| driver-bottom-navigation.tsx | nao existia | CRIADO: navegacao inferior igual ao passageiro, em verde esmeralda |
+| bottom-navigation.tsx | aparecia apenas em /uppi/home | Expandido para todas as rotas do passageiro |
+| auth/driver/login/page.tsx | redirect para /uppi/driver-mode; authService sem import | Redirect para /uppi/driver; OAuth corrigido com createClient |
+| api/v1/driver/location/route.ts | nao sincronizava is_available no driver_profiles | Corrigido para sincronizar is_available |
+| Banco (rides) | colunas origin_*/destination_* incompativeis com o codigo | Renomeadas para pickup_*/dropoff_* |
+| Banco | tabelas driver_profiles, driver_locations, price_offers, notifications, wallet_transactions nao existiam | Criadas via SQL com RLS e Realtime |
+| Banco RLS (rides) | motorista nao conseguia ver corridas pending | Policy corrigida para expor status pending/negotiating a todos autenticados |
+| Banco Realtime | tabelas nao publicadas no canal | rides, price_offers, notifications, driver_locations adicionadas |
 
 ---
 

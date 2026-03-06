@@ -10,11 +10,12 @@
   - POSTGRES_URL
   - E mais 9 variáveis adicionais
 
-- [x] **Schema do banco de dados criado**
-  - 74 tabelas no schema public
-  - RLS ativo em todas as tabelas
+- [x] **Schema do banco de dados criado e atualizado**
+  - 80 tabelas no schema public (6 criadas em 06/03/2026)
+  - RLS ativo em todas as tabelas (corrigida em 06/03/2026)
   - Triggers para updated_at
   - Trigger automático para criação de profile
+  - Realtime: rides, price_offers, notifications, driver_locations, ride_tracking, support_messages, messages, ride_offers
 
 - [x] **Clientes Supabase implementados**
   - `lib/supabase/client.ts` - Cliente navegador

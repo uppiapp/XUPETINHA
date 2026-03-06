@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { Ride, Profile } from '@/lib/types/database'
+import { DriverBottomNavigation } from '@/components/driver-bottom-navigation'
 
 interface RideWithPassenger extends Ride {
   passenger?: Pick<Profile, 'full_name' | 'avatar_url'>
@@ -220,6 +221,7 @@ export default function DriverHistoryPage() {
           </div>
         )}
       </main>
+      <DriverBottomNavigation />
     </div>
   )
 }

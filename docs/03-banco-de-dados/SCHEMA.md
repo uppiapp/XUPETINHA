@@ -1,12 +1,12 @@
 # UPPI - Schema do Banco de Dados
 
-**Ultima Atualizacao:** 02/03/2026
-**Versao:** 15.2
+**Ultima Atualizacao:** 06/03/2026
+**Versao:** 16.0
 **Banco:** Supabase PostgreSQL 15+ com PostGIS 3.3.7
-**Projeto Supabase:** pjlbixnzjndezoscbhej (supabase-amber-door)
-**Migrations aplicadas:** 4 (001 a 004) — verificadas em 02/03/2026
-**Tabelas totais:** 176 (todos os schemas — verificado via SQL em 02/03/2026)
-**Tabelas no schema public (dominio):** 74
+**Projeto Supabase:** mstnqzgsdnlsajuaezhs (projeto ativo em 06/03/2026)
+**Migrations aplicadas:** 4 (001 a 004) + correcoes manuais em 06/03/2026
+**Tabelas totais:** 182 (todos os schemas)
+**Tabelas no schema public (dominio):** 80 (6 novas criadas em 06/03/2026)
 **Tabelas pg_catalog (PostgreSQL interno):** 64
 **Tabelas auth (Supabase):** 21
 **Tabelas storage (Supabase):** 8
@@ -14,10 +14,10 @@
 **Tabelas realtime (Supabase):** 3
 **Tabelas supabase_migrations:** 1
 **Tabelas vault:** 1
-**RLS policies ativas:** 145 (em 73 tabelas — verificado via SQL)
+**RLS policies ativas:** 155+ (em 80 tabelas — corrigida em 06/03/2026)
 **Triggers ativos:** 20 (schema public)
 **Funcoes RPC callable:** 15
-**Tabelas com Realtime:** 8 (supabase_realtime publication)
+**Tabelas com Realtime:** 8+ (rides, price_offers, notifications, driver_locations adicionadas em 06/03/2026)
 **Extensoes instaladas:** 7 (postgis, pgcrypto, uuid-ossp, pg_graphql, pg_stat_statements, supabase_vault, plpgsql)
 **Analise detalhada:** docs/03-banco-de-dados/ANALISE-SCHEMAS-COMPLETA.md
 
@@ -27,17 +27,25 @@
 
 | Schema | Tabelas | Descricao |
 |--------|---------|-----------|
-| **public** | **74** | Dominio da aplicacao — criadas via 4 migrations em 02/03/2026 |
+| **public** | **80** | Dominio da aplicacao — 74 via migrations + 6 criadas manualmente em 06/03/2026 |
 | pg_catalog | 64 | Catalog interno do PostgreSQL (tabelas do sistema) |
 | auth | 21 | Gerenciadas pelo Supabase Auth (users, sessions, tokens, etc.) |
 | storage | 8 | Gerenciadas pelo Supabase Storage (objects, buckets, etc.) |
 | information_schema | 4 | Views do sistema PostgreSQL |
 | realtime | 3 | Gerenciadas pelo Supabase Realtime |
-| supabase_migrations | 1 | Controle interno de migracoes (4 migrations aplicadas) |
+| supabase_migrations | 1 | Controle interno de migracoes |
 | vault | 1 | Segredos criptografados |
-| **Total geral** | **176** | Verificado via SQL: SELECT table_schema, COUNT(*) em 02/03/2026 |
+| **Total geral** | **182** | Atualizado em 06/03/2026 |
 
-### Schema public — tabelas por grupo (74 total)
+### Schema public — tabelas por grupo (80 total)
+
+**6 tabelas criadas manualmente em 06/03/2026:**
+- `driver_profiles` — perfil do motorista com veiculo, is_verified, is_available, rating
+- `driver_locations` — localizacao em tempo real (lat, lng, heading, speed, accuracy)
+- `rides` — corridas (colunas renomeadas: origin_* → pickup_*, destination_* → dropoff_*)
+- `price_offers` — ofertas de preco do motorista para o passageiro
+- `notifications` — notificacoes em tempo real para passageiro e motorista
+- `wallet_transactions` — historico financeiro por usuario
 
 | Grupo | Tabelas |
 |-------|---------|
@@ -111,18 +119,18 @@
 | created_at | timestamptz | now() | |
 | updated_at | timestamptz | now() | |
 
-### rides (27 colunas)
+### rides (29 colunas) — colunas renomeadas em 06/03/2026
 | Coluna | Tipo | Default | Notas |
 |--------|------|---------|-------|
 | id | uuid | gen_random_uuid() | PK |
 | passenger_id | uuid | — | FK profiles |
 | driver_id | uuid | — | FK profiles |
-| pickup_address | text | — | |
-| dropoff_address | text | — | |
-| pickup_lat | float8 | — | |
-| pickup_lng | float8 | — | |
-| dropoff_lat | float8 | — | |
-| dropoff_lng | float8 | — | |
+| pickup_address | text | — | (era origin_address) |
+| dropoff_address | text | — | (era destination_address) |
+| pickup_lat | float8 | — | (era origin_lat) |
+| pickup_lng | float8 | — | (era origin_lng) |
+| dropoff_lat | float8 | — | (era destination_lat) |
+| dropoff_lng | float8 | — | (era destination_lng) |
 | distance_km | numeric | — | |
 | estimated_duration_minutes | integer | — | |
 | passenger_price_offer | numeric | — | |
@@ -141,6 +149,33 @@
 | cancelled_at | timestamptz | — | |
 | cancellation_reason | text | — | |
 | created_at | timestamptz | now() | |
+
+### price_offers (9 colunas) — CRIADA em 06/03/2026
+| Coluna | Tipo | Default | Notas |
+|--------|------|---------|-------|
+| id | uuid | gen_random_uuid() | PK |
+| ride_id | uuid | — | FK rides |
+| driver_id | uuid | — | FK auth.users |
+| offered_price | numeric(10,2) | — | Preco ofertado pelo motorista |
+| eta_minutes | integer | 5 | Tempo estimado de chegada |
+| message | text | — | Mensagem opcional |
+| status | text | 'pending' | pending/accepted/rejected/expired |
+| created_at | timestamptz | now() | |
+| updated_at | timestamptz | now() | |
+
+### driver_locations (9 colunas) — CRIADA em 06/03/2026
+| Coluna | Tipo | Default | Notas |
+|--------|------|---------|-------|
+| id | uuid | gen_random_uuid() | PK |
+| driver_id | uuid | — | FK auth.users (UNIQUE) |
+| latitude | float8 | — | |
+| longitude | float8 | — | |
+| heading | numeric | 0 | Direcao em graus |
+| speed | numeric | 0 | Velocidade km/h |
+| accuracy | numeric | 0 | Precisao em metros |
+| is_available | boolean | false | |
+| last_updated | timestamptz | now() | |
+| updated_at | timestamptz | now() | |
 
 ### ratings (18 colunas)
 | Coluna | Tipo | Default | Notas |

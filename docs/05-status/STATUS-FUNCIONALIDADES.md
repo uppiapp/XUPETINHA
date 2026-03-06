@@ -1,8 +1,8 @@
 # UPPI - Status de Funcionalidades
 
-**Ultima Atualizacao:** 02/03/2026
-**Versao:** 19.1
-**Status Geral:** 100% Operacional — Supabase conectado e schema aplicado (74 tabelas public / 176 total todos schemas)
+**Ultima Atualizacao:** 06/03/2026
+**Versao:** 20.0
+**Status Geral:** 100% Operacional — Supabase mstnqzgsdnlsajuaezhs — fluxo passageiro/motorista corrigido, tabelas criadas, Realtime ativo
 
 ---
 
@@ -29,16 +29,18 @@
 
 ## 1. Frontend - Paginas (152 total)
 
-### Auth (9) — /auth/
+### Auth (12) — /auth/
 - [x] /auth/welcome
 - [x] /auth/login
 - [x] /auth/sign-up
 - [x] /auth/sign-up-success
-- [x] /auth/user-type
+- [x] /auth/user-type — corrigido: passageiro→/uppi/home, motorista→/auth/driver/welcome
 - [x] /auth/error
 - [x] /auth/callback
+- [x] /auth/selection — NOVO: tela de escolha Passageiro ou Motorista
+- [x] /auth/passenger — NOVO: signup direto de passageiro (sem etapa de selecao)
 - [x] /auth/driver/welcome
-- [x] /auth/driver/login
+- [x] /auth/driver/login — corrigido: redirect para /uppi/driver (era /uppi/driver-mode)
 - [x] /auth/driver/sign-up
 
 ### Home e Navegacao (5)
@@ -65,14 +67,16 @@
 - [x] /uppi/ride/[id]/review-enhanced — categorias + tags
 - [x] /uppi/tracking — rastreamento global
 
-### Motorista (7)
-- [x] /uppi/driver — painel
+### Motorista (9)
+- [x] /uppi/driver — REDESENHADO: mapa + toggle online/offline + lista de corridas disponíveis + DriverBottomNavigation
 - [x] /uppi/driver/register
 - [x] /uppi/driver/documents
 - [x] /uppi/driver/verify — verificacao facial
-- [x] /uppi/driver/earnings — charts de ganhos
-- [x] /uppi/driver-mode
-- [x] /uppi/driver-mode/active
+- [x] /uppi/driver/earnings — charts de ganhos + DriverBottomNavigation
+- [x] /uppi/driver/history — com DriverBottomNavigation
+- [x] /uppi/driver/profile — com DriverBottomNavigation
+- [x] /uppi/driver/wallet — com DriverBottomNavigation
+- [x] /uppi/driver-mode (legado — mantido)
 
 ### Perfil e Configuracoes (8)
 - [x] /uppi/profile
@@ -442,8 +446,9 @@
 
 ---
 
-## 11. Correcoes Aplicadas (02/03/2026)
+## 11. Correcoes Aplicadas
 
+### 02/03/2026
 | Arquivo | Correcao |
 |---------|---------|
 | next.config.mjs | Removida chave eslint (nao suportada no Next.js 16) |
@@ -458,6 +463,31 @@
 | lib/api-utils.ts | requireDriver usa driver_profiles |
 | lib/services/review-service.ts | Usa rater_id/rated_id |
 | lib/types/database.ts | Atualizado com todas as novas colunas |
+
+### 06/03/2026
+| Arquivo/Area | Correcao |
+|---------|---------|
+| app/auth/user-type/page.tsx | useEffect corrigido: passageiro→/uppi/home, motorista→/auth/driver/welcome |
+| app/auth/selection/page.tsx | CRIADO: tela de selecao Passageiro/Motorista |
+| app/auth/passenger/page.tsx | CRIADO: signup exclusivo de passageiro |
+| components/onboarding-carousel.tsx | "Criar conta" aponta para /auth/selection |
+| app/login/page.tsx | "Criar conta" aponta para /auth/selection |
+| app/uppi/driver/page.tsx | REDESENHADO: mesmo visual do passageiro, toggle online, corridas Realtime |
+| components/driver-bottom-navigation.tsx | CRIADO: navegacao inferior do motorista |
+| app/uppi/driver/history/page.tsx | Adicionado DriverBottomNavigation |
+| app/uppi/driver/profile/page.tsx | Adicionado DriverBottomNavigation |
+| app/uppi/driver/wallet/page.tsx | Adicionado DriverBottomNavigation |
+| app/uppi/driver/earnings/page.tsx | Adicionado DriverBottomNavigation |
+| components/bottom-navigation.tsx | Expandido para todas as rotas do passageiro (nao so /uppi/home) |
+| app/auth/driver/login/page.tsx | Redirect corrigido para /uppi/driver; Google/Apple OAuth corrigidos |
+| app/login/page.tsx | Redirect motorista corrigido para /uppi/driver |
+| components/sidebar-menu.tsx | Redirect "Modo motorista" corrigido para /uppi/driver |
+| api/v1/driver/location/route.ts | Sincroniza is_available no driver_profiles ao atualizar localizacao |
+| Banco Supabase (mstnqzgsdnlsajuaezhs) | CRIADAS: driver_profiles, driver_locations, rides, price_offers, notifications, wallet_transactions |
+| Banco Supabase | RENOMEADAS: origin_* → pickup_*, destination_* → dropoff_* na tabela rides |
+| Banco Supabase | REALTIME ativado: rides, price_offers, notifications, driver_locations |
+| Banco Supabase | RLS corrigida: motoristas veem corridas pending/negotiating |
+| Banco Supabase | driver_profile do motorista de teste inserido (motorista@uppi.com) |
 
 ---
 

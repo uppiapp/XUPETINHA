@@ -268,6 +268,20 @@ export default function SearchingDriverPage() {
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
+            {/* Botão leilão */}
+            {rideId && (
+              <button
+                type="button"
+                onClick={() => router.push(`/uppi/ride/auction?ride_id=${rideId}`)}
+                className="w-full h-[50px] rounded-[16px] mb-3 font-semibold text-[15px] ios-press flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: 'white' }}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Abrir leilao de preco (opcional)
+              </button>
+            )}
             <button type="button" onClick={cancel} className="w-full h-[50px] rounded-[16px] bg-secondary text-red-500 font-semibold text-[17px] ios-press">Cancelar viagem</button>
           </div>
         )}

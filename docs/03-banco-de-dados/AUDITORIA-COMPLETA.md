@@ -1,9 +1,17 @@
 # UPPI - AUDITORIA COMPLETA FINAL (CODIGO vs BANCO DE DADOS)
 **Data da Auditoria:** 24/02/2026
-**Ultima Atualizacao:** 24/02/2026
-**Versao:** 11.0
-**Status do Banco:** OPERACIONAL — 73 tabelas ativas no Supabase
-**Total de Arquivos no Projeto:** 490
+**Ultima Atualizacao:** 06/03/2026
+**Versao:** 12.0
+**Status do Banco:** OPERACIONAL — 80 tabelas ativas no Supabase mstnqzgsdnlsajuaezhs
+**Total de Arquivos no Projeto:** 500+
+
+**Alteracoes em 06/03/2026:**
+- Tabelas CRIADAS: driver_profiles, driver_locations, rides, price_offers, notifications, wallet_transactions (via SQL manual)
+- Colunas rides RENOMEADAS: origin_* → pickup_*, destination_* → dropoff_*
+- Colunas ADICIONADAS: driver_locations.heading/speed/accuracy/last_updated, driver_profiles.current_lat/current_lng, rides.payment_method/cancellation_reason
+- Realtime ATIVADO: rides, price_offers, notifications, driver_locations
+- RLS CORRIGIDA: rides agora expoe status pending/negotiating para todos os usuarios autenticados
+- Projeto Supabase: mstnqzgsdnlsajuaezhs (ativo, substituiu pjlbixnzjndezoscbhej)
 
 ---
 

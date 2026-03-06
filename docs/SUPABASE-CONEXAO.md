@@ -1,9 +1,10 @@
 # UPPI - Conexao Supabase
 
 **Data da Conexao:** 02/03/2026
-**Projeto Supabase:** pjlbixnzjndezoscbhej
-**Integration Instance:** supabase-amber-door
-**Status:** ATIVO - schema completamente aplicado
+**Ultima Atualizacao:** 06/03/2026
+**Projeto Supabase:** mstnqzgsdnlsajuaezhs (ativo)
+**Projeto Anterior:** pjlbixnzjndezoscbhej (supabase-amber-door)
+**Status:** ATIVO - schema aplicado + correcoes manuais de 06/03/2026
 
 ---
 
@@ -22,8 +23,8 @@
 
 | Metrica | Valor |
 |---------|-------|
-| Tabelas no schema public | **74** |
-| RLS habilitado | Em todas as 74 tabelas |
+| Tabelas no schema public | **80** (6 novas criadas em 06/03/2026) |
+| RLS habilitado | Em todas as 80 tabelas |
 | Triggers updated_at | Em todas as tabelas com updated_at |
 | Trigger on_auth_user_created | Ativo (cria profile automatico no signup) |
 | Realtime publicado | 8 tabelas |

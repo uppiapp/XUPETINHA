@@ -1,5 +1,9 @@
 # Guia de Teste do Sistema Realtime
 
+**Ultima Atualizacao:** 06/03/2026  
+**Status:** Realtime ativo — rides, price_offers, notifications, driver_locations publicadas no canal supabase_realtime  
+**Projeto:** mstnqzgsdnlsajuaezhs
+
 ## Sistema de Tempo Real Configurado ✅
 
 O sistema de tempo real está totalmente configurado e conectado ao Supabase. Aqui está como testar:
@@ -15,19 +19,16 @@ O sistema de tempo real está totalmente configurado e conectado ao Supabase. Aq
 
 #### Conta do Motorista (Você)
 1. Abra uma aba e vá para `/auth/driver/welcome`
-2. Clique em **"Cadastrar como Motorista"**
-3. Preencha nome, email e senha
-4. Em user-type, escolha **"Motorista"** ou **"Ambos"**
-5. Complete o cadastro do veículo em `/uppi/driver/register`
-6. Vá para `/uppi/driver` para ver a tela de motorista
-7. **Certifique-se de estar ONLINE** (toggle no canto superior direito)
+2. Clique em **"Começar a dirigir"** para novo cadastro ou **"Já sou motorista"** para login
+3. Ou use a conta de teste: **motorista@uppi.com** (Toyota Corolla, is_verified=true)
+4. Vá para `/uppi/driver` — o dashboard com mapa aparecerá
+5. **Clique no toggle para ficar ONLINE** (verde = disponivel)
 
 #### Conta do Passageiro (Seu Amigo)
-1. Abra outra aba/dispositivo e vá para `/auth/welcome`
-2. Clique em **"Criar conta"** ou **"Entrar"**
-3. Preencha nome, email e senha diferentes
-4. Em user-type, escolha **"Passageiro"** ou **"Ambos"**
-5. Vá para a home `/uppi/home`
+1. Abra outra aba/dispositivo e vá para `/` (onboarding)
+2. Clique em **"Criar conta"** → selecione **"Passageiro"** → cadastre-se em `/auth/passenger`
+3. Ou clique em **"Entrar"** para login existente
+4. Vá para a home `/uppi/home`
 
 ### 3. Teste do Fluxo Completo
 

@@ -37,7 +37,7 @@ const USER_TYPES = [
       { icon: Clock, text: 'Trabalhe quando quiser', color: 'text-green-500' },
       { icon: TrendingUp, text: 'Maximize seus ganhos', color: 'text-green-500' }
     ],
-    redirectTo: '/uppi/driver'
+    redirectTo: '/auth/driver/welcome'
   }
 ]
 
@@ -63,8 +63,10 @@ export default function UserTypePage() {
           .eq('id', user.id)
           .single()
         
-        if (profile?.user_type && profile.user_type !== 'passenger') {
+        if (profile?.user_type === 'passenger') {
           router.push('/uppi/home')
+        } else if (profile?.user_type === 'driver') {
+          router.push('/auth/driver/welcome')
         }
       }
     }

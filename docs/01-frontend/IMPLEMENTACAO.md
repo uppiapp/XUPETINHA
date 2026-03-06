@@ -1,7 +1,7 @@
 # UPPI - Implementação Completa
 
-**Ultima Atualizacao:** 24/02/2026  
-**Versao:** 11.0
+**Ultima Atualizacao:** 06/03/2026  
+**Versao:** 12.0
 
 ## Visão Geral
 
@@ -159,13 +159,14 @@ O Uppi é um app de transporte completo construído com Next.js 16, Supabase e d
 - `/uppi/club` - Assinaturas Club Uppi
 
 ### Motorista
-- `/uppi/driver` - Dashboard com ofertas em tempo real
-- `/uppi/driver/earnings` - Análise de ganhos com charts
+- `/uppi/driver` - Dashboard REDESENHADO: mapa + toggle online/offline + corridas Realtime + DriverBottomNavigation
+- `/uppi/driver/earnings` - Análise de ganhos com charts + DriverBottomNavigation
+- `/uppi/driver/history` - Historico de corridas + DriverBottomNavigation
+- `/uppi/driver/profile` - Perfil do motorista + DriverBottomNavigation
+- `/uppi/driver/wallet` - Carteira do motorista + DriverBottomNavigation
 - `/uppi/driver/register` - Cadastro de veiculo
 - `/uppi/driver/documents` - Upload de documentos (CNH, CRLV)
 - `/uppi/driver/verify` - Verificacao de identidade
-- `/uppi/driver-mode` - Modo motorista (tela de selecao)
-- `/uppi/driver-mode/active` - Modo ativo recebendo corridas
 
 ### Admin
 - `/admin` - Dashboard com charts e stats
@@ -192,15 +193,23 @@ O Uppi é um app de transporte completo construído com Next.js 16, Supabase e d
 - `/uppi/wallet` - Carteira com transacoes
 - `/uppi/emergency` - Contatos de emergencia
 
-### Componentes Reutilizáveis
+### Componentes Reutilizaveis
 - `<NearbyDrivers />` - Motoristas no mapa (Realtime)
 - `<VoiceAssistantButton />` - Voice assistant com Speech API
 - `<HotZonesCard />` - Zonas quentes para motoristas
-- `<RideAudioRecorder />` - Gravação de áudio
+- `<RideAudioRecorder />` - Gravacao de audio
 - `<MapFallback />` - Fallback quando mapa falha
 - `<GoogleMap />` - Mapa com retry e callbacks
-- `<AutoTheme />` - Tema automático por horário
+- `<AutoTheme />` - Tema automatico por horario
 - `<IOSSkeleton />` - Skeletons iOS-style
+- `<BottomNavigation />` - Navegacao do passageiro (expandida para todas as rotas)
+- `<DriverBottomNavigation />` - Navegacao do motorista (NOVO 06/03/2026)
+
+### Fluxo de Auth (atualizado em 06/03/2026)
+- `/auth/selection` - NOVO: tela de escolha Passageiro ou Motorista
+- `/auth/passenger` - NOVO: signup exclusivo de passageiro
+- Criar conta → `/auth/selection` → Passageiro: `/auth/passenger` | Motorista: `/auth/driver/welcome`
+- Login motorista redireciona para `/uppi/driver` (corrigido de `/uppi/driver-mode`)
 
 ---
 

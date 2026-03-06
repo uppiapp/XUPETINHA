@@ -1,8 +1,8 @@
 # Versionamento de API - Uppi
 
-**Ultima Atualizacao:** 24/02/2026  
+**Ultima Atualizacao:** 06/03/2026  
 **Versao Atual:** v1  
-**Status:** Todos os 56 route.ts em /api/v1/, middleware ativo
+**Status:** Todos os 57 route.ts em /api/v1/, middleware ativo
 
 ---
 

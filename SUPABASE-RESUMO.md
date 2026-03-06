@@ -8,9 +8,9 @@
 │                                 │
 │  Status: ATIVO                 │
 │  Data: 06/03/2026              │
-│  Schema: 74 TABELAS            │
-│  RLS: HABILITADO               │
-│  Realtime: 8 TABELAS           │
+│  Schema: 80 TABELAS            │
+│  RLS: HABILITADO (corrigida)   │
+│  Realtime: 8+ TABELAS          │
 └─────────────────────────────────┘
 ```
 
@@ -152,15 +152,15 @@ SUPABASE-CHECKLIST.md                 ← Checklist ✨ NOVO
 ## 📊 Estatísticas
 
 ```
-Tabelas:        74
+Tabelas:        80 (74 via migrations + 6 criadas em 06/03/2026)
 RPC Functions:  15
-Realtime:       8 tabelas
-RLS Policies:   ~200+
-Seed Records:   16
+Realtime:       8+ tabelas
+RLS Policies:   ~210+ (corrigidas em 06/03/2026)
+Seed Records:   17 (driver_profile do motorista de teste adicionado)
 
-Variáveis de Env: 13
-Migrations:       4
-Storage:          Não configurado (pronto)
+Variaveis de Env: 13
+Migrations:       4 + correcoes SQL manuais (06/03/2026)
+Storage:          Nao configurado (pronto)
 ```
 
 ---

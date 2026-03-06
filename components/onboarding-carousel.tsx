@@ -286,7 +286,7 @@ export function OnboardingCarousel() {
           <div className="relative flex flex-col gap-3">
             <button
               type="button"
-              onClick={() => router.push("/signup")}
+              onClick={() => router.push("/auth/selection")}
               className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 shadow-md"
             >
               Criar conta
@@ -302,6 +302,7 @@ export function OnboardingCarousel() {
             >
               Entrar
             </button>
+
           </div>
         </div>
 

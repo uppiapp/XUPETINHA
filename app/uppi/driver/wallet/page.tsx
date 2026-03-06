@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WalletTransaction } from '@/lib/types/database'
+import { DriverBottomNavigation } from '@/components/driver-bottom-navigation'
 
 export default function DriverWalletPage() {
   const router = useRouter()
@@ -222,6 +223,8 @@ export default function DriverWalletPage() {
           </div>
         </main>
       </div>
+
+      <DriverBottomNavigation />
 
       {/* Withdraw modal */}
       {showWithdraw && (

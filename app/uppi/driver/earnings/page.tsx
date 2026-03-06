@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, TrendingUp, MapPin, Clock, Target, ChevronRight } from 'lucide-react'
 import { iosToast } from '@/lib/utils/ios-toast'
 import { EmptyState } from '@/components/empty-state'
+import { DriverBottomNavigation } from '@/components/driver-bottom-navigation'
 
 interface DayEarning {
   day: string
@@ -364,7 +365,7 @@ export default function DriverEarningsPage() {
         <button
           type="button"
           onClick={() => router.push('/uppi/wallet')}
-          className="w-full h-[52px] bg-emerald-500 text-white font-bold text-[16px] rounded-2xl ios-press shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+          className="w-full h-[52px] bg-emerald-500 text-white font-bold text-[16px] rounded-2xl ios-press shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 mb-24"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -372,6 +373,7 @@ export default function DriverEarningsPage() {
           Sacar Ganhos
         </button>
       </main>
+      <DriverBottomNavigation />
     </div>
   )
 }

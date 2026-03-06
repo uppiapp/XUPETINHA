@@ -1,8 +1,9 @@
 # Analise Completa de Todos os Schemas — Supabase UPPI
 
 **Data:** 02/03/2026
-**Projeto:** pjlbixnzjndezoscbhej (supabase-amber-door)
-**Verificado via SQL:** SELECT direto no banco em 02/03/2026
+**Ultima Atualizacao:** 06/03/2026
+**Projeto:** mstnqzgsdnlsajuaezhs (ativo) — substituiu pjlbixnzjndezoscbhej em 06/03/2026
+**Verificado via SQL:** SELECT direto no banco em 02/03/2026 e 06/03/2026
 
 ---
 
@@ -10,7 +11,7 @@
 
 | Schema | Tabelas | Descricao | Gerenciado por |
 |--------|---------|-----------|----------------|
-| public | 74 | Dominio da aplicacao UPPI | Nos (4 migrations) |
+| public | **80** | Dominio da aplicacao UPPI — 74 migrations + 6 criadas manualmente em 06/03/2026 | Nos |
 | pg_catalog | 64 | Sistema interno do PostgreSQL | PostgreSQL |
 | auth | 21 | Autenticacao e sessoes | Supabase Auth |
 | storage | 8 | Arquivos e buckets | Supabase Storage |
@@ -18,11 +19,13 @@
 | realtime | 3 | Pub/Sub em tempo real | Supabase Realtime |
 | supabase_migrations | 1 | Controle de versao do banco | Supabase CLI / v0 |
 | vault | 1 | Segredos criptografados | Supabase Vault |
-| **TOTAL** | **176** | Verificado via SQL | |
+| **TOTAL** | **182** | Atualizado em 06/03/2026 | |
 
 ---
 
-## 1. Schema: public (74 tabelas — Dominio UPPI)
+## 1. Schema: public (80 tabelas — Dominio UPPI)
+
+**Novas tabelas criadas em 06/03/2026:** driver_profiles, driver_locations, rides (colunas renomeadas), price_offers, notifications, wallet_transactions
 
 ### Tabelas por categoria
 
@@ -51,7 +54,9 @@
 | Legal | faqs, legal_documents |
 | PostGIS (sistema) | spatial_ref_sys |
 
-### RLS Policies (145 policies em 73 tabelas)
+### RLS Policies (155+ policies em 80 tabelas — corrigida em 06/03/2026)
+
+**Correcao critica 06/03/2026:** Policy `rides_select` foi reescrita para expor corridas `pending` e `negotiating` a todos os usuarios autenticados (necessario para o motorista receber corridas via Realtime).
 
 | Tabela | Policies | Tabela | Policies |
 |--------|----------|--------|----------|
