@@ -47,7 +47,7 @@ export default function LoginPage() {
       .single()
 
     if (profile?.user_type === 'driver') {
-      router.push('/uppi/driver-mode')
+      router.push('/uppi/driver')
     } else {
       router.push('/uppi/home')
     }

@@ -109,7 +109,7 @@ export function SidebarMenu({ isOpen, onClose, profile }: SidebarMenuProps) {
 
   const handleDriverMode = () => {
     onClose()
-    router.push('/uppi/driver-mode')
+    router.push('/uppi/driver')
   }
 
   const handleLogout = async () => {

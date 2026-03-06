@@ -35,7 +35,7 @@ export default function DriverLoginPage() {
 
         if (profile?.user_type === 'driver') {
           iosToast.success('Login realizado com sucesso!')
-          router.push('/uppi/driver-mode')
+          router.push('/uppi/driver')
         } else {
           iosToast.error('Esta conta não é de motorista')
           await supabase.auth.signOut()
@@ -54,7 +54,7 @@ export default function DriverLoginPage() {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/uppi/driver-mode` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/uppi/driver` },
       })
       if (error) iosToast.error(error.message)
     } catch {
@@ -70,7 +70,7 @@ export default function DriverLoginPage() {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/uppi/driver-mode` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/uppi/driver` },
       })
       if (error) iosToast.error(error.message)
     } catch {
