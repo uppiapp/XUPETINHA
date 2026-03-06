@@ -210,7 +210,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/auth/passenger")}
+          onClick={() => router.push("/auth/selection")}
           className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 text-white"
           style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
         >
