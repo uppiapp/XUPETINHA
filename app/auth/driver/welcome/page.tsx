@@ -1,44 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-
-const driverSlides = [
-  {
-    id: 0,
-    title: 'Seja seu\npróprio chefe',
-    subtitle: 'Defina seus horários e trabalhe quando quiser',
-    image: '/images/driver-onboarding-1.jpg',
-  },
-  {
-    id: 1,
-    title: 'Ganhe mais\ncom autonomia',
-    subtitle: 'Você define o preço das suas corridas',
-    image: '/images/driver-onboarding-2.jpg',
-  },
-  {
-    id: 2,
-    title: 'Suporte\n24 horas',
-    subtitle: 'Estamos sempre aqui para ajudar você',
-    image: '/images/driver-onboarding-3.jpg',
-  },
-]
 
 export default function DriverWelcomePage() {
   const router = useRouter()
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-black">
-      {/* Background Image */}
-      <div className="pointer-events-none absolute inset-0">
-        <Image
-          src="/images/driver-welcome-bg.jpg"
-          alt=""
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/90" />
+    <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ background: 'linear-gradient(160deg, #1a2e1a 0%, #0d1f0d 40%, #000 100%)' }}>
+      {/* Background decorativo */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #34C759 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 -left-20 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #34C759 0%, transparent 70%)' }} />
       </div>
 
       {/* Content */}
@@ -80,12 +52,14 @@ export default function DriverWelcomePage() {
           {/* Features */}
           <div className="mt-8 space-y-3">
             {[
-              { icon: '💰', text: 'Defina seus próprios preços' },
-              { icon: '⏰', text: 'Trabalhe quando quiser' },
-              { icon: '📈', text: 'Maximize seus ganhos' },
+              { d: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', text: 'Defina seus próprios preços' },
+              { d: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', text: 'Trabalhe quando quiser' },
+              { d: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', text: 'Maximize seus ganhos' },
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm">
-                <span className="text-2xl">{feature.icon}</span>
+                <svg className="w-5 h-5 text-[#34C759] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d={feature.d} />
+                </svg>
                 <span className="text-[15px] font-medium text-white">{feature.text}</span>
               </div>
             ))}
