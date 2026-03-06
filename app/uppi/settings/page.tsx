@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { iosToast } from '@/lib/utils/ios-toast'
 import { triggerHaptic } from '@/hooks/use-haptic'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -16,6 +17,23 @@ export default function SettingsPage() {
   const [soundEffects, setSoundEffects] = useState(true)
   const [locationAlways, setLocationAlways] = useState(false)
   const [savePaymentInfo, setSavePaymentInfo] = useState(true)
+  const [userType, setUserType] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single()
+        setUserType(profile?.user_type ?? 'passenger')
+      }
+    }
+    loadProfile()
+  }, [])
 
   const settingsSections = [
     {
@@ -154,8 +172,8 @@ export default function SettingsPage() {
           </div>
         ))}
 
-        {/* Tornar-se motorista */}
-        <div>
+        {/* Tornar-se motorista — só para passageiros */}
+        {userType === 'passenger' && <div>
           <p className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-2.5 px-1">Motorista</p>
           <div className="bg-white/90 dark:bg-[#1C1C1E]/90 ios-blur rounded-[20px] overflow-hidden shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.04),0_2px_12px_rgba(0,0,0,0.3)] border-[0.5px] border-black/[0.06] dark:border-white/[0.08]">
             <button
@@ -177,7 +195,7 @@ export default function SettingsPage() {
               </svg>
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* App Info - iOS style */}
         <div className="text-center py-6">
