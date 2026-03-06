@@ -37,7 +37,7 @@ export default function DriverLoginPage() {
 
         if (profile?.user_type === 'driver') {
           iosToast.success('Login realizado com sucesso!')
-          router.push('/uppi/driver-mode/active')
+          router.push('/uppi/driver-mode')
         } else {
           iosToast.error('Esta conta não é de motorista')
           await authService.signOut()

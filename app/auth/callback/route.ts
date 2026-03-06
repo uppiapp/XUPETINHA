@@ -35,7 +35,7 @@ export async function GET(request: Request) {
           })
 
         if (userType === 'driver') {
-          return NextResponse.redirect(`${origin}/driver/onboarding`)
+          return NextResponse.redirect(`${origin}/uppi/driver/register`)
         }
         return NextResponse.redirect(`${origin}/uppi/home`)
       }
