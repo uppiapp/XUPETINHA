@@ -16,11 +16,9 @@ export function UppiLogo({ className = "", style, size = 32 }: { className?: str
       <Image
         src="/images/uppi-logo.png"
         alt="Uppi"
-        width={512}
-        height={512}
+        fill
+        sizes={`${size}px`}
         style={{
-          width: "100%",
-          height: "100%",
           objectFit: "contain",
         }}
         priority
