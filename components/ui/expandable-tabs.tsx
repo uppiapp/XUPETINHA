@@ -56,21 +56,16 @@ export function ExpandableTabs({
   activeIndex,
   onChange,
 }: ExpandableTabsProps) {
-  const [selected, setSelected] = React.useState<number | null>(activeIndex ?? null);
   const outsideClickRef = React.useRef(null);
-
-  React.useEffect(() => {
-    if (activeIndex !== undefined) {
-      setSelected(activeIndex);
-    }
-  }, [activeIndex]);
+  
+  // Use activeIndex directly as controlled component
+  const selected = activeIndex ?? null;
 
   useOnClickOutside(outsideClickRef, () => {
     // Don't deselect on outside click for navigation
   });
 
   const handleSelect = (index: number) => {
-    setSelected(index);
     onChange?.(index);
   };
 
