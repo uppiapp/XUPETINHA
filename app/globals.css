@@ -549,20 +549,20 @@ input, textarea, [contenteditable] {
     --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 10%;
-    --primary: 142 71% 45%;
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 93%;
     --secondary-foreground: 220 15% 25%;
     --muted: 220 14% 93%;
     --muted-foreground: 220 10% 50%;
-    --accent: 142 71% 45%;
+    --accent: 211 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 4 86% 58%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 88%;
     --input: 220 13% 88%;
-    --ring: 142 71% 45%;
-    --chart-1: 142 71% 45%;
+    --ring: 211 100% 50%;
+    --chart-1: 211 100% 50%;
     --chart-2: 211 100% 50%;
     --chart-3: 262 83% 58%;
     --chart-4: 4 86% 58%;
@@ -570,17 +570,17 @@ input, textarea, [contenteditable] {
     --radius: 0.75rem;
     --sidebar-background: 222 47% 10%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 142 71% 45%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 40% 16%;
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 222 35% 18%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-ring: 211 100% 50%;
     /* admin specific */
     --admin-bg: 222 47% 8%;
     --admin-surface: 222 40% 12%;
     --admin-border: 222 35% 18%;
-    --admin-green: 142 71% 45%;
+    --admin-green: 211 100% 50%;
   }
   .dark {
     --background: 222 47% 7%;
@@ -589,20 +589,20 @@ input, textarea, [contenteditable] {
     --card-foreground: 210 20% 92%;
     --popover: 222 40% 11%;
     --popover-foreground: 210 20% 92%;
-    --primary: 142 71% 45%;
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 222 35% 17%;
     --secondary-foreground: 210 20% 80%;
     --muted: 222 35% 17%;
     --muted-foreground: 220 15% 52%;
-    --accent: 142 71% 45%;
+    --accent: 211 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 4 86% 58%;
     --destructive-foreground: 0 0% 100%;
     --border: 222 35% 19%;
     --input: 222 35% 19%;
-    --ring: 142 71% 45%;
-    --chart-1: 142 71% 45%;
+    --ring: 211 100% 50%;
+    --chart-1: 211 100% 50%;
     --chart-2: 211 100% 55%;
     --chart-3: 262 80% 60%;
     --chart-4: 4 86% 58%;
@@ -610,16 +610,16 @@ input, textarea, [contenteditable] {
     --radius: 0.75rem;
     --sidebar-background: 222 47% 6%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 142 71% 45%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 40% 13%;
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 222 35% 17%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-ring: 211 100% 50%;
     --admin-bg: 222 47% 6%;
     --admin-surface: 222 40% 10%;
     --admin-border: 222 35% 17%;
-    --admin-green: 142 71% 45%;
+    --admin-green: 211 100% 50%;
   }
 }
 

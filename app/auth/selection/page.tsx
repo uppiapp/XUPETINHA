@@ -47,9 +47,7 @@ export default function SelectionPage() {
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-5 pt-6 pb-2">
-        <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0">
-          <UppiLogo className="w-4 h-4 text-black" />
-        </div>
+        <UppiLogo size={40} />
         <span className="text-sm font-medium text-white/70 tracking-wide">Uppi</span>
       </div>
 

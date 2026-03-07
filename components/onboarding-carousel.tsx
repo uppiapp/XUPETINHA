@@ -192,17 +192,20 @@ export function OnboardingCarousel() {
         {/* Splash overlay */}
         {splash && (
           <div
-            className="absolute inset-0 z-50 bg-black flex items-center justify-center"
+            className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center gap-6"
             style={{
               opacity: splashFading ? 0 : 1,
               transition: "opacity 0.6s ease",
               pointerEvents: splashFading ? "none" : "auto",
             }}
           >
-            <p className="text-white text-[1.75rem] tracking-tight">
-              <span className="font-bold">Uppi</span>
-            </p>
-            <p className="text-white/40 text-[13px] mt-2 tracking-wide">Bem-vindo</p>
+            <UppiLogo size={120} />
+            <div className="text-center">
+              <p className="text-white text-[1.75rem] tracking-tight">
+                <span className="font-bold">Uppi</span>
+              </p>
+              <p className="text-white/40 text-[13px] mt-2 tracking-wide">Bem-vindo</p>
+            </div>
           </div>
         )}
 
@@ -237,13 +240,8 @@ export function OnboardingCarousel() {
         </div>
 
         {/* Header */}
-        <div className="relative z-10 flex items-center gap-2 px-5 pt-4 pb-1">
-          <div
-            className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: slide.logoBg }}
-          >
-            <UppiLogo className="w-4 h-4" style={{ color: slide.logoColor }} />
-          </div>
+        <div className="relative z-10 flex items-center gap-2.5 px-5 pt-4 pb-1">
+          <UppiLogo size={28} />
           <span className="text-sm font-medium tracking-wide" style={{ color: slide.headerTextColor }}>
             Uppi — Mobilidade
           </span>

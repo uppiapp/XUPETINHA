@@ -13,7 +13,7 @@ export function AppBackground() {
           left: "-20%",
           background:
             "radial-gradient(ellipse at 40% 80%, #0d2d52 0%, #061525 40%, transparent 70%)",
-          opacity: 0.95,
+          opacity: 0.55,
         }}
       />
       {/* Glow secundário — toque ainda mais azul no canto inferior esquerdo */}
@@ -26,7 +26,7 @@ export function AppBackground() {
           left: "-10%",
           background:
             "radial-gradient(ellipse at 20% 100%, #0a3060 0%, transparent 65%)",
-          opacity: 0.6,
+          opacity: 0.35,
         }}
       />
     </div>
