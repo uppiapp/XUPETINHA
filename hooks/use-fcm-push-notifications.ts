@@ -57,13 +57,12 @@ export function useFcmPushNotifications(): UseFcmPushNotificationsReturn {
   const [platform]                      = useState<Platform>(detectPlatform)
   const [currentToken, setCurrentToken] = useState<string | null>(null)
 
-  const supabase = createClient()
-
   // ----------------------------------------------------------------
   // Salva o token FCM no banco via Supabase diretamente
   // ----------------------------------------------------------------
   const saveToken = useCallback(async (token: string): Promise<boolean> => {
     try {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return false
 
@@ -98,13 +97,14 @@ export function useFcmPushNotifications(): UseFcmPushNotificationsReturn {
       console.error('[useFcmPushNotifications] saveToken exception:', err)
       return false
     }
-  }, [platform, supabase])
+  }, [platform])
 
   // ----------------------------------------------------------------
   // Desativa o token no banco
   // ----------------------------------------------------------------
   const deactivateToken = useCallback(async (token: string) => {
     try {
+      const supabase = createClient()
       await supabase
         .from('fcm_tokens')
         .update({ is_active: false })
@@ -112,7 +112,7 @@ export function useFcmPushNotifications(): UseFcmPushNotificationsReturn {
     } catch (err) {
       console.error('[useFcmPushNotifications] deactivateToken error:', err)
     }
-  }, [supabase])
+  }, [])
 
   // ----------------------------------------------------------------
   // Inicializacao: verifica se ja ha token armazenado
@@ -121,6 +121,7 @@ export function useFcmPushNotifications(): UseFcmPushNotificationsReturn {
     if (typeof window === 'undefined') return
 
     const init = async () => {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
@@ -142,7 +143,7 @@ export function useFcmPushNotifications(): UseFcmPushNotificationsReturn {
     }
 
     init()
-  }, [platform, supabase])
+  }, [platform])
 
   // ----------------------------------------------------------------
   // Registra para push (Capacitor nativo)
