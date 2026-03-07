@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
-import { google } from 'google-maps'
 
 const DARK_MAP_STYLES = [
   { elementType: 'geometry', stylers: [{ color: '#1d1d1f' }] },
