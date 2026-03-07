@@ -34,7 +34,7 @@
 | **Componentes** | 100% | 48 custom + 85 ui (54 shadcn + 31 iOS) = 133 total |
 | **Services** | 100% | 13 services de dominio |
 | **Hooks** | 100% | 12 hooks customizados |
-| **Integracoes** | 100% | Supabase + Google Maps + Web Push VAPID + Resend |
+| **Integracoes** | 100% | Supabase + Google Maps + FCM + Resend |
 | **Documentacao** | 100% | 17 docs em docs/ |
 | **Build** | 100% | 152 paginas geradas, 0 erros TypeScript |
 

@@ -16,7 +16,6 @@ docs/
   AUDITORIA-PROJETO-v2.md                    Auditoria v2 (banco 73 tabelas, APIs corrigidas)
   CONFIGURACAO-COMPLETA.md                   Env vars, integracoes, proximos passos
   SUPABASE-CONEXAO.md                        Conexao Supabase: projeto, migrations, RPCs, variaveis
-  VAPID-SETUP.md                             Setup Web Push (VAPID) para push notifications
   PAINEL-ADMIN.md                            Painel admin completo: 33 paginas
 
   01-frontend/
@@ -252,7 +251,6 @@ app/api/v1/
   push/subscribe/route.ts
   push/send/route.ts
   push/broadcast/route.ts
-  push/vapid-public-key/route.ts
   admin/setup/route.ts
   admin/create-first/route.ts
 
@@ -382,7 +380,6 @@ package.json                                 Dependencias completas
 | shadcn/ui            | 54 componentes UI base + 31 iOS = 85       | latest    |
 | Supabase             | Auth + PostgreSQL + Realtime + Storage     | 2.47.x    |
 | Google Maps          | Mapas, rotas, geocoding, places            | latest    |
-| Web Push (VAPID)     | Push notifications nativo (sem Firebase)   | web-push 3.x |
 | Framer Motion        | Animacoes                                  | 11.x      |
 | Recharts             | Graficos                                   | 2.15.0    |
 | Sonner               | Notificacoes toast                         | 1.7.1     |
