@@ -8,59 +8,29 @@ import type { Profile } from '@/lib/types/database'
 import { GoogleMap } from '@/components/google-map'
 import type { GoogleMapHandle } from '@/components/google-map'
 import { NearbyDrivers } from '@/components/nearby-drivers'
-import { VoiceAssistantButton } from '@/components/voice-assistant-button'
-import { LocationTag } from '@/components/ui/location-tag'
-import { BottomNavigation } from '@/components/bottom-navigation'
-import { generateSmartSuggestions, estimatePriceWithContext, generateContextualInsights, generatePriceAlert } from '@/lib/utils/ai-suggestions'
-import type { DestinationSuggestion, PriceAlert } from '@/lib/utils/ai-suggestions'
-import { MorphingSpinner } from '@/components/ui/morphing-spinner'
-import { NotificationBanner } from '@/components/notification-banner'
 import { CouponNotificationModal, useCouponNotification } from '@/components/coupon-notification-modal'
 import { triggerHaptic } from '@/hooks/use-haptic'
-import { PullToRefresh } from '@/components/pull-to-refresh'
 import { PermissionOnboarding } from '@/components/permission-onboarding'
-
-interface FrequentRide {
-  dropoff_address: string
-  count: number
-  pickup_address?: string
-}
-
-interface RecentPlace {
-  name: string
-  address: string
-  icon: string
-}
+import { Car, Package, Globe, Calendar, Bell, CalendarDays, ChevronRight, Mic, Plus, Gift, Home, Map, Settings, User } from 'lucide-react'
 
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sheetExpanded, setSheetExpanded] = useState(false)
   const [greeting, setGreeting] = useState('')
-  const [frequentRides, setFrequentRides] = useState<FrequentRide[]>([])
-  const [recentPlaces, setRecentPlaces] = useState<RecentPlace[]>([])
-  const [aiSuggestions, setAiSuggestions] = useState<DestinationSuggestion[]>([])
-  const [insights, setInsights] = useState<string[]>([])
-  const [priceAlert, setPriceAlert] = useState<PriceAlert | null>(null)
   const [nearbyDriversCount, setNearbyDriversCount] = useState(0)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
-  const [showCouponBanner, setShowCouponBanner] = useState(false)
-  const [showAchievementBanner, setShowAchievementBanner] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [favoriteAddresses, setFavoriteAddresses] = useState<string[]>([])
+  const [mapLoaded, setMapLoaded] = useState(false)
   const mapRef = useRef<GoogleMapHandle>(null)
   const router = useRouter()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const supabase = useMemo(() => createClient(), [])
   const { notification: couponNotification, showNotification: showCouponModal, closeNotification: closeCouponModal } = useCouponNotification()
 
   const quickServices = [
-    { label: 'Corrida', sub: 'Mais rapido', icon: 'car', color: 'from-[#1a1a2e] to-[#16213e]', href: '/uppi/ride/route-input' },
-    { label: 'Entregas', sub: 'Envie pacotes', icon: 'box', color: 'from-[#e8751a] to-[#d4620f]', href: '/uppi/entregas' },
-    { label: 'Intercidade', sub: 'Viaje longe', icon: 'globe', color: 'from-[#0d7377] to-[#14a3a8]', href: '/uppi/cidade-a-cidade' },
-    { label: 'Agendar', sub: 'Para depois', icon: 'calendar', color: 'from-[#6c5ce7] to-[#5f3dc4]', href: '/uppi/ride/route-input' },
-    { label: 'Bbzao', sub: 'Novidade', icon: 'zap', color: 'from-[#f7971e] to-[#ffd200]', href: '/uppi/bbzao' },
+    { label: 'Corrida', sub: 'Mais rapido', icon: Car, bgColor: 'bg-[#1a1a2e]', href: '/uppi/ride/route-input' },
+    { label: 'Entregas', sub: 'Envie pacotes', icon: Package, bgColor: 'bg-[#e8751a]', href: '/uppi/entregas' },
+    { label: 'Intercidade', sub: 'Viaje longe', icon: Globe, bgColor: 'bg-[#0d7377]', href: '/uppi/cidade-a-cidade' },
+    { label: 'Agendar', sub: 'Para depois', icon: Calendar, bgColor: 'bg-[#6c5ce7]', href: '/uppi/ride/route-input' },
   ]
 
   const handleLocationFound = useCallback((lat: number, lng: number) => {
@@ -68,24 +38,16 @@ export default function HomePage() {
     setUserLocation({ lat, lng })
   }, [])
 
-  const handleCenterOnUser = useCallback(() => {
-    mapRef.current?.centerOnUser()
+  const handleMapReady = useCallback((instance: any) => {
+    setMapInstance(instance)
+    setMapLoaded(true)
   }, [])
 
   useEffect(() => {
     const hour = new Date().getHours()
-    if (hour < 12) setGreeting('Bom dia')
-    else if (hour < 18) setGreeting('Boa tarde')
-    else setGreeting('Boa noite')
-
-    // Generate price alert for current time
-    setPriceAlert(generatePriceAlert(hour, new Date().getDay()))
-
-    // Load favorite addresses from localStorage
-    const savedFavorites = localStorage.getItem('uppi_favorite_addresses')
-    if (savedFavorites) {
-      setFavoriteAddresses(JSON.parse(savedFavorites))
-    }
+    if (hour < 12) setGreeting('Bom dia,')
+    else if (hour < 18) setGreeting('Boa tarde,')
+    else setGreeting('Boa noite,')
   }, [])
 
   useEffect(() => {
@@ -94,7 +56,6 @@ export default function HomePage() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (user) {
-          // Load from Supabase
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
@@ -103,10 +64,8 @@ export default function HomePage() {
           
           if (profileData) {
             setProfile(profileData)
-            await loadFrequentRides(user.id)
           }
         } else {
-          // Fallback: Load from local storage (no auth)
           const localProfile = sessionStorage.getItem('userProfile') || localStorage.getItem('uppi_profile')
           if (localProfile) {
             const localData = JSON.parse(localProfile)
@@ -115,7 +74,6 @@ export default function HomePage() {
               avatar_url: '/images/default-avatar.jpg', rating: 5.0, total_rides: 0,
               created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
             })
-            // Show welcome coupon for local users
             const hasSeenWelcome = sessionStorage.getItem('uppi_welcome_shown')
             if (!hasSeenWelcome) {
               sessionStorage.setItem('uppi_welcome_shown', 'true')
@@ -131,9 +89,8 @@ export default function HomePage() {
               }, 1500)
             }
           } else {
-            // Default guest profile
             setProfile({
-              id: 'guest', full_name: 'Visitante', phone: '', user_type: 'passenger',
+              id: 'guest', full_name: 'Usuario', phone: '', user_type: 'passenger',
               avatar_url: '/images/default-avatar.jpg', rating: 5.0, total_rides: 0,
               created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
             })
@@ -146,85 +103,52 @@ export default function HomePage() {
       }
     }
     loadProfile()
-  }, [supabase])
-
-  const loadFrequentRides = async (userId: string) => {
-    try {
-      // Load frequent rides from database
-      const { data: ridesData } = await supabase
-        .from('rides')
-        .select('dropoff_address, pickup_address')
-        .eq('passenger_id', userId)
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false })
-        .limit(10)
-      
-      if (ridesData && ridesData.length > 0) {
-        // Count frequency of destinations
-        const addressCount: Record<string, { count: number; pickup?: string }> = {}
-        ridesData.forEach(ride => {
-          const addr = ride.dropoff_address
-          if (addr) {
-            addressCount[addr] = addressCount[addr] || { count: 0, pickup: ride.pickup_address }
-            addressCount[addr].count++
-          }
-        })
-        
-        // Convert to array and sort by frequency
-        const frequent = Object.entries(addressCount)
-          .map(([address, data]) => ({
-            dropoff_address: address,
-            count: data.count,
-            pickup_address: data.pickup,
-          }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5)
-        
-        setFrequentRides(frequent)
-        
-        // Generate AI suggestions based on frequent rides
-        if (userLocation) {
-          const suggestions = generateSmartSuggestions(frequent, userLocation)
-          setAiSuggestions(suggestions)
-          
-          const contextInsights = generateContextualInsights(frequent, new Date().getHours())
-          setInsights(contextInsights)
-        }
-      }
-    } catch (error) {
-      console.log('[v0] Error loading frequent rides:', error)
-    }
-  }
-
-  const handleRefresh = useCallback(async () => {
-    triggerHaptic('impact')
-    // Temporary: Just trigger haptic, no data to reload
-  }, [])
+  }, [supabase, showCouponModal])
 
   if (loading) {
     return <HomeSkeleton />
   }
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'Amigo'
-
-  const categoryFilters = [
-    { label: 'Solicitar Corrida', icon: '🚗' },
-    { label: 'Endereços Favoritos', icon: '⭐' },
-    { label: 'Mais Pedidos', icon: '📍' },
-    { label: 'Gasolina', icon: '⛽' },
-  ]
+  const firstName = profile?.full_name?.split(' ')[0] || 'Usuario'
 
   return (
-    <main className="h-dvh flex flex-col relative overflow-hidden bg-background" aria-label="Tela principal do Uppi">
-      {/* Map Area - Full Screen */}
-      <div className="absolute inset-0" role="region" aria-label="Mapa de localizacao">
+    <main className="h-dvh flex flex-col relative overflow-hidden bg-[#0d0d0d]" aria-label="Tela principal do Uppi">
+      {/* Map Area - Upper Half */}
+      <div className="relative flex-1 min-h-[50vh]" role="region" aria-label="Mapa de localizacao">
+        {/* Search Bar - Fixed at top */}
+        <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+          <button
+            type="button"
+            aria-label="Buscar destino"
+            className="w-full flex items-center gap-3 bg-[#1c1c1e] rounded-full px-4 py-3"
+            onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
+          >
+            <svg className="w-5 h-5 text-[#8E8E93]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="11" cy="11" r="8" />
+              <path strokeLinecap="round" d="m21 21-4.35-4.35" />
+            </svg>
+            <span className="flex-1 text-[#8E8E93] text-base text-left">Para onde?</span>
+          </button>
+        </div>
+
+        {/* Google Map */}
         <GoogleMap 
           ref={mapRef} 
           onLocationFound={handleLocationFound} 
-          onMapReady={setMapInstance}
+          onMapReady={handleMapReady}
           className="w-full h-full" 
         />
-        
+
+        {/* Loading Overlay - shown while map is loading */}
+        {!mapLoaded && (
+          <div className="absolute inset-0 bg-[#0d0d0d] flex items-center justify-center z-10">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-3 border-[#007AFF] border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-[#8E8E93]">Carregando mapa...</span>
+            </div>
+          </div>
+        )}
+
         {/* Nearby Drivers Layer */}
         {userLocation && mapInstance && (
           <NearbyDrivers
@@ -235,221 +159,178 @@ export default function HomePage() {
           />
         )}
 
-        {/* Top Search Bar - iOS Search Field Style */}
-        <div className="absolute top-0 left-0 right-0 z-10 animate-ios-fade-up" style={{ animationDelay: '100ms' }}>
-          <div 
-            className="px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(242, 242, 247, 0.95) 0%, rgba(242, 242, 247, 0.8) 85%, transparent 100%)',
-              backdropFilter: 'saturate(180%) blur(20px)',
-              WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-            }}
+        {/* Facebook Icon - Left side */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+          <button 
+            type="button"
+            className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center shadow-lg"
+            onClick={() => { triggerHaptic('impact') }}
           >
-            <button
-              type="button"
-              aria-label="Buscar destino - Para onde voce quer ir?"
-              role="search"
-              className="w-full flex items-center gap-3 bg-white/90 dark:bg-[#1C1C1E]/90 ios-blur rounded-[14px] pl-4 pr-3.5 py-2.5 ios-press shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.04),0_1px_2px_rgba(0,0,0,0.3)]"
-              onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
-            >
-              <svg aria-hidden="true" className="w-[17px] h-[17px] text-[#8E8E93] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <circle cx="11" cy="11" r="8" />
-                <path strokeLinecap="round" d="m21 21-4.35-4.35" />
-              </svg>
-              <span className="flex-1 text-[#8E8E93] dark:text-[#8E8E93] text-[17px] text-left font-normal tracking-[-0.4px]">{'Pesquise aqui'}</span>
-              <div onClick={(e) => e.stopPropagation()}>
-                <LocationTag />
-              </div>
-            </button>
-            
-            {/* Category Filters */}
-            <div className="flex gap-2 mt-3 overflow-x-auto ios-scroll pb-1 -mx-1 px-1">
-              {categoryFilters.map((cat) => (
-                <button
-                  key={cat.label}
-                  type="button"
-                  className={`flex-shrink-0 flex items-center gap-2 ios-blur rounded-full px-4 py-2 ios-press shadow-[0_0_0_0.5px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.04),0_1px_2px_rgba(0,0,0,0.3)] transition-all ${
-                    selectedCategory === cat.label 
-                      ? 'bg-[#007AFF] text-white' 
-                      : 'bg-white/80 dark:bg-[#1C1C1E]/80'
-                  }`}
-                  onClick={() => {
-                    triggerHaptic('selection')
-                    setSelectedCategory(selectedCategory === cat.label ? null : cat.label)
-                  }}
-                >
-                  <span className="text-base">{cat.icon}</span>
-                  <span className={`text-[15px] font-medium tracking-[-0.2px] whitespace-nowrap ${
-                    selectedCategory === cat.label ? 'text-white' : 'text-foreground'
-                  }`}>{cat.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Favorites/Recent Addresses Dropdown */}
-            {selectedCategory && (
-              <div className="mt-3 ios-blur-heavy bg-white/95 dark:bg-[#1C1C1E]/95 rounded-[14px] p-4 shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.1),0_4px_24px_rgba(0,0,0,0.5)] border border-white/20 dark:border-white/10 max-h-[300px] overflow-y-auto ios-scroll">
-                {selectedCategory === 'Endereços Favoritos' && (
-                  <>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-[17px] font-semibold text-foreground tracking-[-0.4px]">Endereços Salvos</h3>
-                      {favoriteAddresses.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            localStorage.removeItem('uppi_favorite_addresses')
-                            setFavoriteAddresses([])
-                            triggerHaptic('impact')
-                          }}
-                          className="text-[13px] text-[#FF3B30] font-medium ios-press"
-                        >
-                          Limpar
-                        </button>
-                      )}
-                    </div>
-                    {favoriteAddresses.length === 0 ? (
-                      <div className="text-center py-8">
-                        <div className="text-4xl mb-2">📍</div>
-                        <p className="text-[15px] text-[#8E8E93] tracking-[-0.2px]">
-                          Nenhum endereço salvo ainda
-                        </p>
-                        <p className="text-[13px] text-[#8E8E93] mt-1">
-                          Seus endereços pesquisados aparecerão aqui
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {favoriteAddresses.map((address, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            className="w-full flex items-start gap-3 p-3 rounded-[12px] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/50 ios-press text-left"
-                            onClick={() => {
-                              triggerHaptic('selection')
-                              sessionStorage.setItem('selectedDestination', address)
-                              router.push('/uppi/ride/route-input')
-                            }}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-[#007AFF]/10 flex items-center justify-center flex-shrink-0">
-                              <svg className="w-4 h-4 text-[#007AFF]" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                              </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[15px] font-medium text-foreground tracking-[-0.2px] truncate">
-                                {address}
-                              </p>
-                              <p className="text-[13px] text-[#8E8E93] mt-0.5">
-                                Toque para ir
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {selectedCategory === 'Mais Pedidos' && frequentRides.length > 0 && (
-                  <>
-                    <h3 className="text-[17px] font-semibold text-foreground tracking-[-0.4px] mb-3">Destinos Frequentes</h3>
-                    <div className="space-y-2">
-                      {frequentRides.map((ride, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="w-full flex items-start gap-3 p-3 rounded-[12px] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/50 ios-press text-left"
-                          onClick={() => {
-                            triggerHaptic('selection')
-                            sessionStorage.setItem('selectedDestination', ride.dropoff_address)
-                            router.push('/uppi/ride/route-input')
-                          }}
-                        >
-                          <div className="w-8 h-8 rounded-full bg-[#34C759]/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[15px]">📍</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[15px] font-medium text-foreground tracking-[-0.2px] truncate">
-                              {ride.dropoff_address}
-                            </p>
-                            <p className="text-[13px] text-[#8E8E93] mt-0.5">
-                              {ride.count} {ride.count === 1 ? 'vez' : 'vezes'}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {selectedCategory === 'Solicitar Corrida' && (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-2">🚗</div>
-                    <p className="text-[15px] font-medium text-foreground tracking-[-0.2px] mb-2">
-                      Solicitar uma corrida
-                    </p>
-                    <p className="text-[13px] text-[#8E8E93] mb-4">
-                      Informe seu destino para começar
-                    </p>
-                    <button
-                      type="button"
-                      className="bg-[#007AFF] text-white px-6 py-2.5 rounded-full text-[15px] font-semibold ios-press"
-                      onClick={() => {
-                        triggerHaptic('impact')
-                        router.push('/uppi/ride/route-input')
-                      }}
-                    >
-                      Onde você vai?
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
+            </svg>
+          </button>
         </div>
 
-        {/* Bottom Navigation Buttons */}
-        <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-0 right-0 z-10 px-4">
-          <div className="flex items-center justify-between gap-3">
-            {/* Left side - Info pill */}
-            <div className="flex gap-2">
-              {nearbyDriversCount > 0 && (
-                <div className="ios-blur-heavy bg-white/90 dark:bg-black/75 rounded-full px-4 py-2.5 flex items-center gap-2 shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_2px_12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.1),0_2px_16px_rgba(0,0,0,0.5)] border border-white/20 dark:border-white/10">
-                  <div className="w-[6px] h-[6px] bg-[#34C759] rounded-full animate-pulse shadow-[0_0_4px_rgba(52,199,89,0.6)]" />
-                  <span className="text-[13px] font-semibold text-foreground tracking-[-0.2px]">
-                    {nearbyDriversCount} motorista{nearbyDriversCount !== 1 ? 's' : ''} próximo{nearbyDriversCount !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              )}
-            </div>
+        {/* Right side buttons - Mic and Plus */}
+        <div className="absolute right-4 bottom-16 z-10 flex flex-col gap-3">
+          <button 
+            type="button"
+            className="w-12 h-12 rounded-full bg-[#007AFF] flex items-center justify-center shadow-lg"
+            onClick={() => { triggerHaptic('impact') }}
+          >
+            <Mic className="w-5 h-5 text-white" />
+          </button>
+          <button 
+            type="button"
+            className="w-10 h-10 rounded-full bg-[#007AFF] flex items-center justify-center shadow-lg"
+            onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
+          >
+            <Plus className="w-5 h-5 text-white" />
+          </button>
+        </div>
 
-            {/* Right side - Action buttons */}
-            <div className="flex items-center gap-2">
-              {/* GPS button - iOS circle button */}
-              <button
+        {/* Handle indicator */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
+          <div className="w-10 h-1 bg-[#3a3a3c] rounded-full" />
+        </div>
+      </div>
+
+      {/* Bottom Sheet - Lower section */}
+      <div className="bg-[#0d0d0d] rounded-t-3xl -mt-4 relative z-20 pb-24">
+        {/* Header with greeting */}
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[#8E8E93] text-sm">{greeting}</p>
+              <h1 className="text-white text-2xl font-bold mt-0.5">{firstName}</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
                 type="button"
-                aria-label="Centralizar no mapa na minha localizacao"
-                className="w-[52px] h-[52px] ios-blur-heavy bg-white/90 dark:bg-black/75 rounded-full flex items-center justify-center shadow-[0_0_0_0.5px_rgba(0,0,0,0.08),0_2px_12px_rgba(0,0,0,0.12)] dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.1),0_2px_16px_rgba(0,0,0,0.5)] border border-white/20 dark:border-white/10 ios-press"
-                onClick={handleCenterOnUser}
+                className="relative"
+                onClick={() => { triggerHaptic('selection'); router.push('/uppi/notifications') }}
               >
-                <svg className="w-5 h-5 text-[#007AFF]" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
+                <Bell className="w-6 h-6 text-white" />
+                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#FF9500] rounded-full" />
               </button>
-              
-              {/* Voice Assistant button */}
-              <VoiceAssistantButton />
+              <button 
+                type="button"
+                className="w-10 h-10 rounded-xl bg-[#007AFF] flex items-center justify-center"
+                onClick={() => { triggerHaptic('selection'); router.push('/uppi/history') }}
+              >
+                <CalendarDays className="w-5 h-5 text-white" />
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Quick Services */}
+        <div className="px-5 pb-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+            {quickServices.map((service) => (
+              <button
+                key={service.label}
+                type="button"
+                className="flex-shrink-0 flex flex-col items-center"
+                onClick={() => { triggerHaptic('selection'); router.push(service.href) }}
+              >
+                <div className={`w-16 h-16 ${service.bgColor} rounded-2xl flex items-center justify-center mb-2`}>
+                  <service.icon className="w-7 h-7 text-white" />
+                </div>
+                <span className="text-white text-xs font-medium">{service.label}</span>
+                <span className="text-[#8E8E93] text-[10px]">{service.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Club Uppi Card */}
+        <div className="px-5 pb-3">
+          <button
+            type="button"
+            className="w-full bg-gradient-to-r from-[#1a1a2e] to-[#2d2d44] rounded-2xl p-4 flex items-center justify-between"
+            onClick={() => { triggerHaptic('selection'); router.push('/uppi/club') }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#FFD700]/20 rounded-xl flex items-center justify-center">
+                <Gift className="w-5 h-5 text-[#FFD700]" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-semibold">Club Uppi</span>
+                  <span className="bg-[#FF9500] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">NOVO</span>
+                </div>
+                <p className="text-[#8E8E93] text-xs mt-0.5">Ate 15% OFF em todas as corridas</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#8E8E93]" />
+          </button>
+        </div>
+
+        {/* Promotion Card */}
+        <div className="px-5 pb-3">
+          <button
+            type="button"
+            className="w-full bg-gradient-to-r from-[#6c5ce7] to-[#8b7cf7] rounded-2xl p-4 flex items-center justify-between overflow-hidden relative"
+            onClick={() => { triggerHaptic('selection'); router.push('/uppi/promotions') }}
+          >
+            <div className="text-left z-10">
+              <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider">PROMOCAO</p>
+              <h3 className="text-white font-bold text-lg mt-1">20% OFF na proxima</h3>
+              <p className="text-white/80 text-xs mt-0.5">Use o codigo UPPI20</p>
+            </div>
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center z-10">
+              <Gift className="w-6 h-6 text-white" />
+            </div>
+            {/* Decorative circles */}
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full" />
+            <div className="absolute -right-5 -bottom-10 w-24 h-24 bg-white/5 rounded-full" />
+          </button>
+        </div>
       </div>
 
-      {/* Bottom Navigation - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 pb-[env(safe-area-inset-bottom)]">
-        <BottomNavigation />
-      </div>
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1c1c1e]/95 backdrop-blur-xl border-t border-white/5 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around py-2">
+          <button 
+            type="button"
+            className="flex flex-col items-center gap-1 px-6 py-2"
+            onClick={() => { triggerHaptic('selection') }}
+          >
+            <div className="w-10 h-8 bg-[#007AFF]/20 rounded-full flex items-center justify-center">
+              <Home className="w-5 h-5 text-[#007AFF]" />
+            </div>
+            <span className="text-[#007AFF] text-[10px] font-medium">Inicio</span>
+          </button>
+          <button 
+            type="button"
+            className="flex flex-col items-center gap-1 px-6 py-2"
+            onClick={() => { triggerHaptic('selection'); router.push('/uppi/history') }}
+          >
+            <Map className="w-5 h-5 text-[#8E8E93]" />
+            <span className="text-[#8E8E93] text-[10px]">Viagens</span>
+          </button>
+          <button 
+            type="button"
+            className="flex flex-col items-center gap-1 px-6 py-2"
+            onClick={() => { triggerHaptic('selection'); router.push('/uppi/settings') }}
+          >
+            <Settings className="w-5 h-5 text-[#8E8E93]" />
+            <span className="text-[#8E8E93] text-[10px]">Config</span>
+          </button>
+          <button 
+            type="button"
+            className="flex flex-col items-center gap-1 px-6 py-2"
+            onClick={() => { triggerHaptic('selection'); router.push('/uppi/profile') }}
+          >
+            <User className="w-5 h-5 text-[#8E8E93]" />
+            <span className="text-[#8E8E93] text-[10px]">Perfil</span>
+          </button>
+        </div>
+      </nav>
 
-      {/* iFood-style Coupon/Reward Modal */}
+      {/* Coupon Modal */}
       <CouponNotificationModal
         notification={couponNotification}
         onClose={closeCouponModal}
