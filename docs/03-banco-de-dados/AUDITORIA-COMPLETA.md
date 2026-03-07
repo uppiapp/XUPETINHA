@@ -1321,11 +1321,7 @@ accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button,
 - CRON_SECRET (usado em: webhooks/process/route.ts, sms/send/route.ts - autenticacao de cron jobs)
 
 ### Opcionais
-- TWILIO_ACCOUNT_SID (SMS fallback - usado em sms/send/route.ts)
-- TWILIO_AUTH_TOKEN (usado em sms/send/route.ts)
-- TWILIO_PHONE_NUMBER (usado em sms/send/route.ts)
 - STRIPE_SECRET_KEY (pagamentos reais - nao referenciado no codigo atual)
-- SENTRY_DSN (error tracking - nao referenciado no codigo atual)
 
 ---
 

@@ -440,9 +440,6 @@
 - [x] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 - [x] RESEND_API_KEY
 - [ ] CRON_SECRET (opcional — webhooks automaticos)
-- [ ] TWILIO_ACCOUNT_SID (opcional — SMS)
-- [ ] TWILIO_AUTH_TOKEN (opcional — SMS)
-- [ ] TWILIO_PHONE_NUMBER (opcional — SMS)
 
 ---
 
