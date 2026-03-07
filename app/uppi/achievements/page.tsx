@@ -118,7 +118,6 @@ const categoryBgMap: Record<string, string> = {
 
 export default function AchievementsPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -129,6 +128,7 @@ export default function AchievementsPage() {
   }, [])
 
   const loadData = async () => {
+    const supabase = createClient()
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }

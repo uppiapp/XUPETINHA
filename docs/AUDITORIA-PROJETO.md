@@ -377,9 +377,6 @@ search-bar, segmented-control, sheet, skeleton, slider, switch, tabs, toast-adva
 | NEXT_PUBLIC_GOOGLE_MAPS_API_KEY | Configurado | Google Maps |
 | RESEND_API_KEY | Configurado | Emails de relatorio |
 | CRON_SECRET | Pendente | Webhooks automaticos (opcional) |
-| TWILIO_ACCOUNT_SID | Pendente | SMS (opcional) |
-| TWILIO_AUTH_TOKEN | Pendente | SMS (opcional) |
-| TWILIO_PHONE_NUMBER | Pendente | SMS (opcional) |
 
 ---
 

@@ -89,11 +89,6 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyDl31vsTzJiDt_qr3PEOAxYiU7JUiRJYmE
 ```env
 # Webhooks (opcional - para processamento de entregas)
 CRON_SECRET=seu-secret
-
-# Twilio (opcional - para SMS notifications)
-TWILIO_ACCOUNT_SID=seu-account-sid
-TWILIO_AUTH_TOKEN=seu-auth-token
-TWILIO_PHONE_NUMBER=+1234567890
 ```
 
 ---
