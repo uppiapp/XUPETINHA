@@ -115,20 +115,45 @@ export default function HomePage() {
     <main className="h-dvh flex flex-col relative overflow-hidden bg-[#0d0d0d]" aria-label="Tela principal do Uppi">
       {/* Map Area - Upper Half */}
       <div className="relative flex-1 min-h-[50vh]" role="region" aria-label="Mapa de localizacao">
-        {/* Search Bar - Fixed at top */}
+        {/* Search Bar - iOS Style like Uber */}
         <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-          <button
-            type="button"
-            aria-label="Buscar destino"
-            className="w-full flex items-center gap-3 bg-[#1c1c1e] rounded-full px-4 py-3"
-            onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
-          >
-            <svg className="w-5 h-5 text-[#8E8E93]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <circle cx="11" cy="11" r="8" />
-              <path strokeLinecap="round" d="m21 21-4.35-4.35" />
-            </svg>
-            <span className="flex-1 text-[#8E8E93] text-base text-left">Para onde?</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Main Search Button */}
+            <button
+              type="button"
+              aria-label="Buscar destino"
+              className="flex-1 flex items-center gap-3 bg-[#1c1c1e]/95 backdrop-blur-xl rounded-full pl-3 pr-2 py-2 shadow-lg shadow-black/20"
+              onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
+            >
+              {/* Google Maps Pin Icon */}
+              <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" className="w-6 h-6">
+                  <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle fill="#B31412" cx="12" cy="9" r="2.5"/>
+                </svg>
+              </div>
+              <span className="flex-1 text-[#8E8E93] text-[15px] text-left font-normal">Search location...</span>
+              
+              {/* User Avatar */}
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#3a3a3c] flex-shrink-0">
+                <img 
+                  src={profile?.avatar_url || '/images/default-avatar.jpg'} 
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+            
+            {/* Mic Button */}
+            <button 
+              type="button"
+              aria-label="Busca por voz"
+              className="w-11 h-11 rounded-full bg-[#007AFF] flex items-center justify-center shadow-lg shadow-[#007AFF]/30 flex-shrink-0"
+              onClick={() => { triggerHaptic('impact') }}
+            >
+              <Mic className="w-5 h-5 text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Google Map */}
@@ -159,34 +184,24 @@ export default function HomePage() {
           />
         )}
 
-        {/* Facebook Icon - Left side */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          <button 
-            type="button"
-            className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center shadow-lg"
-            onClick={() => { triggerHaptic('impact') }}
-          >
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
-            </svg>
-          </button>
-        </div>
 
-        {/* Right side buttons - Mic and Plus */}
-        <div className="absolute right-4 bottom-16 z-10 flex flex-col gap-3">
+
+        {/* Current Location Button */}
+        <div className="absolute right-4 bottom-16 z-10">
           <button 
             type="button"
-            className="w-12 h-12 rounded-full bg-[#007AFF] flex items-center justify-center shadow-lg"
-            onClick={() => { triggerHaptic('impact') }}
+            aria-label="Minha localizacao"
+            className="w-11 h-11 rounded-full bg-[#1c1c1e]/95 backdrop-blur-xl flex items-center justify-center shadow-lg shadow-black/20"
+            onClick={() => { 
+              triggerHaptic('impact')
+              if (mapRef.current && userLocation) {
+                mapRef.current.panTo(userLocation.lat, userLocation.lng)
+              }
+            }}
           >
-            <Mic className="w-5 h-5 text-white" />
-          </button>
-          <button 
-            type="button"
-            className="w-10 h-10 rounded-full bg-[#007AFF] flex items-center justify-center shadow-lg"
-            onClick={() => { triggerHaptic('impact'); router.push('/uppi/ride/route-input') }}
-          >
-            <Plus className="w-5 h-5 text-white" />
+            <svg className="w-5 h-5 text-[#007AFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </button>
         </div>
 
