@@ -202,20 +202,19 @@ export default function LoginPage() {
       <div className="relative z-10 px-5 pb-10 pt-6 flex flex-col gap-3">
         <button
           type="button"
-          onClick={() => router.push("/auth/selection")}
-          disabled={loading}
-          className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-lg disabled:opacity-40"
+          onClick={handleLogin}
+          disabled={!canSubmit || loading}
+          className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-md disabled:opacity-40"
         >
-          Criar conta
+          {loading ? "Entrando..." : "Entrar"}
         </button>
         <button
           type="button"
-          onClick={handleLogin}
-          disabled={!canSubmit || loading}
-          className="w-full py-[17px] rounded-full bg-black text-white font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-lg disabled:opacity-40"
-          style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+          onClick={() => router.push("/auth/selection")}
+          className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 text-white"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
         >
-          {loading ? "Entrando..." : "Log in"}
+          Criar conta
         </button>
       </div>
     </div>

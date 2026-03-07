@@ -358,17 +358,18 @@ export default function SignupPage() {
               handleCreateAccount()
             }
           }}
-          className="w-full py-[17px] rounded-full bg-white text-black font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-lg disabled:opacity-30"
+          className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-md disabled:opacity-30"
+          style={{ backgroundColor: "white", color: "black" }}
         >
-          {step < 3 ? "Continuar" : loading ? "Criando conta..." : "Create account"}
+          {step < 3 ? "Continuar" : loading ? "Criando conta..." : "Criar conta"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/login")}
-          className="w-full py-[17px] rounded-full bg-black text-white font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-all duration-100 shadow-lg"
-          style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+          className="w-full py-[17px] rounded-full font-semibold text-[15px] tracking-wide active:scale-[0.98] transition-transform duration-100 text-white"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
         >
-          Log in
+          Já tenho conta
         </button>
 
         {/* Links legais */}
