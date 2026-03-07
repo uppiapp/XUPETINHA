@@ -114,7 +114,7 @@ export default function PassengerSignupPage() {
       {/* Logo + title */}
       <div className="relative z-10 px-5 pt-6 pb-8">
         <div className="flex items-center gap-2 mb-6">
-          <UppiLogo size={28} />
+          <UppiLogo size={40} />
           <span className="text-sm font-medium text-white/80">Uppi</span>
         </div>
         <h1 className="text-[2rem] font-bold text-white leading-tight text-balance">
