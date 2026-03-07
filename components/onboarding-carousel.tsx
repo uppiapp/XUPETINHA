@@ -206,34 +206,46 @@ export function OnboardingCarousel() {
           </div>
         )}
 
-        {/* Progress bars */}
-        <div className="relative z-10 flex gap-[5px] px-5 pt-4">
-          {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
+        {/* Progress bars + Pular */}
+        <div className="relative z-10 flex items-center gap-3 px-5 pt-4">
+          <div className="flex flex-1 gap-[5px]">
+            {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Ir para slide ${i + 1}`}
+                onClick={() => goTo(i)}
+                className="flex-1 h-[2px] rounded-full overflow-hidden"
+                style={{ backgroundColor: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)" }}
+              >
+                {i < current && (
+                  <div className="h-full w-full rounded-full" style={{ backgroundColor: isDark ? "white" : "#111" }} />
+                )}
+                {i === current && (
+                  <div
+                    key={`bar-${animKey}`}
+                    className="h-full w-full rounded-full"
+                    style={{
+                      transformOrigin: "left center",
+                      animation: `scaleX-fill ${SLIDE_DURATION}ms linear forwards`,
+                      animationPlayState: paused ? "paused" : "running",
+                      backgroundColor: isDark ? "white" : "#111",
+                    }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+          {current < TOTAL_SLIDES - 1 && (
             <button
-              key={i}
               type="button"
-              aria-label={`Ir para slide ${i + 1}`}
-              onClick={() => goTo(i)}
-              className="flex-1 h-[2px] rounded-full overflow-hidden"
-              style={{ backgroundColor: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)" }}
+              onClick={() => router.push("/auth/selection")}
+              className="text-[13px] font-medium tracking-wide shrink-0 active:opacity-60 transition-opacity duration-100"
+              style={{ color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.45)" }}
             >
-              {i < current && (
-                <div className="h-full w-full rounded-full" style={{ backgroundColor: isDark ? "white" : "#111" }} />
-              )}
-              {i === current && (
-                <div
-                  key={`bar-${animKey}`}
-                  className="h-full w-full rounded-full"
-                  style={{
-                    transformOrigin: "left center",
-                    animation: `scaleX-fill ${SLIDE_DURATION}ms linear forwards`,
-                    animationPlayState: paused ? "paused" : "running",
-                    backgroundColor: isDark ? "white" : "#111",
-                  }}
-                />
-              )}
+              Pular
             </button>
-          ))}
+          )}
         </div>
 
         {/* Header */}
